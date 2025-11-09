@@ -4,6 +4,7 @@ import Layout from "../../layouts/Layout.astro";
 import ArticleSnippet from "../../components/ArticleSnippet.astro";
 import Section from "../../components/common/Section.astro";
 import { articles } from "../../lib/list";
+import SubscribeCard from "../../components/SubscribeCard.astro";
 
 ---
 
@@ -51,5 +52,8 @@ import { articles } from "../../lib/list";
         ))
       }
     </ul>
+    <div class="mt-12">
+      <SubscribeCard />
+    </div>
   </Section>
 </Layout>

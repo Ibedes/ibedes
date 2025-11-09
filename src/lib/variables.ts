@@ -38,5 +38,15 @@ export const GLOBAL = {
     home: "/",
     projects: "/projects",
     blog: "/blog",
-  }
+  },
+
+  // Newsletter / subscribe card copy
+  newsletter: {
+    title: "Gabung Newsletter",
+    description: "Dapatkan tulisan terbaru, catatan projek, dan eksperimen langsung di inbox tanpa spam.",
+    buttonText: "Berlangganan",
+    successMessage: "Tipis aja, cuma 1-2 email per bulan.",
+    placeholder: "nama@emailkamu.com",
+    formAction: "https://buttondown.com/api/emails/embed-subscribe/muji", // Ganti dengan endpoint newsletter kamu
+  },
 };

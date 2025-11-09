@@ -10,6 +10,7 @@ import { GLOBAL } from "../lib/variables";
 import type { MarkdownLayoutProps } from "astro";
 import Prose from "../components/Prose.astro";
 import Layout from "./Layout.astro";
+import SubscribeCard from "../components/SubscribeCard.astro";
 
 type Props = MarkdownLayoutProps<ArticleFrontmatter>;
 
@@ -54,8 +55,13 @@ const sourceUrl = generateSourceUrl(frontmatter.filename, "blog");
   <slot />
 </Prose>
 
+    <div class="my-12">
+      <SubscribeCard />
+    </div>
 
-    <p class="pt-8">~{GLOBAL.username}</p>
+  <p class="pt-8">~{GLOBAL.username}</p>
+
+
   </div>
 </Section>
 

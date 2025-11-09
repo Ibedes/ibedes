@@ -1,0 +1,48 @@
+---
+export interface Props {
+  title?: string;
+  description?: string;
+  buttonText?: string;
+  formAction: string;
+  successMessage?: string;
+}
+
+const {
+  title = "Gabung Newsletter",
+  description = "Dapatkan tulisan baru, catatan, dan eksperimen sebelum orang lain.",
+  buttonText = "Berlangganan",
+  formAction,
+  successMessage = "Terima kasih! Cek inbox kamu.",
+} = Astro.props;
+---
+
+<section class="zag-border-b zag-transition rounded-2xl border p-6 bg-white/70 dark:bg-zinc-900/60 shadow-lg">
+  <h2 class="font-display text-xl mb-2">{title}</h2>
+  <p class="zag-muted mb-4">{description}</p>
+
+  <form
+    method="post"
+    action={formAction}
+    class="flex flex-col gap-3"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <input
+      type="email"
+      name="email"
+      required
+      placeholder="nama@emailkamu.com"
+      class="rounded-lg border-2 border-black/40 dark:border-white/60 bg-transparent px-4 py-3 font-mono focus:outline-2 focus:outline-offset-2 focus:outline-emerald-500"
+    />
+    <button
+      type="submit"
+      class="-zag-bg -zag-text font-display py-3 rounded-lg uppercase tracking-widest"
+    >
+      {buttonText}
+    </button>
+    <p class="text-xs zag-muted text-center">{successMessage}</p>
+  </form>
+  
+
+
+</section>
