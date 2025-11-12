@@ -43,7 +43,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
   <div class="flex flex-wrap gap-4">
     <button
       type="button"
-      class="inline-flex items-center gap-2 rounded-2xl border-2 border-black/70 dark:border-white/70 px-4 py-3 font-mono text-xs uppercase tracking-[0.2em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 disabled:opacity-60"
+      class="relative inline-flex items-center gap-2 rounded-2xl border-2 border-black/70 dark:border-white/70 px-4 py-3 font-mono text-xs uppercase tracking-[0.2em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 disabled:opacity-60 overflow-visible"
       data-like-button
       aria-live="polite"
     >
@@ -51,6 +51,11 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       <span class="font-semibold text-base" data-like-count>0</span>
       <span class="sr-only">total suka untuk artikel ini</span>
       <span class="font-mono text-[0.6rem] uppercase tracking-[0.3em]">Suka</span>
+      <span
+        class="pointer-events-none absolute inset-0 overflow-visible"
+        aria-hidden="true"
+        data-like-animator
+      ></span>
     </button>
     <p class="text-xs text-zag-dark/70 dark:text-zag-light/70">
       Kami menyaring spam secara otomatis dan bisa menghapus kiriman yang tidak relevan.
@@ -126,6 +131,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       const supabaseKey = root.getAttribute("data-supabase-key") ?? "";
       const likeButton = root.querySelector("[data-like-button]");
       const likeCountEl = root.querySelector("[data-like-count]");
+      const likeAnimator = root.querySelector("[data-like-animator]");
       const commentList = root.querySelector("[data-comment-list]");
       const emptyState = root.querySelector("[data-empty-comments]");
       const form = root.querySelector("[data-comment-form]");
@@ -137,6 +143,8 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
 
       const likesKey = `ibedes:likes:${slug}`;
       const commentsKey = `ibedes:comments:${slug}`;
+      const userHashKey = `ibedes:user-hash`;
+      const MAX_CLAPS = 50;
       const useRemote = supabaseReady && Boolean(supabaseUrl && supabaseKey);
 
       const parseJSON = (value) => {
@@ -147,10 +155,26 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
         }
       };
 
-      let likesState = parseJSON(window.localStorage.getItem(likesKey)) ?? {
-        count: likesSeed,
-        liked: false,
+      const normalizeLikesState = (state) => {
+        if (!state || typeof state !== "object") {
+          return {
+            count: likesSeed,
+            claps: 0,
+          };
+        }
+        const next = {
+          count: Number.isFinite(Number(state.count)) ? Number(state.count) : likesSeed,
+          claps: Number.isFinite(Number(state.claps))
+            ? Number(state.claps)
+            : state.liked
+              ? 1
+              : 0,
+        };
+        next.claps = Math.max(0, Math.min(MAX_CLAPS, next.claps));
+        return next;
       };
+
+      let likesState = normalizeLikesState(parseJSON(window.localStorage.getItem(likesKey)));
 
       const setStatusMessage = (message = "", variant = "info") => {
         if (!statusMessage) return;
@@ -178,13 +202,54 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
           likeCountEl.textContent = `${likesState.count}`;
         }
         if (likeButton) {
-          likeButton.disabled = likesState.liked;
-          likeButton.setAttribute("aria-pressed", likesState.liked ? "true" : "false");
+          const reachedLimit = likesState.claps >= MAX_CLAPS;
+          likeButton.disabled = reachedLimit;
+          likeButton.setAttribute("aria-pressed", likesState.claps > 0 ? "true" : "false");
         }
       };
 
       const persistLikes = () => {
         window.localStorage.setItem(likesKey, JSON.stringify(likesState));
+      };
+
+      const getUserHash = () => {
+        const existing = window.localStorage.getItem(userHashKey);
+        if (existing) return existing;
+        const fresh =
+          window.crypto?.randomUUID?.() ??
+          `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        window.localStorage.setItem(userHashKey, fresh);
+        return fresh;
+      };
+
+      const userHash = getUserHash();
+
+      const spawnFloatingHeart = () => {
+        if (!likeAnimator) return;
+        const heart = document.createElement("span");
+        heart.className = "floating-heart";
+        heart.textContent = "❤️";
+        heart.style.setProperty("--heart-spread", `${(Math.random() - 0.5) * 40}px`);
+        heart.style.setProperty("--heart-scale", `${0.8 + Math.random() * 0.5}`);
+        likeAnimator.appendChild(heart);
+        heart.addEventListener(
+          "animationend",
+          () => {
+            heart.remove();
+          },
+          { once: true },
+        );
+      };
+
+      const applyClapLocally = () => {
+        likesState = {
+          ...likesState,
+          count: likesState.count + 1,
+          claps: Math.min(MAX_CLAPS, likesState.claps + 1),
+        };
+        persistLikes();
+        updateLikeUI();
+        spawnFloatingHeart();
       };
 
       updateLikeUI();
@@ -407,13 +472,14 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       });
 
       const handleSupabaseLike = async () => {
+        if (likesState.claps >= MAX_CLAPS) {
+          setStatusMessage("Kamu sudah memberi 50 tepuk untuk artikel ini.", "error");
+          return;
+        }
+
         if (!useRemote) {
-          likesState = {
-            count: likesState.count + 1,
-            liked: true,
-          };
-          persistLikes();
-          updateLikeUI();
+          applyClapLocally();
+          setStatusMessage(`Tepuk tersimpan di perangkatmu (${likesState.claps}/${MAX_CLAPS}).`);
           return;
         }
         likeButton?.setAttribute("data-loading", "true");
@@ -427,19 +493,18 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
             },
             body: JSON.stringify({
               slug,
-              user_hash: window.crypto?.randomUUID?.() ?? `${Date.now()}`,
+              user_hash: userHash,
             }),
           });
           if (!response.ok) {
             throw new Error("Gagal menambahkan suka");
           }
-          likesState = {
-            count: likesState.count + 1,
-            liked: true,
-          };
-          persistLikes();
-          updateLikeUI();
-          setStatusMessage("Terima kasih sudah apresiasi!");
+          applyClapLocally();
+          setStatusMessage(
+            likesState.claps >= MAX_CLAPS
+              ? "Terima kasih! Batas 50 tepuk sudah kamu capai."
+              : "Terima kasih sudah apresiasi!",
+          );
         } catch (error) {
           console.error(error);
           setStatusMessage("Suka gagal dikirim. Coba lagi.", "error");
@@ -449,7 +514,10 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       };
 
       likeButton?.addEventListener("click", () => {
-        if (likesState.liked) return;
+        if (likesState.claps >= MAX_CLAPS) {
+          setStatusMessage("Kamu sudah memberi 50 tepuk untuk artikel ini.", "error");
+          return;
+        }
         handleSupabaseLike();
       });
 
@@ -461,3 +529,37 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
     })();
   </script>
 </section>
+
+<style>
+  [data-like-animator] {
+    pointer-events: none;
+  }
+
+  :global(.floating-heart) {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.4rem;
+    animation: heartFloat 900ms cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    opacity: 0.95;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+    will-change: transform, opacity;
+  }
+
+  @keyframes heartFloat {
+    0% {
+      transform: translate(-50%, -50%) translateX(var(--heart-spread, 0px))
+        scale(var(--heart-scale, 0.8));
+      opacity: 0.95;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-50%, -180%) translateX(calc(var(--heart-spread, 0px) * 1.5))
+        scale(calc(var(--heart-scale, 0.8) + 0.35));
+      opacity: 0;
+    }
+  }
+</style>
