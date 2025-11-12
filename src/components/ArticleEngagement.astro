@@ -7,12 +7,7 @@ export interface Props {
 const { slug, title } = Astro.props;
 
 const safeSlug = slug?.trim?.().replace(/^\/+|\/+$/g, "") || "artikel";
-
-const seedLikes = Array.from(safeSlug)
-  .map((char, index) => char.charCodeAt(0) * (index + 1))
-  .reduce((acc, value) => acc + value, 0) %
-  13 +
-  3;
+const seedLikes = 0;
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
