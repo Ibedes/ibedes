@@ -35,6 +35,48 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
     </p>
   </div>
 
+  <div class="engagement-fab" data-floating-controls hidden>
+    <button
+      type="button"
+      class="engagement-fab__button engagement-fab__button-like"
+      data-like-button
+      aria-label="Kirim tepuk"
+    >
+      <span aria-hidden="true">❤️</span>
+      <span class="engagement-fab__count" data-like-count>0</span>
+    </button>
+    <button
+      type="button"
+      class="engagement-fab__button"
+      data-scroll-comments
+      aria-label="Buka komentar"
+    >
+      💬
+    </button>
+  </div>
+
+  <div class="engagement-mobile-bar" data-floating-controls hidden>
+    <button
+      type="button"
+      class="engagement-mobile-bar__action"
+      data-like-button
+      aria-label="Kirim tepuk"
+    >
+      <span aria-hidden="true">❤️</span>
+      <span class="font-semibold" data-like-count>0</span>
+      <span class="text-xs uppercase tracking-[0.3em]">Tepuk</span>
+    </button>
+    <button
+      type="button"
+      class="engagement-mobile-bar__action"
+      data-scroll-comments
+      aria-label="Menuju komentar"
+    >
+      <span aria-hidden="true">💬</span>
+      <span class="font-mono text-xs uppercase tracking-[0.3em]">Komentar</span>
+    </button>
+  </div>
+
   <div class="flex flex-wrap gap-4">
     <button
       type="button"
@@ -124,8 +166,9 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       const supabaseReady = root.getAttribute("data-supabase-ready") === "true";
       const supabaseUrl = root.getAttribute("data-supabase-url")?.replace(/\/+$/, "") ?? "";
       const supabaseKey = root.getAttribute("data-supabase-key") ?? "";
-      const likeButton = root.querySelector("[data-like-button]");
-      const likeCountEl = root.querySelector("[data-like-count]");
+      const likeButtons = Array.from(root.querySelectorAll("[data-like-button]"));
+      const primaryLikeButton = likeButtons[0] ?? null;
+      const likeCountEls = Array.from(root.querySelectorAll("[data-like-count]"));
       const likeAnimator = root.querySelector("[data-like-animator]");
       const commentList = root.querySelector("[data-comment-list]");
       const emptyState = root.querySelector("[data-empty-comments]");
@@ -135,6 +178,8 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       const submitButton = form?.querySelector?.("button[type='submit']");
       const loadingState = root.querySelector("[data-loading-state]");
       const statusMessage = root.querySelector("[data-status-message]");
+      const commentButtons = Array.from(root.querySelectorAll("[data-scroll-comments]"));
+      const floatingControls = Array.from(root.querySelectorAll("[data-floating-controls]"));
 
       const likesKey = `ibedes:likes:${slug}`;
       const commentsKey = `ibedes:comments:${slug}`;
@@ -193,14 +238,14 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       };
 
       const updateLikeUI = () => {
-        if (likeCountEl) {
-          likeCountEl.textContent = `${likesState.count}`;
-        }
-        if (likeButton) {
+        likeCountEls.forEach((el) => {
+          el.textContent = `${likesState.count}`;
+        });
+        likeButtons.forEach((button) => {
           const reachedLimit = likesState.claps >= MAX_CLAPS;
-          likeButton.disabled = reachedLimit;
-          likeButton.setAttribute("aria-pressed", likesState.claps > 0 ? "true" : "false");
-        }
+          button.disabled = reachedLimit;
+          button.setAttribute("aria-pressed", likesState.claps > 0 ? "true" : "false");
+        });
       };
 
       const persistLikes = () => {
@@ -248,6 +293,23 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       };
 
       updateLikeUI();
+      floatingControls.forEach((el) => {
+        el.hidden = false;
+      });
+
+      const scrollToComments = () => {
+        const target = form ?? commentList ?? root;
+        target?.scrollIntoView({ behavior: "smooth", block: "start" });
+        if (commentInput) {
+          window.setTimeout(() => commentInput.focus(), 400);
+        }
+      };
+
+      commentButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          scrollToComments();
+        });
+      });
 
       const renderEmptyState = () => {
         if (!emptyState) return;
@@ -477,7 +539,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
           setStatusMessage(`Tepuk tersimpan di perangkatmu (${likesState.claps}/${MAX_CLAPS}).`);
           return;
         }
-        likeButton?.setAttribute("data-loading", "true");
+        primaryLikeButton?.setAttribute("data-loading", "true");
         setStatusMessage("Mengirim suka...");
         try {
           const response = await fetch(`${supabaseUrl}/rest/v1/article_likes`, {
@@ -504,16 +566,18 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
           console.error(error);
           setStatusMessage("Suka gagal dikirim. Coba lagi.", "error");
         } finally {
-          likeButton?.removeAttribute("data-loading");
+          primaryLikeButton?.removeAttribute("data-loading");
         }
       };
 
-      likeButton?.addEventListener("click", () => {
-        if (likesState.claps >= MAX_CLAPS) {
-          setStatusMessage("Kamu sudah memberi 50 tepuk untuk artikel ini.", "error");
-          return;
-        }
-        handleSupabaseLike();
+      likeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (likesState.claps >= MAX_CLAPS) {
+            setStatusMessage("Kamu sudah memberi 50 tepuk untuk artikel ini.", "error");
+            return;
+          }
+          handleSupabaseLike();
+        });
       });
 
       if (useRemote) {
@@ -526,6 +590,104 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
 </section>
 
 <style>
+  .engagement-fab {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: none;
+    flex-direction: column;
+    gap: 0.75rem;
+    z-index: 40;
+  }
+
+  .engagement-fab__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 999px;
+    border: 2px solid rgba(0, 0, 0, 0.6);
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(8px);
+    color: #111;
+    font-size: 1.3rem;
+    transition: transform 150ms ease, border-color 150ms ease;
+  }
+
+  .engagement-fab__button:hover {
+    transform: translateY(-2px);
+    border-color: rgba(16, 185, 129, 0.9);
+  }
+
+  .engagement-fab__count {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-left: 0.35rem;
+  }
+
+  .engagement-mobile-bar {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 1rem;
+    width: min(92vw, 360px);
+    display: none;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 999px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    z-index: 40;
+    backdrop-filter: blur(8px);
+  }
+
+  .engagement-mobile-bar__action {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    border: 2px solid rgba(0, 0, 0, 0.4);
+    background: transparent;
+    font-size: 0.95rem;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .engagement-mobile-bar__action:first-of-type {
+    background: rgba(16, 185, 129, 0.12);
+    border-color: rgba(16, 185, 129, 0.5);
+  }
+
+  @media (max-width: 1023px) {
+    .engagement-mobile-bar {
+      display: flex;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .engagement-fab {
+      display: flex;
+    }
+    .engagement-mobile-bar {
+      display: none;
+    }
+  }
+
+  :global(.dark) [data-engagement] :where(.engagement-fab__button, .engagement-mobile-bar, .engagement-mobile-bar__action) {
+    background: rgba(24, 24, 27, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #f8fafc;
+  }
+
+  :global(.dark) [data-engagement] :where(.engagement-fab__button-like, .engagement-mobile-bar__action:first-of-type) {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.5);
+    color: #ecfdf5;
+  }
+
   [data-like-animator] {
     pointer-events: none;
   }
