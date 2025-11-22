@@ -1,0 +1,16 @@
+{
+    "name": "Ibedes - Creative Developer",
+    "short_name": "Ibedes",
+    "description": "Portfolio dan blog personal Ibedes. Berbagi cerita tentang web development, teknologi, dan pengalaman belajar.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml"
+        }
+    ]
+}

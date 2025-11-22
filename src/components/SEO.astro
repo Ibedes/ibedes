@@ -1,0 +1,81 @@
+---
+import { GLOBAL } from "../lib/variables";
+
+interface Props {
+    title: string;
+    description: string;
+    image?: string;
+    canonicalURL?: string | URL;
+    type?: "website" | "article";
+}
+
+const {
+    title,
+    description,
+    image = "/og-image.png",
+    canonicalURL = new URL(Astro.url.pathname, Astro.site),
+    type = "website",
+} = Astro.props;
+
+const siteName = "Ibedes";
+const twitterHandle = "@ibedes";
+
+const schema = {
+    "@context": "https://schema.org",
+    "@type": type === "article" ? "BlogPosting" : "WebSite",
+    headline: title,
+    description: description,
+    image: new URL(image, Astro.url).href,
+    url: Astro.url.href,
+    author: {
+        "@type": "Person",
+        name: GLOBAL.username,
+        url: Astro.site,
+    },
+    publisher: {
+        "@type": "Organization",
+        name: siteName,
+        logo: {
+            "@type": "ImageObject",
+            url: new URL("/favicon.svg", Astro.url).href,
+        },
+    },
+};
+---
+
+<!-- Global Metadata -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="manifest" href="/manifest.json" />
+<meta name="generator" content={Astro.generator} />
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURL} />
+
+<!-- Primary Meta Tags -->
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={type} />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={new URL(image, Astro.url)} />
+<meta property="og:site_name" content={siteName} />
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={Astro.url} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={new URL(image, Astro.url)} />
+{twitterHandle && <meta property="twitter:creator" content={twitterHandle} />}
+
+<!-- Robots -->
+<meta name="robots" content="index, follow" />
+
+<!-- JSON-LD -->
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

@@ -22,25 +22,16 @@ const whatsappLink = GLOBAL.contactWhatsApp ?? "https://wa.link/b1hzai";
 const phoneHref = `tel:${contactPhone.replace(/\D+/g, "")}`;
 ---
 
-<Layout>
-  <Fragment slot="head">
-    <title>{service.title} • {GLOBAL.username}</title>
-    <meta name="description" content={service.summary} />
-    <meta property="og:title" content={`${service.title} • ${GLOBAL.username}`} />
-    <meta property="og:description" content={service.summary} />
-    <meta property="og:image" content={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`} />
-    <meta property="og:url" content={`${GLOBAL.rootUrl}/services/${service.slug}`} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={`${service.title} • ${GLOBAL.username}`} />
-    <meta name="twitter:description" content={service.summary} />
-    <meta name="twitter:image" content={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`} />
-    <meta http-equiv="content-language" content="id" />
-    <meta name="language" content="Indonesia" />
-    <link rel="canonical" href={`${GLOBAL.rootUrl}/services/${service.slug}`} />
-  </Fragment>
-
+<Layout
+  title={`${service.title} • ${GLOBAL.username}`}
+  description={service.summary}
+  image={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`}
+>
   <Section class="py-16 space-y-8">
-    <a href="/services" class="inline-flex items-center text-xs uppercase tracking-[0.35em] zag-muted gap-2">
+    <a
+      href="/services"
+      class="inline-flex items-center text-xs uppercase tracking-[0.35em] zag-muted gap-2"
+    >
       <span aria-hidden="true">←</span> Kembali
     </a>
     <div class="space-y-4">
@@ -55,11 +46,13 @@ const phoneHref = `tel:${contactPhone.replace(/\D+/g, "")}`;
     </div>
 
     <div class="flex flex-wrap gap-3">
-      {service.problems.map((item) => (
-        <span class="text-xs uppercase tracking-[0.25em] border border-black/20 dark:border-white/30 rounded-full px-4 py-2">
-          {item}
-        </span>
-      ))}
+      {
+        service.problems.map((item) => (
+          <span class="text-xs uppercase tracking-[0.25em] border border-black/20 dark:border-white/30 rounded-full px-4 py-2">
+            {item}
+          </span>
+        ))
+      }
     </div>
   </Section>
 
@@ -70,32 +63,38 @@ const phoneHref = `tel:${contactPhone.replace(/\D+/g, "")}`;
       </p>
       <h2 class="text-2xl font-display">Pricelist yang bisa disesuaikan</h2>
       <p class="text-sm zag-muted max-w-2xl">
-        Semua paket fleksibel untuk menyesuaikan kebutuhan dan timeline kamu. Pilih yang paling dekat dengan kebutuhanmu, sisanya bisa kita atur saat briefing.
+        Semua paket fleksibel untuk menyesuaikan kebutuhan dan timeline kamu.
+        Pilih yang paling dekat dengan kebutuhanmu, sisanya bisa kita atur saat
+        briefing.
       </p>
     </div>
     <div class="grid gap-6 md:grid-cols-3">
-      {service.priceList.map((tier) => (
-        <article
-          class:list={[
-            "rounded-2xl border border-black/20 dark:border-white/30 p-6 flex flex-col gap-4",
-            tier.highlight ? "price-card--highlight" : "",
-          ]}
-        >
-          <div class="space-y-2">
-            <p class="text-xs uppercase tracking-[0.25em] zag-muted">{tier.name}</p>
-            <p class="text-xl font-display">{tier.price}</p>
-            <p class="text-sm">{tier.description}</p>
-          </div>
-          <ul class="space-y-2 text-sm leading-relaxed">
-            {tier.features.map((feature) => (
-              <li class="flex gap-2">
-                <span aria-hidden="true">—</span>
-                <span>{feature}</span>
-              </li>
-            ))}
-          </ul>
-        </article>
-      ))}
+      {
+        service.priceList.map((tier) => (
+          <article
+            class:list={[
+              "rounded-2xl border border-black/20 dark:border-white/30 p-6 flex flex-col gap-4",
+              tier.highlight ? "price-card--highlight" : "",
+            ]}
+          >
+            <div class="space-y-2">
+              <p class="text-xs uppercase tracking-[0.25em] zag-muted">
+                {tier.name}
+              </p>
+              <p class="text-xl font-display">{tier.price}</p>
+              <p class="text-sm">{tier.description}</p>
+            </div>
+            <ul class="space-y-2 text-sm leading-relaxed">
+              {tier.features.map((feature) => (
+                <li class="flex gap-2">
+                  <span aria-hidden="true">—</span>
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
     </div>
   </Section>
 
@@ -107,11 +106,13 @@ const phoneHref = `tel:${contactPhone.replace(/\D+/g, "")}`;
       <h2 class="text-2xl font-display">Kenapa layanan ini efektif</h2>
     </div>
     <div class="grid gap-4 md:grid-cols-2">
-      {service.benefits.map((benefit) => (
-        <div class="rounded-2xl border border-dashed border-black/20 dark:border-white/30 p-4">
-          <p class="text-base leading-relaxed">{benefit}</p>
-        </div>
-      ))}
+      {
+        service.benefits.map((benefit) => (
+          <div class="rounded-2xl border border-dashed border-black/20 dark:border-white/30 p-4">
+            <p class="text-base leading-relaxed">{benefit}</p>
+          </div>
+        ))
+      }
     </div>
   </Section>
 
@@ -123,27 +124,31 @@ const phoneHref = `tel:${contactPhone.replace(/\D+/g, "")}`;
       <h2 class="text-2xl font-display">Cara kita bekerja</h2>
     </div>
     <div class="space-y-4">
-      {service.process.map((step, index) => (
-        <div class="flex gap-4">
-          <div class="flex flex-col items-center">
-            <span class="w-8 h-8 rounded-full border border-black/30 dark:border-white/30 flex items-center justify-center font-display text-sm">
-              {index + 1}
-            </span>
-            {index < service.process.length - 1 ? (
-              <span class="flex-1 w-px bg-black/20 dark:bg-white/30 grow"></span>
-            ) : null}
+      {
+        service.process.map((step, index) => (
+          <div class="flex gap-4">
+            <div class="flex flex-col items-center">
+              <span class="w-8 h-8 rounded-full border border-black/30 dark:border-white/30 flex items-center justify-center font-display text-sm">
+                {index + 1}
+              </span>
+              {index < service.process.length - 1 ? (
+                <span class="flex-1 w-px bg-black/20 dark:bg-white/30 grow" />
+              ) : null}
+            </div>
+            <div class="pb-6 border-b border-dashed border-black/20 dark:border-white/20 w-full">
+              <h3 class="text-xl font-display">{step.title}</h3>
+              <p class="text-sm leading-relaxed">{step.description}</p>
+            </div>
           </div>
-          <div class="pb-6 border-b border-dashed border-black/20 dark:border-white/20 w-full">
-            <h3 class="text-xl font-display">{step.title}</h3>
-            <p class="text-sm leading-relaxed">{step.description}</p>
-          </div>
-        </div>
-      ))}
+        ))
+      }
     </div>
   </Section>
 
   <Section class="py-16">
-    <div class="rounded-2xl border border-black/20 dark:border-white/30 p-8 space-y-6">
+    <div
+      class="rounded-2xl border border-black/20 dark:border-white/30 p-8 space-y-6"
+    >
       <div class="space-y-3">
         <p class="font-display text-xs uppercase tracking-[0.35em] zag-muted">
           Siap mulai?
@@ -152,7 +157,9 @@ const phoneHref = `tel:${contactPhone.replace(/\D+/g, "")}`;
           Kirim brief singkat, gratis konsultasi awal.
         </h2>
         <p class="text-base sm:text-lg max-w-2xl">
-          Ceritakan target, timeline ideal, dan budget range. Dalam 24 jam kami kirimkan kombinasi paket + action plan awal supaya kamu bisa langsung ambil keputusan.
+          Ceritakan target, timeline ideal, dan budget range. Dalam 24 jam kami
+          kirimkan kombinasi paket + action plan awal supaya kamu bisa langsung
+          ambil keputusan.
         </p>
       </div>
       <div class="flex flex-wrap gap-3">

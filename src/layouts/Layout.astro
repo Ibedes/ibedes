@@ -1,15 +1,32 @@
 ---
+import SEO from "../components/SEO.astro";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import { GLOBAL } from "../lib/variables";
 import ClickEffect from "../components/effects/ClickEffect";
 import "../styles/click-effect.css";
 import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: "website" | "article";
+}
+
+const {
+  title = "Ibedes - Creative Developer",
+  description = "Portfolio dan blog personal Ibedes. Berbagi cerita tentang web development, teknologi, dan pengalaman belajar.",
+  image,
+  type,
+} = Astro.props;
 ---
 
 <!doctype html>
 <html lang="id">
   <head>
+    <SEO title={title} description={description} image={image} type={type} />
+
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQ2GF3GCCX"
     ></script>
@@ -23,19 +40,12 @@ import "../styles/global.css";
       gtag("config", "G-TQ2GF3GCCX");
     </script>
 
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Doto:wght@100..900&family=Jersey+20+Charted&display=swap"
       rel="stylesheet"
     />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
     <link rel="preconnect" href="https://fonts.bunny.net" />
     <link
       href="https://fonts.bunny.net/css?family=ibm-plex-mono:400,400i,500,500i,600,600i,700,700i"

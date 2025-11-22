@@ -50,38 +50,11 @@ const contactChannels = [
 ];
 ---
 
-<Layout>
-  <Fragment slot="head">
-    <title>Ibedes Studio - Penawaran Jasa</title>
-    <meta
-      name="description"
-      content="Digital agency untuk bisnismu: social media, website, periklanan digital, konsultasi pemasaran, dan KOL specialist dengan harga fleksibel."
-    />
-    <meta property="og:title" content="Ibedes Studio - Penawaran Jasa" />
-    <meta
-      property="og:description"
-      content="Solusi digitalisasi lengkap untuk UMKM, brand lokal, dan kreator. Pilih layanan social media, website, ads, konsultasi, hingga KOL specialist."
-    />
-    <meta
-      property="og:image"
-      content={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`}
-    />
-    <meta property="og:url" content={`${GLOBAL.rootUrl}/services`} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Ibedes Studio - Penawaran Jasa" />
-    <meta
-      name="twitter:description"
-      content="Solusi digitalisasi lengkap untuk UMKM, brand lokal, dan kreator."
-    />
-    <meta
-      name="twitter:image"
-      content={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`}
-    />
-    <meta http-equiv="content-language" content="id" />
-    <meta name="language" content="Indonesia" />
-    <link rel="canonical" href={`${GLOBAL.rootUrl}/services`} />
-  </Fragment>
-
+<Layout
+  title="Ibedes Studio - Penawaran Jasa"
+  description="Digital agency untuk bisnismu: social media, website, periklanan digital, konsultasi pemasaran, dan KOL specialist dengan harga fleksibel."
+  image={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`}
+>
   <Section class="py-16">
     <div id="hero" class="space-y-5">
       <p class="font-display text-xs uppercase tracking-[0.35em] zag-muted">

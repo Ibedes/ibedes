@@ -49,34 +49,12 @@ const affiliateContext =
   frontmatter.affiliateContext || articleAffiliate?.context;
 ---
 
-<Layout>
-  <Fragment slot="head">
-    <title>{frontmatter.title} • {GLOBAL.username}</title>
-    <meta name="description" content={frontmatter.description} />
-    <meta
-      property="og:title"
-      content={`${frontmatter.title} • ${GLOBAL.username}`}
-    />
-    <meta property="og:description" content={shortDescription} />
-    <meta
-      property="og:image"
-      content={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`}
-    />
-    <meta property="og:url" content={frontmatter.url} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content={`${frontmatter.title} • ${GLOBAL.username}`}
-    />
-    <meta name="twitter:description" content={shortDescription} />
-    <meta
-      name="twitter:image"
-      content={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`}
-    />
-    <meta http-equiv="content-language" content="id" />
-    <meta name="language" content="indonesia" />
-    <link rel="canonical" href={sourceUrl} />
-  </Fragment>
+<Layout
+  title={`${frontmatter.title} • ${GLOBAL.username}`}
+  description={frontmatter.description}
+  image={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`}
+  type="article"
+>
   <Section class="pt-8">
     <div class="max-w-prose mx-auto w-full">
       <div class="flex flex-col gap-4 mt-8 mb-16 w-full">
