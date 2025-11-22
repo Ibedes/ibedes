@@ -77,6 +77,13 @@ const sourceUrl = generateSourceUrl(frontmatter.filename, "blog");
       <div class="my-12">
         <SubscribeCard />
       </div>
+
+      <div class="my-12">
+        <ArticleEngagement
+          slug={frontmatter.filename}
+          title={frontmatter.title}
+        />
+      </div>
     </div>
   </Section>
 </Layout>
