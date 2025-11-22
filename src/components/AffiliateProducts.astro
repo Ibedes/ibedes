@@ -2,14 +2,31 @@
 import { Image } from "astro:assets";
 import type { AffiliateProduct } from "../lib/affiliates";
 import { platformConfig } from "../lib/affiliates";
+import { generateProductSchema } from "../lib/seo";
+import { GLOBAL } from "../lib/variables";
 
 export interface Props {
   products: AffiliateProduct[];
   context?: string;
   title?: string;
+  showSkeleton?: boolean;
 }
 
-const { products, context, title = "Rekomendasi Produk" } = Astro.props;
+const { products, context, title = "Rekomendasi Produk", showSkeleton = false } = Astro.props;
+
+// Generate structured data for each product
+const productSchemas = products.map(product => 
+  generateProductSchema({
+    name: product.name,
+    description: product.description || context || title || "Rekomendasi Produk",
+    image: product.image,
+    price: product.price || "0",
+    currency: 'IDR',
+    availability: 'InStock',
+    rating: product.rating,
+    url: product.link,
+  }, GLOBAL.rootUrl)
+);
 ---
 
 <div class="my-8 border-t border-b border-gray-200 dark:border-gray-800 py-6">
@@ -34,9 +51,14 @@ const { products, context, title = "Rekomendasi Produk" } = Astro.props;
         <a 
           href={product.link}
           target="_blank"
-          rel="noopener noreferrer"
+          rel="noopener noreferrer sponsored"
           class="group flex gap-4 p-3 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200"
-          onclick={`gtag('event', 'affiliate_click', { 'product_id': '${product.id}', 'platform': '${product.platform}', 'value': 1 });`}
+          data-affiliate-link
+          data-product-id={product.id}
+          data-platform={product.platform}
+          data-product-name={product.name}
+          data-price={product.price}
+          aria-label={`Beli ${product.name} di ${platform.name}`}
         >
           <!-- Product Image (Compact) -->
           <div class="relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-900">
@@ -101,6 +123,56 @@ const { products, context, title = "Rekomendasi Produk" } = Astro.props;
     </p>
   </div>
 </div>
+
+<!-- Structured Data for Products -->
+{productSchemas.map((schema) => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+))}
+
+<script is:inline>
+  // Enhanced affiliate tracking
+  document.addEventListener('DOMContentLoaded', () => {
+    const affiliateLinks = document.querySelectorAll('[data-affiliate-link]');
+    
+    affiliateLinks.forEach((link) => {
+      link.addEventListener('click', function(e) {
+        const productId = this.getAttribute('data-product-id') || '';
+        const platform = this.getAttribute('data-platform') || '';
+        const productName = this.getAttribute('data-product-name') || '';
+        const price = this.getAttribute('data-price') || '';
+        
+        // Track with Google Analytics if available
+        if (typeof window.gtag === 'function') {
+          window.gtag('event', 'affiliate_click', {
+            product_id: productId,
+            platform: platform,
+            product_name: productName,
+            price: price,
+            event_category: 'Affiliate',
+            event_label: productName,
+          });
+        }
+        
+        // Track with custom analytics if available
+        if (typeof window.trackAffiliateClick === 'function') {
+          window.trackAffiliateClick(productId, platform, productName, price);
+        }
+        
+        // Visual feedback
+        this.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+          this.style.transform = '';
+        }, 100);
+      });
+      
+      // Add hover effect for better UX
+      link.addEventListener('mouseenter', function() {
+        this.style.transition = 'transform 0.2s ease';
+      });
+    });
+  });
+</script>
+
 
 <style>
   .line-clamp-2 {

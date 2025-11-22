@@ -1,0 +1,67 @@
+---
+// Example: Enhanced blog index page with breadcrumb and structured data
+import { GLOBAL } from "../../lib/variables";
+import Layout from "../../layouts/Layout.astro";
+import ArticleSnippet from "../../components/ArticleSnippet.astro";
+import Section from "../../components/common/Section.astro";
+import Breadcrumb from "../../components/common/Breadcrumb.astro";
+import { articles } from "../../lib/list";
+import SubscribeCard from "../../components/SubscribeCard.astro";
+import { generateWebsiteSchema } from "../../lib/seo";
+
+// Breadcrumb items
+const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "Blog", url: "/blog" },
+];
+
+// Generate structured data for blog listing page
+const websiteSchema = generateWebsiteSchema(
+    GLOBAL.rootUrl,
+    `${GLOBAL.blogTitle} • ${GLOBAL.username}`,
+    GLOBAL.blogLongDescription,
+);
+---
+
+<Layout
+    title={`${GLOBAL.blogTitle} • ${GLOBAL.username}`}
+    description={GLOBAL.blogLongDescription}
+    image={`${GLOBAL.rootUrl}/${GLOBAL.profileImage}`}
+>
+    <Section class="my-8">
+        <!-- Breadcrumb Navigation -->
+        <Breadcrumb items={breadcrumbItems} />
+
+        <div class="flex items-center gap-4 pt-8 pb-16">
+            <h1 class="font-display text-3xl sm:text-4xl leading-loose">
+                {GLOBAL.articlesName}
+            </h1>
+        </div>
+
+        <ul>
+            {
+                articles.map((project) => (
+                    <li>
+                        <ArticleSnippet
+                            title={project.title}
+                            description={project.description}
+                            duration={`${project.time} min`}
+                            url={project.filename}
+                            timestamp={project.timestamp}
+                        />
+                    </li>
+                ))
+            }
+        </ul>
+
+        <div class="mt-12">
+            <SubscribeCard />
+        </div>
+    </Section>
+
+    <!-- Structured Data -->
+    <script
+        type="application/ld+json"
+        set:html={JSON.stringify(websiteSchema)}
+    />
+</Layout>

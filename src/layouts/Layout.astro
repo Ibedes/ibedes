@@ -2,6 +2,7 @@
 import SEO from "../components/SEO.astro";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
+import Toast from "../components/common/Toast.astro";
 import { GLOBAL } from "../lib/variables";
 import ClickEffect from "../components/effects/ClickEffect";
 import "../styles/click-effect.css";
@@ -96,5 +97,63 @@ const {
       <slot />
     </main>
     <Footer />
+
+    <!-- Toast Notifications -->
+    <Toast position="bottom-right" />
+
+    <!-- Initialize Analytics & Performance Monitoring -->
+    <script>
+      import { initScrollTracking, initTimeTracking } from "../lib/analytics";
+      import { initAllPerformanceMonitoring } from "../lib/performance";
+
+      if (typeof window !== "undefined") {
+        // Wait for page to fully load
+        window.addEventListener("load", () => {
+          // Initialize engagement tracking
+          initScrollTracking();
+          initTimeTracking();
+
+          // Initialize performance monitoring
+          initAllPerformanceMonitoring();
+
+          // Log initialization in development
+          if (import.meta.env.DEV) {
+            console.log("✅ Analytics & Performance Monitoring Initialized");
+          }
+        });
+
+        // Handle page visibility changes
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden) {
+            // User left the page
+            if (typeof (window as any).trackEngagement === "function") {
+              (window as any).trackEngagement("page_hidden", 1);
+            }
+          } else {
+            // User returned to the page
+            if (typeof (window as any).trackEngagement === "function") {
+              (window as any).trackEngagement("page_visible", 1);
+            }
+          }
+        });
+
+        // Global error handler
+        window.addEventListener("error", (event) => {
+          if (typeof (window as any).trackError === "function") {
+            (window as any).trackError(
+              event.error || event.message,
+              "global_error",
+            );
+          }
+        });
+
+        // Unhandled promise rejection handler
+        window.addEventListener("unhandledrejection", (event) => {
+          if (typeof (window as any).trackError === "function") {
+            (window as any).trackError(event.reason, "unhandled_rejection");
+          }
+        });
+      }
+    </script>
   </body>
 </html>

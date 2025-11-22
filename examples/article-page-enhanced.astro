@@ -1,0 +1,195 @@
+---
+// Example: Enhanced article page with full SEO and analytics
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumb from "../../components/common/Breadcrumb.astro";
+import ShareActions from "../../components/ShareActions.astro";
+import AffiliateProducts from "../../components/AffiliateProducts.astro";
+import SubscribeCard from "../../components/SubscribeCard.astro";
+import OptimizedImage from "../../components/common/OptimizedImage.astro";
+import { GLOBAL } from "../../lib/variables";
+import { generateArticleSchema, generateSocialMeta } from "../../lib/seo";
+import {
+    getAffiliateByArticle,
+    getAffiliateProductsByIds,
+} from "../../lib/affiliates";
+
+// Example article data
+const article = {
+    title: "Filosofis Waktu Syuruq: Berani Memulai",
+    slug: "filosofis-waktu-syuruq",
+    description:
+        "Refleksi tentang keberanian memulai sesuatu yang baru, terinspirasi dari waktu syuruq (terbit matahari).",
+    publishDate: "2025-01-15",
+    modifiedDate: "2025-01-16",
+    readingTime: 5,
+    tags: ["filosofi", "motivasi", "spiritual"],
+    image: "/images/syuruq.jpg",
+    content: `
+    <p>Waktu syuruq adalah momen ketika matahari mulai terbit...</p>
+    <!-- Article content here -->
+  `,
+};
+
+// Breadcrumb
+const breadcrumbItems = [
+    { name: "Home", url: "/" },
+    { name: "Blog", url: "/blog" },
+    { name: article.title, url: `/blog/${article.slug}` },
+];
+
+// Structured data for article
+const articleSchema = generateArticleSchema(
+    {
+        title: article.title,
+        description: article.description,
+        publishedTime: article.publishDate,
+        modifiedTime: article.modifiedDate,
+        author: GLOBAL.username,
+        tags: article.tags,
+        image: article.image,
+        url: `/blog/${article.slug}`,
+    },
+    GLOBAL.rootUrl,
+);
+
+// Social meta tags
+const socialMeta = generateSocialMeta(
+    article.title,
+    article.description,
+    `${GLOBAL.rootUrl}${article.image}`,
+    `${GLOBAL.rootUrl}/blog/${article.slug}`,
+    "article",
+);
+
+// Get affiliate products for this article
+const affiliateData = getAffiliateByArticle(article.slug);
+const affiliateProducts = affiliateData
+    ? getAffiliateProductsByIds(affiliateData.productIds)
+    : [];
+---
+
+<Layout
+    title={`${article.title} • ${GLOBAL.username}`}
+    description={article.description}
+    image={`${GLOBAL.rootUrl}${article.image}`}
+>
+    <!-- Breadcrumb Navigation -->
+    <Breadcrumb items={breadcrumbItems} />
+
+    <!-- Article Header -->
+    <article class="max-w-3xl mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="font-display text-4xl sm:text-5xl mb-4">
+                {article.title}
+            </h1>
+
+            <div
+                class="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400"
+            >
+                <time datetime={article.publishDate}>
+                    {
+                        new Date(article.publishDate).toLocaleDateString(
+                            "id-ID",
+                            {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                            },
+                        )
+                    }
+                </time>
+                <span>•</span>
+                <span>{article.readingTime} menit baca</span>
+            </div>
+
+            {
+                article.tags && article.tags.length > 0 && (
+                    <div class="flex flex-wrap gap-2 mt-4">
+                        {article.tags.map((tag) => (
+                            <span class="px-3 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                                #{tag}
+                            </span>
+                        ))}
+                    </div>
+                )
+            }
+        </header>
+
+        <!-- Featured Image -->
+        {
+            article.image && (
+                <div class="mb-8 rounded-2xl overflow-hidden">
+                    <OptimizedImage
+                        src={article.image}
+                        alt={article.title}
+                        width={1200}
+                        height={630}
+                        loading="eager"
+                        fetchpriority="high"
+                        quality={90}
+                    />
+                </div>
+            )
+        }
+
+        <!-- Article Content -->
+        <div class="prose prose-lg dark:prose-invert max-w-none">
+            <Fragment set:html={article.content} />
+        </div>
+
+        <!-- Affiliate Products (if available) -->
+        {
+            affiliateProducts.length > 0 && (
+                <AffiliateProducts
+                    products={affiliateProducts}
+                    context={affiliateData?.context}
+                    title="Produk Rekomendasi"
+                />
+            )
+        }
+
+        <!-- Share Actions -->
+        <div class="mt-12">
+            <ShareActions title={article.title} url={`/blog/${article.slug}`} />
+        </div>
+
+        <!-- Newsletter Subscribe -->
+        <div class="mt-12">
+            <SubscribeCard />
+        </div>
+    </article>
+
+    <!-- Structured Data -->
+    <script
+        type="application/ld+json"
+        set:html={JSON.stringify(articleSchema)}
+    />
+
+    <!-- Social Meta Tags -->
+    {
+        Object.entries(socialMeta).map(([property, content]) => (
+            <meta property={property} content={content} slot="head" />
+        ))
+    }
+
+    <!-- Article-specific Analytics -->
+    <script is:inline>
+        // Track article view
+        if (typeof window !== "undefined") {
+            window.addEventListener("load", () => {
+                if (typeof window.trackPageView === "function") {
+                    window.trackPageView(
+                        window.location.pathname,
+                        document.title,
+                        {
+                            article_title:
+                                "Filosofis Waktu Syuruq: Berani Memulai",
+                            article_category: "filosofi",
+                            reading_time: 5,
+                        },
+                    );
+                }
+            });
+        }
+    </script>
+</Layout>
