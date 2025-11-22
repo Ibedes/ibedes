@@ -24,17 +24,6 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
   data-supabase-url={supabaseEnabled ? supabaseUrl : undefined}
   data-supabase-key={supabaseEnabled ? supabaseAnonKey : undefined}
 >
-  <div class="flex flex-col gap-2">
-    <p class="font-display text-xs uppercase tracking-[0.3em] zag-muted">interaksi</p>
-    <h2 class="text-2xl">Terima kasih sudah membaca.</h2>
-    <p class="text-sm text-zag-dark/70 dark:text-zag-light/80">
-      Tinggalkan satu ❤️ atau komentar singkat untuk bantu kami memahami apa yang paling berkesan buatmu.
-      {supabaseEnabled
-        ? "Semua interaksi akan tersimpan aman di Supabase."
-        : "Saat Supabase belum siap, interaksi akan disimpan sementara di browser kamu."}
-    </p>
-  </div>
-
   <div class="engagement-fab" data-floating-controls hidden>
     <button
       type="button"
@@ -44,6 +33,8 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
     >
       <span aria-hidden="true">❤️</span>
       <span class="engagement-fab__count" data-like-count>0</span>
+      <span class="floating-heart-container" data-floating-heart-container
+      ></span>
     </button>
     <button
       type="button"
@@ -65,6 +56,8 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       <span aria-hidden="true">❤️</span>
       <span class="font-semibold" data-like-count>0</span>
       <span class="text-xs uppercase tracking-[0.3em]">Tepuk</span>
+      <span class="floating-heart-container" data-floating-heart-container
+      ></span>
     </button>
     <button
       type="button"
@@ -77,80 +70,77 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
     </button>
   </div>
 
-  <div class="flex flex-wrap gap-4">
-    <button
-      type="button"
-      class="relative inline-flex items-center gap-2 rounded-2xl border-2 border-black/70 dark:border-white/70 px-4 py-3 font-mono text-xs uppercase tracking-[0.2em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 disabled:opacity-60 overflow-visible"
-      data-like-button
-      aria-live="polite"
-    >
-      <span aria-hidden="true">❤️</span>
-      <span class="font-semibold text-base" data-like-count>0</span>
-      <span class="sr-only">total suka untuk artikel ini</span>
-      <span class="font-mono text-[0.6rem] uppercase tracking-[0.3em]">Suka</span>
-      <span
-        class="pointer-events-none absolute inset-0 overflow-visible"
-        aria-hidden="true"
-        data-like-animator
-      ></span>
-    </button>
-    <p class="text-xs text-zag-dark/70 dark:text-zag-light/70">
-      Kami menyaring spam secara otomatis dan bisa menghapus kiriman yang tidak relevan.
-    </p>
-  </div>
-
-  <div class="flex flex-col gap-4 w-full">
-    <div class="flex flex-col gap-2">
-      <h3 class="font-display text-lg uppercase tracking-[0.2em]">Komentar</h3>
-      <p class="text-sm text-zag-dark/80 dark:text-zag-light/80">
-        Ceritakan satu hal yang kamu rasakan setelah membaca artikel ini.
-      </p>
+  <!-- Comment popup modal -->
+  <div class="comment-popup-overlay" data-comment-popup hidden>
+    <div class="comment-popup-modal">
+      <div class="comment-popup-header">
+        <h3 class="font-display text-lg uppercase tracking-[0.2em]">
+          Komentar
+        </h3>
+        <button
+          type="button"
+          class="comment-popup-close"
+          data-comment-close
+          aria-label="Tutup komentar"
+        >
+          ✕
+        </button>
+      </div>
+      <div class="comment-popup-content">
+        <p class="text-sm text-zag-dark/80 dark:text-zag-light/80 mb-4">
+          Ceritakan satu hal yang kamu rasakan setelah membaca artikel ini.
+        </p>
+        <p
+          class="text-xs text-zag-dark/70 dark:text-zag-light/60"
+          data-loading-state
+        >
+          Menyiapkan data interaksi...
+        </p>
+        <p
+          class="text-sm font-mono uppercase tracking-[0.3em] text-emerald-700 dark:text-emerald-300 hidden"
+          data-status-message
+          aria-live="polite"
+        >
+        </p>
+        <ul
+          class="flex flex-col gap-4 max-h-64 overflow-y-auto"
+          data-comment-list
+        >
+        </ul>
+        <p
+          class="text-sm text-zag-dark/70 dark:text-zag-light/70 italic"
+          data-empty-comments
+        >
+          Belum ada komentar. Mulai duluan, yuk?
+        </p>
+        <form class="flex flex-col gap-4 mt-4" data-comment-form>
+          <label class="flex flex-col gap-1 text-sm">
+            <span>Nama (opsional)</span>
+            <input
+              type="text"
+              name="name"
+              class="rounded-2xl border-2 border-black/40 dark:border-white/40 bg-transparent px-4 py-2 outline-none focus-visible:border-emerald-400"
+              placeholder="Mis. Nadya, Teman Belajar"
+              autocomplete="name"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-sm">
+            <span>Pesan</span>
+            <textarea
+              name="comment"
+              class="rounded-2xl border-2 border-black/40 dark:border-white/40 bg-transparent px-4 py-2 outline-none focus-visible:border-emerald-400 min-h-[100px]"
+              placeholder="Apa bagian favoritmu, atau apa yang ingin kamu coba setelah ini?"
+              required></textarea>
+          </label>
+          <button
+            type="submit"
+            class="self-start rounded-2xl border-2 border-black/70 dark:border-white/70 px-4 py-3 font-mono text-xs uppercase tracking-[0.3em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 disabled:opacity-60"
+          >
+            Kirim Komentar
+          </button>
+        </form>
+      </div>
     </div>
-    <p
-      class="text-xs text-zag-dark/70 dark:text-zag-light/60"
-      data-loading-state
-    >
-      Menyiapkan data interaksi...
-    </p>
-    <p
-      class="text-sm font-mono uppercase tracking-[0.3em] text-emerald-700 dark:text-emerald-300 hidden"
-      data-status-message
-      aria-live="polite"
-    ></p>
-    <ul class="flex flex-col gap-4" data-comment-list></ul>
-    <p
-      class="text-sm text-zag-dark/70 dark:text-zag-light/70 italic"
-      data-empty-comments
-    >
-      Belum ada komentar. Mulai duluan, yuk?
-    </p>
-    <form class="flex flex-col gap-4" data-comment-form>
-      <label class="flex flex-col gap-1 text-sm">
-        <span>Nama (opsional)</span>
-        <input
-          type="text"
-          name="name"
-          class="rounded-2xl border-2 border-black/40 dark:border-white/40 bg-transparent px-4 py-2 outline-none focus-visible:border-emerald-400"
-          placeholder="Mis. Nadya, Teman Belajar"
-          autocomplete="name"
-        />
-      </label>
-      <label class="flex flex-col gap-1 text-sm">
-        <span>Pesan</span>
-        <textarea
-          name="comment"
-          class="rounded-2xl border-2 border-black/40 dark:border-white/40 bg-transparent px-4 py-2 outline-none focus-visible:border-emerald-400 min-h-[120px]"
-          placeholder="Apa bagian favoritmu, atau apa yang ingin kamu coba setelah ini?"
-          required
-        ></textarea>
-      </label>
-      <button
-        type="submit"
-        class="self-start rounded-2xl border-2 border-black/70 dark:border-white/70 px-4 py-3 font-mono text-xs uppercase tracking-[0.3em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 disabled:opacity-60"
-      >
-        Kirim Komentar
-      </button>
-    </form>
   </div>
 
   <script is:inline>
@@ -164,12 +154,20 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       const slug = root.getAttribute("data-slug") ?? "artikel";
       const likesSeed = Number(root.getAttribute("data-likes-seed")) || 0;
       const supabaseReady = root.getAttribute("data-supabase-ready") === "true";
-      const supabaseUrl = root.getAttribute("data-supabase-url")?.replace(/\/+$/, "") ?? "";
+      const supabaseUrl =
+        root.getAttribute("data-supabase-url")?.replace(/\/+$/, "") ?? "";
       const supabaseKey = root.getAttribute("data-supabase-key") ?? "";
-      const likeButtons = Array.from(root.querySelectorAll("[data-like-button]"));
+      const likeButtons = Array.from(
+        root.querySelectorAll("[data-like-button]"),
+      );
       const primaryLikeButton = likeButtons[0] ?? null;
-      const likeCountEls = Array.from(root.querySelectorAll("[data-like-count]"));
+      const likeCountEls = Array.from(
+        root.querySelectorAll("[data-like-count]"),
+      );
       const likeAnimator = root.querySelector("[data-like-animator]");
+      const floatingHeartContainers = Array.from(
+        root.querySelectorAll("[data-floating-heart-container]"),
+      );
       const commentList = root.querySelector("[data-comment-list]");
       const emptyState = root.querySelector("[data-empty-comments]");
       const form = root.querySelector("[data-comment-form]");
@@ -178,8 +176,12 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       const submitButton = form?.querySelector?.("button[type='submit']");
       const loadingState = root.querySelector("[data-loading-state]");
       const statusMessage = root.querySelector("[data-status-message]");
-      const commentButtons = Array.from(root.querySelectorAll("[data-scroll-comments]"));
-      const floatingControls = Array.from(root.querySelectorAll("[data-floating-controls]"));
+      const commentButtons = Array.from(
+        root.querySelectorAll("[data-scroll-comments]"),
+      );
+      const floatingControls = Array.from(
+        root.querySelectorAll("[data-floating-controls]"),
+      );
 
       const likesKey = `ibedes:likes:${slug}`;
       const commentsKey = `ibedes:comments:${slug}`;
@@ -203,7 +205,9 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
           };
         }
         const next = {
-          count: Number.isFinite(Number(state.count)) ? Number(state.count) : likesSeed,
+          count: Number.isFinite(Number(state.count))
+            ? Number(state.count)
+            : likesSeed,
           claps: Number.isFinite(Number(state.claps))
             ? Number(state.claps)
             : state.liked
@@ -214,7 +218,9 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
         return next;
       };
 
-      let likesState = normalizeLikesState(parseJSON(window.localStorage.getItem(likesKey)));
+      let likesState = normalizeLikesState(
+        parseJSON(window.localStorage.getItem(likesKey)),
+      );
 
       const setStatusMessage = (message = "", variant = "info") => {
         if (!statusMessage) return;
@@ -227,9 +233,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
         statusMessage.hidden = false;
         statusMessage.textContent = message;
         statusMessage.style.color =
-          variant === "error"
-            ? "rgb(220,38,38)"
-            : "rgb(4,120,87)";
+          variant === "error" ? "rgb(220,38,38)" : "rgb(4,120,87)";
       };
 
       const setLoading = (state) => {
@@ -244,7 +248,10 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
         likeButtons.forEach((button) => {
           const reachedLimit = likesState.claps >= MAX_CLAPS;
           button.disabled = reachedLimit;
-          button.setAttribute("aria-pressed", likesState.claps > 0 ? "true" : "false");
+          button.setAttribute(
+            "aria-pressed",
+            likesState.claps > 0 ? "true" : "false",
+          );
         });
       };
 
@@ -264,14 +271,20 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
 
       const userHash = getUserHash();
 
-      const spawnFloatingHeart = () => {
-        if (!likeAnimator) return;
+      const spawnFloatingHeart = (container) => {
+        if (!container) return;
         const heart = document.createElement("span");
         heart.className = "floating-heart";
         heart.textContent = "❤️";
-        heart.style.setProperty("--heart-spread", `${(Math.random() - 0.5) * 40}px`);
-        heart.style.setProperty("--heart-scale", `${0.8 + Math.random() * 0.5}`);
-        likeAnimator.appendChild(heart);
+        heart.style.setProperty(
+          "--heart-spread",
+          `${(Math.random() - 0.5) * 40}px`,
+        );
+        heart.style.setProperty(
+          "--heart-scale",
+          `${0.8 + Math.random() * 0.5}`,
+        );
+        container.appendChild(heart);
         heart.addEventListener(
           "animationend",
           () => {
@@ -279,6 +292,20 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
           },
           { once: true },
         );
+      };
+
+      const spawnFloatingHeartsInAllContainers = () => {
+        // Spawn hearts in floating containers (fab and mobile bar)
+        floatingHeartContainers.forEach((container) => {
+          if (container) {
+            spawnFloatingHeart(container);
+          }
+        });
+
+        // Also spawn in the main like animator if it exists (for embedded button)
+        if (likeAnimator) {
+          spawnFloatingHeart(likeAnimator);
+        }
       };
 
       const applyClapLocally = () => {
@@ -289,22 +316,27 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
         };
         persistLikes();
         updateLikeUI();
-        spawnFloatingHeart();
+        spawnFloatingHeartsInAllContainers();
       };
 
       updateLikeUI();
       floatingControls.forEach((el) => {
         el.hidden = false;
-        el.classList.add("engagement-floating-container", "engagement-floating--hidden");
+        el.classList.add(
+          "engagement-floating-container",
+          "engagement-floating--hidden",
+        );
       });
 
       const updateFloatingVisibility = () => {
         const doc = document.documentElement;
         const scrollTop = doc.scrollTop || document.body.scrollTop || 0;
-        const scrollHeight = doc.scrollHeight || document.body.scrollHeight || 0;
+        const scrollHeight =
+          doc.scrollHeight || document.body.scrollHeight || 0;
         const clientHeight = doc.clientHeight || window.innerHeight || 1;
         const maxScroll = Math.max(1, scrollHeight - clientHeight);
-        const progress = scrollHeight <= clientHeight ? 1 : scrollTop / maxScroll;
+        const progress =
+          scrollHeight <= clientHeight ? 1 : scrollTop / maxScroll;
         const shouldShow = progress >= 0.3;
         floatingControls.forEach((el) => {
           el.classList.toggle("engagement-floating--visible", shouldShow);
@@ -313,20 +345,51 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       };
 
       updateFloatingVisibility();
-      window.addEventListener("scroll", updateFloatingVisibility, { passive: true });
+      window.addEventListener("scroll", updateFloatingVisibility, {
+        passive: true,
+      });
 
-      const scrollToComments = () => {
-        const target = form ?? commentList ?? root;
-        target?.scrollIntoView({ behavior: "smooth", block: "start" });
-        if (commentInput) {
-          window.setTimeout(() => commentInput.focus(), 400);
+      const showCommentPopup = () => {
+        const popup = root.querySelector("[data-comment-popup]");
+        if (popup) {
+          popup.hidden = false;
+          // Focus on comment input after popup is shown
+          if (commentInput) {
+            setTimeout(() => commentInput.focus(), 300);
+          }
+        }
+      };
+
+      const hideCommentPopup = () => {
+        const popup = root.querySelector("[data-comment-popup]");
+        if (popup) {
+          popup.hidden = true;
         }
       };
 
       commentButtons.forEach((button) => {
         button.addEventListener("click", () => {
-          scrollToComments();
+          showCommentPopup();
         });
+      });
+
+      // Close popup events
+      const closeButton = root.querySelector("[data-comment-close]");
+      const popup = root.querySelector("[data-comment-popup]");
+
+      closeButton?.addEventListener("click", hideCommentPopup);
+
+      popup?.addEventListener("click", (event) => {
+        if (event.target === popup) {
+          hideCommentPopup();
+        }
+      });
+
+      // ESC key to close popup
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !popup?.hidden) {
+          hideCommentPopup();
+        }
       });
 
       const renderEmptyState = () => {
@@ -384,7 +447,10 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
 
       const persistComments = () => {
         if (useRemote) return;
-        window.localStorage.setItem(commentsKey, JSON.stringify(comments.slice(0, 50)));
+        window.localStorage.setItem(
+          commentsKey,
+          JSON.stringify(comments.slice(0, 50)),
+        );
       };
 
       if (!useRemote) {
@@ -470,7 +536,10 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
           setStatusMessage("Data tersinkron dengan Supabase.");
         } catch (error) {
           console.error(error);
-          setStatusMessage("Gagal memuat data Supabase. Menampilkan cadangan lokal.", "error");
+          setStatusMessage(
+            "Gagal memuat data Supabase. Menampilkan cadangan lokal.",
+            "error",
+          );
           comments = loadComments();
           renderComments();
         } finally {
@@ -514,19 +583,22 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
           submitButton?.setAttribute("disabled", "true");
           setStatusMessage("Mengirim komentar...");
           try {
-            const response = await fetch(`${supabaseUrl}/rest/v1/article_comments`, {
-              method: "POST",
-              headers: {
-                ...supabaseHeaders(),
-                Prefer: "return=representation",
+            const response = await fetch(
+              `${supabaseUrl}/rest/v1/article_comments`,
+              {
+                method: "POST",
+                headers: {
+                  ...supabaseHeaders(),
+                  Prefer: "return=representation",
+                },
+                body: JSON.stringify({
+                  slug,
+                  name,
+                  message,
+                  status: "published",
+                }),
               },
-              body: JSON.stringify({
-                slug,
-                name,
-                message,
-                status: "published",
-              }),
-            });
+            );
             if (!response.ok) {
               throw new Error("Komentar gagal dikirim");
             }
@@ -537,7 +609,10 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
           } catch (error) {
             console.error(error);
             submitLocalComment();
-            setStatusMessage("Gagal ke Supabase, komentar disimpan lokal.", "error");
+            setStatusMessage(
+              "Gagal ke Supabase, komentar disimpan lokal.",
+              "error",
+            );
           } finally {
             submitButton?.removeAttribute("disabled");
           }
@@ -548,13 +623,18 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
 
       const handleSupabaseLike = async () => {
         if (likesState.claps >= MAX_CLAPS) {
-          setStatusMessage("Kamu sudah memberi 50 tepuk untuk artikel ini.", "error");
+          setStatusMessage(
+            "Kamu sudah memberi 50 tepuk untuk artikel ini.",
+            "error",
+          );
           return;
         }
 
         if (!useRemote) {
           applyClapLocally();
-          setStatusMessage(`Tepuk tersimpan di perangkatmu (${likesState.claps}/${MAX_CLAPS}).`);
+          setStatusMessage(
+            `Tepuk tersimpan di perangkatmu (${likesState.claps}/${MAX_CLAPS}).`,
+          );
           return;
         }
         primaryLikeButton?.setAttribute("data-loading", "true");
@@ -591,7 +671,10 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       likeButtons.forEach((button) => {
         button.addEventListener("click", () => {
           if (likesState.claps >= MAX_CLAPS) {
-            setStatusMessage("Kamu sudah memberi 50 tepuk untuk artikel ini.", "error");
+            setStatusMessage(
+              "Kamu sudah memberi 50 tepuk untuk artikel ini.",
+              "error",
+            );
             return;
           }
           handleSupabaseLike();
@@ -611,7 +694,9 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
   .engagement-floating-container {
     opacity: 0;
     transform: translateY(12px);
-    transition: opacity 220ms ease, transform 260ms ease;
+    transition:
+      opacity 220ms ease,
+      transform 260ms ease;
     pointer-events: none;
   }
 
@@ -649,7 +734,24 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
     backdrop-filter: blur(8px);
     color: #111;
     font-size: 1.3rem;
-    transition: transform 150ms ease, border-color 150ms ease;
+    transition:
+      transform 150ms ease,
+      border-color 150ms ease;
+    position: relative;
+  }
+
+  .engagement-fab__button-like {
+    position: relative;
+  }
+
+  .floating-heart-container {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    pointer-events: none;
+    z-index: 10;
   }
 
   .engagement-fab__button:hover {
@@ -691,6 +793,21 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
     background: transparent;
     font-size: 0.95rem;
     padding: 0.4rem 0.6rem;
+    position: relative;
+  }
+
+  .engagement-mobile-bar__action:first-of-type {
+    position: relative;
+  }
+
+  .engagement-mobile-bar .floating-heart-container {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    pointer-events: none;
+    z-index: 10;
   }
 
   .engagement-mobile-bar__action:first-of-type {
@@ -713,13 +830,24 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
     }
   }
 
-  :global(.dark) [data-engagement] :where(.engagement-fab__button, .engagement-mobile-bar, .engagement-mobile-bar__action) {
+  :global(.dark)
+    [data-engagement]
+    :where(
+      .engagement-fab__button,
+      .engagement-mobile-bar,
+      .engagement-mobile-bar__action
+    ) {
     background: rgba(24, 24, 27, 0.9);
     border-color: rgba(255, 255, 255, 0.2);
     color: #f8fafc;
   }
 
-  :global(.dark) [data-engagement] :where(.engagement-fab__button-like, .engagement-mobile-bar__action:first-of-type) {
+  :global(.dark)
+    [data-engagement]
+    :where(
+      .engagement-fab__button-like,
+      .engagement-mobile-bar__action:first-of-type
+    ) {
     background: rgba(16, 185, 129, 0.14);
     border-color: rgba(16, 185, 129, 0.5);
     color: #ecfdf5;
@@ -734,11 +862,12 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    font-size: 1.4rem;
-    animation: heartFloat 900ms cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    font-size: 1.2rem;
+    animation: heartFloat 1200ms cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
     opacity: 0.95;
-    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
     will-change: transform, opacity;
+    z-index: 15;
   }
 
   @keyframes heartFloat {
@@ -747,13 +876,162 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
         scale(var(--heart-scale, 0.8));
       opacity: 0.95;
     }
-    70% {
+    30% {
       opacity: 1;
     }
     100% {
-      transform: translate(-50%, -180%) translateX(calc(var(--heart-spread, 0px) * 1.5))
-        scale(calc(var(--heart-scale, 0.8) + 0.35));
+      transform: translate(-50%, -250%)
+        translateX(calc(var(--heart-spread, 0px) * 2))
+        scale(calc(var(--heart-scale, 0.8) + 0.5));
       opacity: 0;
     }
+  }
+
+  /* Comment Popup Styles */
+  .comment-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: popupFadeIn 0.2s ease-out;
+  }
+
+  .comment-popup-modal {
+    background: white;
+    border: 2px solid rgba(0, 0, 0, 0.7);
+    border-radius: 1.5rem;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: popupSlideIn 0.3s ease-out;
+  }
+
+  .comment-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .comment-popup-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    background: transparent;
+    color: rgba(0, 0, 0, 0.7);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .comment-popup-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: scale(1.05);
+  }
+
+  .comment-popup-content {
+    padding: 1.5rem;
+    max-height: calc(80vh - 120px);
+    overflow-y: auto;
+  }
+
+  .comment-popup-content::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .comment-popup-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .comment-popup-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+  }
+
+  @keyframes popupFadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes popupSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 640px) {
+    .comment-popup-overlay {
+      padding: 0.5rem;
+      align-items: flex-end;
+    }
+
+    .comment-popup-modal {
+      border-radius: 1rem 1rem 0 0;
+      max-height: 85vh;
+      animation: popupSlideUp 0.3s ease-out;
+    }
+
+    .comment-popup-content {
+      padding: 1rem;
+      max-height: calc(85vh - 100px);
+    }
+  }
+
+  @keyframes popupSlideUp {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Dark mode adjustments */
+  :global(.dark) .comment-popup-modal {
+    background: rgb(24, 24, 27);
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+
+  :global(.dark) .comment-popup-header {
+    border-bottom-color: rgba(255, 255, 255, 0.2);
+  }
+
+  :global(.dark) .comment-popup-close {
+    color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  :global(.dark) .comment-popup-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  :global(.dark) .comment-popup-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
   }
 </style>
