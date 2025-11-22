@@ -22,10 +22,16 @@ import {
   getAffiliateProductsByIds,
 } from "../lib/affiliates";
 import { generateArticleSchema, generateSocialMeta } from "../lib/seo";
+import TableOfContents from "../components/TableOfContents.astro";
+import RelatedArticles from "../components/RelatedArticles.astro";
+import CodeCopy from "../components/CodeCopy.astro";
+import ImageLightbox from "../components/ImageLightbox.astro";
+import BackToTop from "../components/BackToTop.astro";
+import AuthorBio from "../components/AuthorBio.astro";
 
 type Props = MarkdownLayoutProps<ArticleFrontmatter>;
 
-const { frontmatter } = Astro.props;
+const { frontmatter, headings } = Astro.props;
 const shortDescription = getShortDescription(frontmatter.description);
 const articleDate = processArticleDate(frontmatter.timestamp);
 const sourceUrl = generateSourceUrl(frontmatter.filename, "blog");
@@ -95,50 +101,69 @@ const affiliateContext =
     ))
   }
 
-  <Section class="pt-8">
-    <div class="max-w-prose mx-auto w-full">
-      <!-- Breadcrumb Navigation -->
-      <Breadcrumb items={breadcrumbItems} />
+  <Section class="pt-8 !max-w-6xl">
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-12 relative">
+      <div class="w-full min-w-0">
+        <div class="max-w-prose mx-auto lg:ml-auto lg:mr-0">
+          <!-- Breadcrumb Navigation -->
+          <Breadcrumb items={breadcrumbItems} />
 
-      <div class="flex flex-col gap-4 mt-8 mb-16 w-full">
-        <h1 class="text-3xl sm:text-4xl leading-tight font-display break-words">
-          {frontmatter.title}
-        </h1>
+          <div class="flex flex-col gap-4 mt-8 mb-16 w-full">
+            <h1
+              class="text-3xl sm:text-4xl leading-tight font-display break-words"
+            >
+              {frontmatter.title}
+            </h1>
 
-        <div class="flex justify-between items-center text-sm w-full">
-          <span class="whitespace-nowrap">{articleDate}</span>
-          <span class="whitespace-nowrap">{frontmatter.time} min</span>
+            <div class="flex justify-between items-center text-sm w-full">
+              <span class="whitespace-nowrap">{articleDate}</span>
+              <span class="whitespace-nowrap">{frontmatter.time} min</span>
+            </div>
+          </div>
+
+          <Prose id="article-content">
+            <slot />
+          </Prose>
+
+          <RelatedArticles
+            currentSlug={frontmatter.filename.split("/").pop() ?? ""}
+            tags={frontmatter.tags ?? []}
+          />
+
+          <AuthorBio />
+
+          <!-- Affiliate Products Section -->
+          {
+            affiliateProducts.length > 0 && (
+              <div class="my-12">
+                <AffiliateProducts
+                  products={affiliateProducts}
+                  context={affiliateContext}
+                  title="Produk yang Mungkin Bantu"
+                />
+              </div>
+            )
+          }
+
+          <div class="my-12">
+            <ShareActions
+              title={frontmatter.title}
+              url={frontmatter.url ?? sourceUrl}
+              image={ogImageUrl}
+            />
+          </div>
+
+          <div class="my-12">
+            <SubscribeCard />
+          </div>
         </div>
       </div>
 
-      <Prose id="article-content">
-        <slot />
-      </Prose>
-
-      <!-- Affiliate Products Section -->
-      {
-        affiliateProducts.length > 0 && (
-          <div class="my-12">
-            <AffiliateProducts
-              products={affiliateProducts}
-              context={affiliateContext}
-              title="Produk yang Mungkin Bantu"
-            />
-          </div>
-        )
-      }
-
-      <div class="my-12">
-        <ShareActions
-          title={frontmatter.title}
-          url={frontmatter.url ?? sourceUrl}
-          image={ogImageUrl}
-        />
-      </div>
-
-      <div class="my-12">
-        <SubscribeCard />
-      </div>
+      <aside class="hidden lg:block relative">
+        <div class="sticky top-24">
+          <TableOfContents headings={headings} />
+        </div>
+      </aside>
     </div>
   </Section>
 
@@ -174,4 +199,7 @@ const affiliateContext =
       });
     }
   </script>
+  <CodeCopy />
+  <ImageLightbox />
+  <BackToTop />
 </Layout>

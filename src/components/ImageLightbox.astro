@@ -1,0 +1,78 @@
+<div
+    id="lightbox"
+    class="fixed inset-0 z-[100] bg-black/90 hidden items-center justify-center opacity-0 transition-opacity duration-300"
+>
+    <img
+        id="lightbox-img"
+        src=""
+        alt=""
+        class="max-w-[90vw] max-h-[90vh] object-contain transform scale-95 transition-transform duration-300"
+    />
+    <button
+        id="lightbox-close"
+        class="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 focus:outline-none"
+        >&times;</button
+    >
+</div>
+
+<script>
+    function initLightbox() {
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImg = document.getElementById(
+            "lightbox-img",
+        ) as HTMLImageElement;
+        const closeBtn = document.getElementById("lightbox-close");
+        const images = document.querySelectorAll(".prose img");
+
+        if (!lightbox || !lightboxImg || !closeBtn) return;
+
+        const openLightbox = (src: string, alt: string) => {
+            lightboxImg.src = src;
+            lightboxImg.alt = alt;
+            lightbox.classList.remove("hidden");
+            // Small delay to allow display:flex to apply before opacity transition
+            requestAnimationFrame(() => {
+                lightbox.classList.remove("opacity-0");
+                lightboxImg.classList.remove("scale-95");
+                lightboxImg.classList.add("scale-100");
+            });
+            document.body.style.overflow = "hidden";
+        };
+
+        const closeLightbox = () => {
+            lightbox.classList.add("opacity-0");
+            lightboxImg.classList.remove("scale-100");
+            lightboxImg.classList.add("scale-95");
+            setTimeout(() => {
+                lightbox.classList.add("hidden");
+                lightboxImg.src = "";
+            }, 300);
+            document.body.style.overflow = "";
+        };
+
+        images.forEach((img) => {
+            img.classList.add("cursor-zoom-in");
+            img.addEventListener("click", () => {
+                openLightbox(
+                    (img as HTMLImageElement).src,
+                    (img as HTMLImageElement).alt,
+                );
+            });
+        });
+
+        closeBtn.addEventListener("click", closeLightbox);
+        lightbox.addEventListener("click", (e) => {
+            if (e.target === lightbox) closeLightbox();
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && !lightbox.classList.contains("hidden")) {
+                closeLightbox();
+            }
+        });
+    }
+
+    // Initialize on load and after view transitions
+    document.addEventListener("DOMContentLoaded", initLightbox);
+    document.addEventListener("astro:page-load", initLightbox);
+</script>

@@ -1,0 +1,51 @@
+<script>
+    const copyButtonLabel = '<i class="fa-regular fa-copy"></i>';
+    const copiedButtonLabel = '<i class="fa-solid fa-check"></i>';
+
+    function addCopyButtons() {
+        const codeBlocks = document.querySelectorAll("pre");
+
+        codeBlocks.forEach((codeBlock) => {
+            // Check if button already exists
+            if (codeBlock.querySelector(".copy-code-btn")) return;
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "relative group";
+
+            // Insert wrapper before codeBlock
+            codeBlock.parentNode?.insertBefore(wrapper, codeBlock);
+            // Move codeBlock into wrapper
+            wrapper.appendChild(codeBlock);
+
+            const button = document.createElement("button");
+            button.className =
+                "copy-code-btn absolute top-2 right-2 p-2 rounded-lg bg-white/10 hover:bg-white/20 text-gray-400 hover:text-white transition-all opacity-0 group-hover:opacity-100 focus:opacity-100";
+            button.innerHTML = copyButtonLabel;
+            button.setAttribute("aria-label", "Copy code");
+
+            button.addEventListener("click", async () => {
+                const code = codeBlock.querySelector("code")?.innerText;
+                if (!code) return;
+
+                try {
+                    await navigator.clipboard.writeText(code);
+                    button.innerHTML = copiedButtonLabel;
+                    button.classList.add("text-emerald-400");
+
+                    setTimeout(() => {
+                        button.innerHTML = copyButtonLabel;
+                        button.classList.remove("text-emerald-400");
+                    }, 2000);
+                } catch (err) {
+                    console.error("Failed to copy:", err);
+                }
+            });
+
+            wrapper.appendChild(button);
+        });
+    }
+
+    // Initialize on load and after view transitions
+    document.addEventListener("DOMContentLoaded", addCopyButtons);
+    document.addEventListener("astro:page-load", addCopyButtons);
+</script>

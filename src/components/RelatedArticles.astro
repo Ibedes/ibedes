@@ -1,0 +1,63 @@
+---
+import { processContentInDir } from "../lib/utils";
+import type { ArticleFrontmatter } from "../lib/types";
+import ArticleSnippet from "./ArticleSnippet.astro";
+
+interface Props {
+    currentSlug: string;
+    tags: string[];
+}
+
+const { currentSlug, tags } = Astro.props;
+
+const allArticles = await processContentInDir<ArticleFrontmatter, any>(
+    "blog",
+    ({ frontmatter, url, file }) => ({
+        ...frontmatter,
+        url,
+        slug: file.split("/").pop(),
+    }),
+);
+
+const relatedArticles = allArticles
+    .filter((article) => article.slug !== currentSlug)
+    .map((article) => {
+        const articleTags = article.tags || [];
+        const matchingTags = articleTags.filter((tag) => tags.includes(tag));
+        return {
+            ...article,
+            relevance: matchingTags.length,
+        };
+    })
+    .filter((article) => article.relevance > 0)
+    .sort(
+        (a, b) =>
+            b.relevance - a.relevance ||
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    )
+    .slice(0, 3);
+---
+
+{
+    relatedArticles.length > 0 && (
+        <section class="border-t-2 border-dashed border-black/10 dark:border-white/10 pt-12 mt-12">
+            <h2 class="font-display text-lg uppercase tracking-widest mb-8 flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-emerald-500" />
+                Baca Juga
+            </h2>
+            <div class="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+                {relatedArticles.map((article) => (
+                    <div class="flex flex-col h-full">
+                        <ArticleSnippet
+                            title={article.title}
+                            description={article.description}
+                            url={article.url}
+                            timestamp={article.timestamp}
+                            duration={article.time + " min read"}
+                        />
+                    </div>
+                ))}
+            </div>
+        </section>
+    )
+}

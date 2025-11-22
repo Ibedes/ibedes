@@ -523,4 +523,9 @@
   .skip-link {
     @apply absolute top-4 left-4 z-50 -translate-y-[150%] rounded-md bg-primary px-4 py-2 text-primary-foreground transition-transform duration-200 focus:translate-y-0;
   }
+
+  /* Disable native callout on mobile for prose content to allow custom tooltip */
+  .prose {
+    -webkit-touch-callout: none;
+  }
 }

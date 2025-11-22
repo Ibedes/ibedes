@@ -1,0 +1,61 @@
+---
+import { GLOBAL } from "../lib/variables";
+
+interface Props {
+    class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div
+    class:list={[
+        "border-2 border-black dark:border-white rounded-lg p-6 my-12",
+        className,
+    ]}
+>
+    <div class="flex items-start gap-4">
+        <img
+            src={`/${GLOBAL.profileImage}`}
+            alt={GLOBAL.username}
+            class="w-16 h-16 rounded-full object-cover border-2 border-black dark:border-white"
+        />
+        <div class="flex-1">
+            <h3 class="font-display text-lg mb-2">Tentang Penulis</h3>
+            <p class="text-sm mb-3">
+                <strong>{GLOBAL.username}</strong> adalah seorang digital marketer
+                dan content creator yang senang berbagi pemikiran tentang kehidupan,
+                teknologi, dan pengembangan diri.
+            </p>
+            <div class="flex gap-3 text-lg">
+                <a
+                    href={GLOBAL.github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="GitHub"
+                    class="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                >
+                    <i class="fa-brands fa-github"></i>
+                </a>
+                <a
+                    href={GLOBAL.instagram}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Instagram"
+                    class="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                >
+                    <i class="fa-brands fa-instagram"></i>
+                </a>
+                <a
+                    href={GLOBAL.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="LinkedIn"
+                    class="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                >
+                    <i class="fa-brands fa-linkedin"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,109 @@
+---
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+    headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+
+// Filter out h1 and limit depth if needed
+const tocHeadings = headings.filter((h) => h.depth > 1 && h.depth < 4);
+---
+
+{
+    tocHeadings.length > 0 && (
+        <nav class="toc-container hidden lg:block sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-4">
+            <h2 class="font-display text-xs uppercase tracking-widest mb-4 text-gray-900 dark:text-gray-100">
+                Daftar Isi
+            </h2>
+            <ul class="flex flex-col gap-2 text-sm">
+                {tocHeadings.map((heading) => (
+                    <li
+                        class:list={[
+                            "transition-colors duration-200",
+                            {
+                                "pl-0": heading.depth === 2,
+                                "pl-4": heading.depth === 3,
+                            },
+                        ]}
+                    >
+                        <a
+                            href={`#${heading.slug}`}
+                            class="text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 block py-1 border-l-2 border-transparent hover:border-emerald-500 pl-3 -ml-[2px]"
+                        >
+                            {heading.text}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    )
+}
+
+<script>
+    // Highlight active TOC item on scroll
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                const id = entry.target.getAttribute("id");
+                if (entry.intersectionRatio > 0) {
+                    document
+                        .querySelector(`.toc-container a[href="#${id}"]`)
+                        ?.classList.add(
+                            "text-emerald-600",
+                            "dark:text-emerald-400",
+                            "font-medium",
+                            "border-emerald-500",
+                        );
+                    document
+                        .querySelector(`.toc-container a[href="#${id}"]`)
+                        ?.classList.remove(
+                            "text-gray-500",
+                            "dark:text-gray-400",
+                            "border-transparent",
+                        );
+                } else {
+                    document
+                        .querySelector(`.toc-container a[href="#${id}"]`)
+                        ?.classList.remove(
+                            "text-emerald-600",
+                            "dark:text-emerald-400",
+                            "font-medium",
+                            "border-emerald-500",
+                        );
+                    document
+                        .querySelector(`.toc-container a[href="#${id}"]`)
+                        ?.classList.add(
+                            "text-gray-500",
+                            "dark:text-gray-400",
+                            "border-transparent",
+                        );
+                }
+            });
+        },
+        { rootMargin: "0px 0px -80% 0px" }, // Trigger when element is near top
+    );
+
+    // Observe all headings
+    document.querySelectorAll("h2[id], h3[id]").forEach((section) => {
+        observer.observe(section);
+    });
+</script>
+
+<style>
+    /* Custom scrollbar for TOC */
+    .toc-container::-webkit-scrollbar {
+        width: 4px;
+    }
+    .toc-container::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .toc-container::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.3);
+        border-radius: 20px;
+    }
+    .dark .toc-container::-webkit-scrollbar-thumb {
+        background-color: rgba(156, 163, 175, 0.2);
+    }
+</style>

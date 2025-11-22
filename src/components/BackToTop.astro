@@ -1,0 +1,84 @@
+<button
+    id="back-to-top"
+    class="fixed bottom-24 lg:bottom-40 right-8 z-50 p-3 rounded-full bg-emerald-600 dark:bg-emerald-500 text-white shadow-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all opacity-0 invisible translate-y-4"
+    aria-label="Kembali ke atas"
+>
+    <i class="fa-solid fa-arrow-up text-xl"></i>
+</button>
+
+<script>
+    function initBackToTop() {
+        const backToTopBtn = document.getElementById("back-to-top");
+        if (!backToTopBtn) return;
+
+        const toggleButton = () => {
+            // Check if comment popup is open
+            const commentPopup = document.querySelector("[data-comment-popup]");
+            const isCommentOpen =
+                commentPopup && !commentPopup.hasAttribute("hidden");
+
+            if (isCommentOpen) {
+                // Hide button when comment popup is open
+                backToTopBtn.classList.add(
+                    "opacity-0",
+                    "invisible",
+                    "translate-y-4",
+                );
+                backToTopBtn.classList.remove(
+                    "opacity-100",
+                    "visible",
+                    "translate-y-0",
+                );
+            } else if (window.scrollY > 300) {
+                backToTopBtn.classList.remove(
+                    "opacity-0",
+                    "invisible",
+                    "translate-y-4",
+                );
+                backToTopBtn.classList.add(
+                    "opacity-100",
+                    "visible",
+                    "translate-y-0",
+                );
+            } else {
+                backToTopBtn.classList.add(
+                    "opacity-0",
+                    "invisible",
+                    "translate-y-4",
+                );
+                backToTopBtn.classList.remove(
+                    "opacity-100",
+                    "visible",
+                    "translate-y-0",
+                );
+            }
+        };
+
+        const scrollToTop = () => {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            });
+        };
+
+        window.addEventListener("scroll", toggleButton);
+        backToTopBtn.addEventListener("click", scrollToTop);
+
+        // Watch for comment popup changes
+        const observer = new MutationObserver(toggleButton);
+        const commentPopup = document.querySelector("[data-comment-popup]");
+        if (commentPopup) {
+            observer.observe(commentPopup, {
+                attributes: true,
+                attributeFilter: ["hidden"],
+            });
+        }
+
+        // Initial check
+        toggleButton();
+    }
+
+    // Initialize on load and after view transitions
+    document.addEventListener("DOMContentLoaded", initBackToTop);
+    document.addEventListener("astro:page-load", initBackToTop);
+</script>
