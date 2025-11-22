@@ -11,6 +11,22 @@ const breadcrumbItems = [
 
 const changelog = [
   {
+    version: "3.2.1",
+    type: "patch",
+    date: "2025-11-22",
+    title: "Bug Fix - BackToTop Component",
+    description: "Fixed syntax error in BackToTop component",
+    changes: [
+      {
+        category: "Fixed",
+        items: [
+          "Removed duplicate function definition in BackToTop.astro causing build error",
+          "Fixed 'Expected \")\" but found \"document\"' syntax error",
+        ],
+      },
+    ],
+  },
+  {
     version: "3.2.0",
     type: "minor",
     date: "2025-11-22",
