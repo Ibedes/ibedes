@@ -1,12 +1,17 @@
 ---
+import { Image } from "astro:assets";
 import { GLOBAL } from "../../lib/variables";
+import profileImage from "../../assets/ibedes.jpg";
 ---
 
 <div class="flex flex-col items-center sm:flex-row gap-8">
-  <img
-    src={GLOBAL.profileImage}
+  <Image
+    src={profileImage}
     alt={GLOBAL.username}
     class="rounded-full max-w-40 w-40 h-40 mb-4 z-0 grayscale"
+    width={160}
+    height={160}
+    loading="eager"
   />
   <div>
     <h1
@@ -17,7 +22,7 @@ import { GLOBAL } from "../../lib/variables";
     <h2
       class="text-center text-xl sm:text-2xl font-mono font-medium sm:text-left"
     >
-      <p set:html={GLOBAL.shortDescription}/>
+      <p set:html={GLOBAL.shortDescription} />
     </h2>
   </div>
 </div>

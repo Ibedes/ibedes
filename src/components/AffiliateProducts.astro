@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import type { AffiliateProduct } from "../lib/affiliates";
 import { platformConfig } from "../lib/affiliates";
 
@@ -39,11 +40,12 @@ const { products, context, title = "Rekomendasi Produk" } = Astro.props;
         >
           <!-- Product Image (Compact) -->
           <div class="relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-900">
-            <img 
+            <Image 
               src={product.image} 
               alt={product.name}
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              loading="lazy"
+              width={200}
+              height={200}
             />
             {product.discount && product.discount !== '-' && (
               <div class="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-bl-md">

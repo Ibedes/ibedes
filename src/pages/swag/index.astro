@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
 import Layout from "../../layouts/Layout.astro";
 import Section from "../../components/common/Section.astro";
 import { GLOBAL } from "../../lib/variables";
@@ -23,14 +25,14 @@ const waBaseLink = waNumber
   : whatsappLink || "https://wa.me/";
 
 type ShowcaseItem = {
-  src: string;
+  src: ImageMetadata | string;
   alt: string;
   label: string;
   description: string;
 };
 
 type GalleryImage = {
-  src: string;
+  src: ImageMetadata;
   alt: string;
 };
 
@@ -43,7 +45,7 @@ type SwagItem = {
   details: string[];
   batch?: string;
   shipping?: string;
-  image: string;
+  image: ImageMetadata;
   imageAlt: string;
   gallery?: GalleryImage[];
 };
@@ -73,12 +75,12 @@ const swagItems: SwagItem[] = [
       "Ukuran S-XL, chart lengkap via WhatsApp",
     ],
     shipping: "Packing polybag tebal + silica gel.",
-    image: tee99Full.src,
+    image: tee99Full,
     imageAlt: "Detail punggung 99AI Circuit Tee",
     gallery: [
-      { src: tee99SideLeft.src, alt: "Detail sisi kiri 99AI Circuit" },
-      { src: tee99Full.src, alt: "Tampilan penuh grafis 99AI Circuit" },
-      { src: tee99SideRight.src, alt: "Detail sisi kanan 99AI Circuit" },
+      { src: tee99SideLeft, alt: "Detail sisi kiri 99AI Circuit" },
+      { src: tee99Full, alt: "Tampilan penuh grafis 99AI Circuit" },
+      { src: tee99SideRight, alt: "Detail sisi kanan 99AI Circuit" },
     ],
   },
   {
@@ -95,12 +97,12 @@ const swagItems: SwagItem[] = [
       "Free sticker pack + kartu ucapan",
     ],
     shipping: "Kirim dari Bandung via JNE/SiCepat (pilih saat order).",
-    image: teeSoftFull.src,
+    image: teeSoftFull,
     imageAlt: "Software Glow Tee tampak belakang",
     gallery: [
-      { src: teeSoftSideRight.src, alt: "Detail sisi kanan Software Glow" },
-      { src: teeSoftFull.src, alt: "Tampilan penuh Software Glow Tee" },
-      { src: teeSoftSideLeft.src, alt: "Detail sisi kiri Software Glow" },
+      { src: teeSoftSideRight, alt: "Detail sisi kanan Software Glow" },
+      { src: teeSoftFull, alt: "Tampilan penuh Software Glow Tee" },
+      { src: teeSoftSideLeft, alt: "Detail sisi kiri Software Glow" },
     ],
   },
 ];
@@ -184,7 +186,12 @@ const buildOrderLink = (item: SwagItem) => {
                   <ul class="swag-card-gallery__track" data-gallery-track>
                     {gallery.map((image) => (
                       <li class="swag-card-gallery__slide">
-                        <img src={image.src} alt={image.alt} loading="lazy" />
+                        <Image
+                          src={image.src}
+                          alt={image.alt}
+                          width={600}
+                          loading="lazy"
+                        />
                       </li>
                     ))}
                   </ul>
@@ -299,209 +306,9 @@ const buildOrderLink = (item: SwagItem) => {
     </div>
   </Section>
 
-  <script is:inline>
-    (() => {
-      if (typeof window === "undefined") return;
-      const initShowcaseSlider = () => {
-        const slider = document.querySelector("[data-showcase-slider]");
-        if (!slider) return;
-        const track = slider.querySelector("[data-showcase-track]");
-        const slides = Array.from(track?.children ?? []);
-        if (!track || slides.length <= 1) return;
-        const prevBtn = slider.querySelector("[data-showcase-prev]");
-        const nextBtn = slider.querySelector("[data-showcase-next]");
-        const dots = Array.from(slider.querySelectorAll("[data-showcase-dot]"));
-        const viewport = slider.querySelector(".swag-showcase__viewport");
-
-        let index = 0;
-        let autoPlayId;
-        const AUTO_PLAY_INTERVAL = 6500;
-
-        const normalize = (value) => {
-          const total = slides.length;
-          return ((value % total) + total) % total;
-        };
-
-        const render = () => {
-          track.setAttribute("data-current", String(index));
-          track.style.transform = `translateX(-${index * 100}%)`;
-          dots.forEach((dot, dotIndex) => {
-            dot.classList.toggle(
-              "swag-showcase__dot--active",
-              dotIndex === index,
-            );
-          });
-        };
-
-        const goTo = (nextIndex) => {
-          index = normalize(nextIndex);
-          render();
-        };
-
-        const startAutoPlay = () => {
-          stopAutoPlay();
-          autoPlayId = window.setInterval(() => {
-            goTo(index + 1);
-          }, AUTO_PLAY_INTERVAL);
-        };
-
-        const stopAutoPlay = () => {
-          if (typeof autoPlayId === "number") {
-            window.clearInterval(autoPlayId);
-            autoPlayId = undefined;
-          }
-        };
-
-        prevBtn?.addEventListener("click", () => {
-          goTo(index - 1);
-          startAutoPlay();
-        });
-        nextBtn?.addEventListener("click", () => {
-          goTo(index + 1);
-          startAutoPlay();
-        });
-        dots.forEach((dot, dotIndex) => {
-          dot.addEventListener("click", () => {
-            goTo(dotIndex);
-            startAutoPlay();
-          });
-        });
-
-        let isPointerDown = false;
-        let startX = 0;
-
-        const handlePointerDown = (event) => {
-          isPointerDown = true;
-          startX = event.clientX;
-        };
-
-        const handlePointerUp = (event) => {
-          if (!isPointerDown) return;
-          const delta = event.clientX - startX;
-          if (Math.abs(delta) > 40) {
-            goTo(delta < 0 ? index + 1 : index - 1);
-          }
-          isPointerDown = false;
-        };
-
-        viewport?.addEventListener("pointerdown", (event) => {
-          stopAutoPlay();
-          handlePointerDown(event);
-        });
-        viewport?.addEventListener("pointerup", (event) => {
-          handlePointerUp(event);
-          startAutoPlay();
-        });
-        viewport?.addEventListener("pointerleave", () => {
-          isPointerDown = false;
-          startAutoPlay();
-        });
-        window.addEventListener("pointerup", (event) => {
-          handlePointerUp(event);
-          startAutoPlay();
-        });
-
-        slider.addEventListener("mouseenter", stopAutoPlay);
-        slider.addEventListener("mouseleave", startAutoPlay);
-        slider.addEventListener("focusin", stopAutoPlay);
-        slider.addEventListener("focusout", startAutoPlay);
-
-        render();
-        startAutoPlay();
-      };
-
-      const initCardGalleries = () => {
-        const galleries = document.querySelectorAll("[data-card-gallery]");
-        galleries.forEach((gallery) => {
-          const track = gallery.querySelector("[data-gallery-track]");
-          const slides = Array.from(track?.children ?? []);
-          if (!track || slides.length <= 1) {
-            gallery.classList.add("swag-card-gallery--static");
-            return;
-          }
-          const prev = gallery.querySelector("[data-gallery-prev]");
-          const next = gallery.querySelector("[data-gallery-next]");
-          const dots = Array.from(
-            gallery.querySelectorAll("[data-gallery-dot]"),
-          );
-          const viewport = gallery.querySelector("[data-gallery-viewport]");
-          const badge = gallery.querySelector("[data-gallery-badge]");
-          const totalSlides = slides.length;
-          let current = 0;
-
-          const normalize = (value) => {
-            const total = slides.length;
-            return ((value % total) + total) % total;
-          };
-
-          const update = () => {
-            const slideWidth = viewport?.getBoundingClientRect().width ?? 0;
-            track.style.transform = `translate3d(-${current * slideWidth}px, 0, 0)`;
-            dots.forEach((dot, dotIndex) => {
-              dot.classList.toggle(
-                "swag-card-gallery__dot--active",
-                dotIndex === current,
-              );
-            });
-            if (badge) {
-              badge.textContent = `${String(current + 1).padStart(2, "0")} / ${String(
-                totalSlides,
-              ).padStart(2, "0")}`;
-            }
-          };
-
-          const goTo = (nextIndex) => {
-            current = normalize(nextIndex);
-            update();
-          };
-
-          prev?.addEventListener("click", () => goTo(current - 1));
-          next?.addEventListener("click", () => goTo(current + 1));
-          dots.forEach((dot, dotIndex) => {
-            dot.addEventListener("click", () => goTo(dotIndex));
-          });
-
-          let pointerDown = false;
-          let startX = 0;
-
-          const handlePointerDown = (event) => {
-            pointerDown = true;
-            startX = event.clientX;
-          };
-
-          const handlePointerUp = (event) => {
-            if (!pointerDown) return;
-            const delta = event.clientX - startX;
-            if (Math.abs(delta) > 30) {
-              goTo(delta < 0 ? current + 1 : current - 1);
-            }
-            pointerDown = false;
-          };
-
-          viewport?.addEventListener("pointerdown", handlePointerDown);
-          viewport?.addEventListener("pointerup", handlePointerUp);
-          viewport?.addEventListener("pointerleave", () => {
-            pointerDown = false;
-          });
-          window.addEventListener("pointerup", handlePointerUp);
-          const handleResize = () => {
-            track.style.transition = "none";
-            update();
-            requestAnimationFrame(() => {
-              track.style.transition =
-                "transform 420ms cubic-bezier(0.25, 0.8, 0.25, 1)";
-            });
-          };
-
-          window.addEventListener("resize", handleResize);
-
-          update();
-        });
-      };
-
-      initShowcaseSlider();
-      initCardGalleries();
-    })();
+  <script>
+    import { init } from "../../scripts/swag-gallery";
+    init();
   </script>
 </Layout>
 

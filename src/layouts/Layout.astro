@@ -59,9 +59,25 @@ const {
       referrerpolicy="no-referrer"
     />
 
+    <link
+      rel="preload"
+      href="https://cdn.jsdelivr.net/fontsource/fonts/literata:vf@latest/latin-opsz-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="https://cdn.jsdelivr.net/fontsource/fonts/press-start-2p@latest/latin-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+
     <slot name="head" />
   </head>
   <body class="zag-bg zag-text zag-transition font-mono">
+    <a href="#main-content" class="skip-link">Skip to content</a>
     <ClickEffect client:load />
     <div class="retro-marquee" aria-hidden="true">
       <div class="retro-marquee__track">
@@ -76,7 +92,7 @@ const {
       </div>
     </div>
     <Header />
-    <main>
+    <main id="main-content">
       <slot />
     </main>
     <Footer />
