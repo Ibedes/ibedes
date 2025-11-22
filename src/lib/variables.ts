@@ -40,7 +40,6 @@ export const GLOBAL = {
     swag: "/swag",
     projects: "/projects",
     blog: "/blog",
-    tentang: "/tentang",
   },
 
   contactEmail: "ibedestudio@gmail.com",

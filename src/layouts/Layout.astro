@@ -2,6 +2,8 @@
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import { GLOBAL } from "../lib/variables";
+import ClickEffect from "../components/effects/ClickEffect";
+import "../styles/click-effect.css";
 import "../styles/global.css";
 ---
 
@@ -50,6 +52,7 @@ import "../styles/global.css";
     <slot name="head" />
   </head>
   <body class="zag-bg zag-text zag-transition font-mono">
+    <ClickEffect client:load />
     <div class="retro-marquee" aria-hidden="true">
       <div class="retro-marquee__track">
         <span

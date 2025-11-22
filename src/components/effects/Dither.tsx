@@ -63,7 +63,7 @@ float cnoise(vec2 P) {
   return 2.3 * mix(n_x.x, n_x.y, fade_xy.y);
 }
 
-const int OCTAVES = 4;
+const int OCTAVES = 2;
 float fbm(vec2 p) {
   float value = 0.0;
   float amp = 1.0;
@@ -277,8 +277,8 @@ export default function Dither({
         <Canvas
             className="dither-container"
             camera={{ position: [0, 0, 6] }}
-            dpr={1}
-            gl={{ antialias: true, preserveDrawingBuffer: true }}
+            dpr={0.5}
+            gl={{ antialias: false, preserveDrawingBuffer: false, powerPreference: 'low-power' }}
         >
             <DitheredWaves
                 waveSpeed={waveSpeed}
