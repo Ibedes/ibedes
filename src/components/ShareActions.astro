@@ -25,34 +25,38 @@ const shareTargets = [
     label: "WhatsApp",
     href: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
     aria: "Bagikan melalui WhatsApp",
+    icon: "fa-brands fa-whatsapp",
   },
   {
     label: "X",
     href: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`,
     aria: "Bagikan melalui X (Twitter)",
+    icon: "fa-brands fa-x-twitter",
   },
   {
     label: "LinkedIn",
     href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
     aria: "Bagikan melalui LinkedIn",
+    icon: "fa-brands fa-linkedin",
   },
   {
     label: "Facebook",
     href: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     aria: "Bagikan melalui Facebook",
+    icon: "fa-brands fa-facebook",
   },
   {
     label: "Threads",
     href: `https://www.threads.net/intent/post?text=${encodedTitle}%20${encodedUrl}`,
     aria: "Bagikan melalui Threads",
+    icon: "fa-brands fa-threads",
   },
 ];
-
 ---
 
 <section
   class:list={[
-        "rounded-3xl border-2 border-black/70 dark:border-white/60 bg-white/70 dark:bg-zinc-900/70 p-6 flex flex-col gap-4",
+    "rounded-3xl border-2 border-black/70 dark:border-white/60 bg-white/70 dark:bg-zinc-900/70 p-6 flex flex-col gap-4",
 
     className,
   ]}
@@ -62,7 +66,7 @@ const shareTargets = [
 >
   <div class="flex flex-col gap-1">
     <p class="font-display text-xs uppercase tracking-[0.25em] zag-muted">
-      Bagikan
+      <i class="fa-solid fa-share-nodes mr-2"></i>Bagikan
     </p>
     <p class="text-xl">Biar temanmu juga ikut baca tulisan ini.</p>
   </div>
@@ -74,26 +78,29 @@ const shareTargets = [
           href={target.href}
           target="_blank"
           rel="noopener noreferrer"
-          class="px-4 py-2 rounded-2xl border-2 border-black/50 dark:border-white/50 font-mono text-xs uppercase tracking-[0.2em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+          class="px-4 py-2 rounded-2xl border-2 border-black/50 dark:border-white/50 font-mono text-xs uppercase tracking-[0.2em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 flex items-center gap-2"
           aria-label={target.aria}
         >
-          {target.label}
+          <i class={`${target.icon} text-lg`} />
+          <span class="hidden sm:inline">{target.label}</span>
         </a>
       ))
     }
     <button
       type="button"
       data-share-copy
-      class="px-4 py-2 rounded-2xl border-2 border-dashed border-black/50 dark:border-white/50 font-mono text-xs uppercase tracking-[0.2em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+      class="px-4 py-2 rounded-2xl border-2 border-dashed border-black/50 dark:border-white/50 font-mono text-xs uppercase tracking-[0.2em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 flex items-center gap-2"
     >
-      Salin Link
+      <i class="fa-solid fa-link text-lg"></i>
+      <span class="hidden sm:inline">Salin Link</span>
     </button>
     <button
       type="button"
       data-web-share
-      class="px-4 py-2 rounded-2xl border-2 border-black/70 dark:border-white/70 font-mono text-xs uppercase tracking-[0.2em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+      class="px-4 py-2 rounded-2xl border-2 border-black/70 dark:border-white/70 font-mono text-xs uppercase tracking-[0.2em] zag-transition hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 flex items-center gap-2"
     >
-      Share via…
+      <i class="fa-solid fa-share-nodes text-lg"></i>
+      <span class="hidden sm:inline">Share via…</span>
     </button>
   </div>
 
@@ -113,8 +120,10 @@ const shareTargets = [
       const copyBtn = section.querySelector("[data-share-copy]");
       const feedback = section.querySelector("[data-copy-feedback]");
       const shareBtn = section.querySelector("[data-web-share]");
-      const shareUrl = section.getAttribute("data-share-url") ?? window.location.href;
-      const shareTitle = section.getAttribute("data-share-title") ?? document.title;
+      const shareUrl =
+        section.getAttribute("data-share-url") ?? window.location.href;
+      const shareTitle =
+        section.getAttribute("data-share-title") ?? document.title;
 
       const showFeedback = () => {
         if (!feedback) return;

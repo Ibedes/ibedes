@@ -31,7 +31,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       data-like-button
       aria-label="Kirim tepuk"
     >
-      <span aria-hidden="true">❤️</span>
+      <i class="fa-solid fa-heart text-red-500 text-xl"></i>
       <span class="engagement-fab__count" data-like-count>0</span>
       <span class="floating-heart-container" data-floating-heart-container
       ></span>
@@ -42,7 +42,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       data-scroll-comments
       aria-label="Buka komentar"
     >
-      💬
+      <i class="fa-solid fa-comment text-xl"></i>
     </button>
   </div>
 
@@ -53,7 +53,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       data-like-button
       aria-label="Kirim tepuk"
     >
-      <span aria-hidden="true">❤️</span>
+      <i class="fa-solid fa-heart text-red-500 text-lg"></i>
       <span class="font-semibold" data-like-count>0</span>
       <span class="text-xs uppercase tracking-[0.3em]">Tepuk</span>
       <span class="floating-heart-container" data-floating-heart-container
@@ -65,7 +65,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
       data-scroll-comments
       aria-label="Menuju komentar"
     >
-      <span aria-hidden="true">💬</span>
+      <i class="fa-solid fa-comment text-lg"></i>
       <span class="font-mono text-xs uppercase tracking-[0.3em]">Komentar</span>
     </button>
   </div>
@@ -83,7 +83,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
           data-comment-close
           aria-label="Tutup komentar"
         >
-          ✕
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
       <div class="comment-popup-content">
@@ -275,7 +275,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
         if (!container) return;
         const heart = document.createElement("span");
         heart.className = "floating-heart";
-        heart.textContent = "❤️";
+        heart.innerHTML = '<i class="fa-solid fa-heart text-red-500"></i>';
         heart.style.setProperty(
           "--heart-spread",
           `${(Math.random() - 0.5) * 40}px`,
