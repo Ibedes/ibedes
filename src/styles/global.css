@@ -11,8 +11,7 @@
   font-style: normal;
   font-display: swap;
   font-weight: 200 900;
-  src: url(https://cdn.jsdelivr.net/fontsource/fonts/literata:vf@latest/latin-opsz-normal.woff2)
-    format("woff2-variations");
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/literata:vf@latest/latin-opsz-normal.woff2) format("woff2-variations");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
     U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -23,10 +22,8 @@
   font-style: normal;
   font-display: swap;
   font-weight: 400;
-  src: url(https://cdn.jsdelivr.net/fontsource/fonts/press-start-2p@latest/latin-400-normal.woff2)
-      format("woff2"),
-    url(https://cdn.jsdelivr.net/fontsource/fonts/press-start-2p@latest/latin-400-normal.woff)
-      format("woff");
+  src: url(https://cdn.jsdelivr.net/fontsource/fonts/press-start-2p@latest/latin-400-normal.woff2) format("woff2"),
+    url(https://cdn.jsdelivr.net/fontsource/fonts/press-start-2p@latest/latin-400-normal.woff) format("woff");
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
     U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191,
     U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
@@ -67,6 +64,7 @@
 
   .zag-bg {
     background-color: var(--color-zag-light);
+
     :where(.dark, .dark *) & {
       background-color: var(--color-zag-dark);
     }
@@ -74,13 +72,15 @@
 
   .-zag-bg {
     background-color: var(--color-zag-dark);
+
     :where(.dark, .dark *) & {
       background-color: var(--color-zag-light);
     }
   }
-  
+
   .zag-text {
     color: var(--color-zag-dark);
+
     :where(.dark, .dark *) & {
       color: var(--color-zag-light);
     }
@@ -88,6 +88,7 @@
 
   .-zag-text {
     color: var(--color-zag-light);
+
     :where(.dark, .dark *) & {
       color: var(--color-zag-dark);
     }
@@ -95,6 +96,7 @@
 
   .zag-muted {
     color: var(--color-zag-dark-muted);
+
     :where(.dark, .dark *) & {
       color: var(--color-zag-light-muted);
     }
@@ -102,6 +104,7 @@
 
   .zag-fill {
     fill: var(--color-zag-dark);
+
     &:where(.dark, .dark *) {
       fill: var(--color-zag-light);
     }
@@ -109,6 +112,7 @@
 
   .zag-text-muted {
     color: var(--color-zag-dark-muted);
+
     &:where(.dark, .dark *) {
       color: var(--color-zag-light-muted);
     }
@@ -117,6 +121,7 @@
   .zag-border-b {
     border-bottom: var(--zag-stroke) solid;
     border-color: var(--color-zag-dark);
+
     &:where(.dark, .dark *) {
       border-color: var(--color-zag-light);
     }
@@ -143,6 +148,7 @@
     letter-spacing: 0.2em;
     position: relative;
     z-index: 10;
+
     :where(.dark, .dark *) & {
       background: #ffffff;
       color: rgb(20, 20, 20);
@@ -165,11 +171,114 @@
     0% {
       transform: translate3d(0, 0, 0);
     }
+
     100% {
       transform: translate3d(-50%, 0, 0);
     }
   }
 
+  /* Global Icon Styles */
+  i,
+  .icon {
+    display: inline-block;
+    text-decoration: none;
+    transition: color var(--zag-transition-duration) var(--zag-transition-timing-function);
+  }
+
+  /* Default hover effect for generic icons */
+  a:hover i:not([class*="fa-"]),
+  button:hover i:not([class*="fa-"]),
+  i:not([class*="fa-"]):hover {
+    color: var(--color-zag-accent-dark);
+
+    :where(.dark, .dark *) & {
+      color: var(--color-zag-accent-light);
+    }
+  }
+
+  /* Brand Specific Hover Colors */
+  a:hover .fa-github,
+  button:hover .fa-github,
+  .fa-github:hover {
+    color: #333;
+
+    :where(.dark, .dark *) & {
+      color: #fff;
+    }
+  }
+
+  a:hover .fa-threads,
+  button:hover .fa-threads,
+  .fa-threads:hover {
+    color: #000;
+
+    :where(.dark, .dark *) & {
+      color: #fff;
+    }
+  }
+
+  a:hover .fa-linkedin,
+  button:hover .fa-linkedin,
+  .fa-linkedin:hover {
+    color: #0077b5;
+  }
+
+  a:hover .fa-facebook,
+  button:hover .fa-facebook,
+  .fa-facebook:hover {
+    color: #1877f2;
+  }
+
+  a:hover .fa-whatsapp,
+  button:hover .fa-whatsapp,
+  .fa-whatsapp:hover {
+    color: #25d366;
+  }
+
+  a:hover .fa-instagram,
+  button:hover .fa-instagram,
+  .fa-instagram:hover {
+    color: #e4405f;
+  }
+
+  a:hover .fa-twitter,
+  button:hover .fa-twitter,
+  .fa-twitter:hover,
+  a:hover .fa-x-twitter,
+  button:hover .fa-x-twitter,
+  .fa-x-twitter:hover {
+    color: #000;
+
+    :where(.dark, .dark *) & {
+      color: #fff;
+    }
+  }
+
+  a:hover .fa-youtube,
+  button:hover .fa-youtube,
+  .fa-youtube:hover {
+    color: #ff0000;
+  }
+
+  a:hover .fa-tiktok,
+  button:hover .fa-tiktok,
+  .fa-tiktok:hover {
+    color: #000000;
+
+    :where(.dark, .dark *) & {
+      color: #fff;
+    }
+  }
+
+  a:hover .fa-bag-shopping,
+  button:hover .fa-bag-shopping,
+  .fa-bag-shopping:hover {
+    color: var(--color-zag-accent-dark);
+
+    :where(.dark, .dark *) & {
+      color: var(--color-zag-accent-light);
+    }
+  }
 }
 
 .service-link {

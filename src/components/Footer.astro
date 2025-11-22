@@ -31,14 +31,22 @@ const year = date.getFullYear();
       <div class="flex flex-row sm:flex-col gap-4">
         {
           GLOBAL.githubProfile && (
-            <Anchor url={GLOBAL.githubProfile} aria-label="GitHub Profile">
+            <Anchor
+              url={GLOBAL.githubProfile}
+              aria-label="GitHub Profile"
+              class="!no-underline"
+            >
               <i class="fa-brands fa-github text-3xl zag-text zag-transition" />
             </Anchor>
           )
         }
         {
           GLOBAL.threadsProfile && (
-            <Anchor url={GLOBAL.threadsProfile} aria-label="Threads Profile">
+            <Anchor
+              url={GLOBAL.threadsProfile}
+              aria-label="Threads Profile"
+              class="!no-underline"
+            >
               <i class="fa-brands fa-threads text-3xl zag-text zag-transition" />
             </Anchor>
           )
