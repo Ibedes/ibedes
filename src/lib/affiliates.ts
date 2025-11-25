@@ -25,67 +25,6 @@ export interface ArticleAffiliate {
 // Database affiliate produk
 export const affiliateProducts: AffiliateProduct[] = [
     // Produk untuk artikel motivasi
-
-    {
-        id: 'jas-hujan-sp3',
-        name: 'Jas Hujan Setelan Pria Wanita Anti Rembes Tebal',
-        description: 'Jas hujan setelan pria wanita anti rembes tebal, cocok untuk perjalanan hujan.',
-        price: 'Rp 80.000',
-        originalPrice: '-', // Optional, untuk show discount
-        discount: '-', // Optional
-        image: 'https://down-tx-id.img.susercontent.com/id-11134207-81ztf-mf24l8x0wglp96.webp',
-        link: 'https://s.shopee.co.id/5VNhWKJC84',
-        platform: 'shopee', // shopee, tokopedia, lazada, blibli, tiktok, amazon, other
-        category: 'Productivity', // Kategori produk
-        tags: ['tag1', 'tag2', 'relevant'], // Tags untuk matching
-        rating: 4.8, // Optional
-        verified: true // Set true kalau udah dicek/rekomendasi
-    },
-    {
-        id: "tripod-kamera-1",
-        name: "INBEX IB-2R 170CM Profesion Tripod Kamera Handphone Bluetooth Remote Konten Remote Bluetooth Aluminium",
-        description: "INBEX IB-2R 170CM Tripod Bluetooth Remote hp anti goyang with Holder&Carry Bag ⭐ Selamat datang di Toko Resmi INBEX (Selamat datang di inbexstudio⭐",
-        price: "79699",
-        originalPrice: "400000",
-        discount: "80%",
-        image: "https://down-id.img.susercontent.com/file/id-11134207-7r98s-ly7rdig42me338@resize_w450_nl.webp",
-        link: "https://s.shopee.co.id/3fw7k6v8Hg",
-        platform: "shopee",
-        category: "Productivity,camera",
-        tags: ["camera", "productivity"],
-        rating: 4.8,
-        verified: true
-    },
-    {
-        id: "smart-watch-1",
-        name: "Samsung SmartWatch XS 11 PRO MAX",
-        description: "0% asli, ada garansi, Anda dapat membeli dengan percaya diri\n\nSetelah menerima barang, silakan tinggalkan pujian bintang lima Anda\n\nIkuti kami untuk informasi tentang diskon dan produk serta kupon baru\n\nGrosir dan distributor dipersilakan.",
-        price: "142499",
-        originalPrice: "8888888",
-        discount: "98%",
-        image: "https://down-ws-id.img.susercontent.com/id-11134207-82250-mh9x4u6msrgvc9.webp",
-        link: "https://s.shopee.co.id/9zqBGrKNwi",
-        platform: "shopee",
-        category: "Productivity, smartwatch",
-        tags: ["camera", "smartwatch"],
-        rating: 4.7,
-        verified: true
-    },
-    {
-        id: "kipas",
-        name: "kipas",
-        description: "sf",
-        price: "79699",
-        
-        
-        image: "https://down-bs-id.img.susercontent.com/sg-11134201-8258x-mev4122dts05ef.webp",
-        link: "https://s.shopee.co.id/7V8qfWo2B0",
-        platform: "shopee",
-        category: "Productivity",
-        tags: ["tag1"],
-        
-        verified: true
-    }
 ];
 
 // Mapping artikel dengan produk affiliate
