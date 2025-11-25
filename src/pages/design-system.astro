@@ -203,7 +203,7 @@ const icons = [
                             Dark Mode Preview (simulated)
                         </p>
                         <div
-                            class="dark p-4 bg-background rounded border border-border flex gap-4"
+                            class="dark p-4 bg-background rounded border border-border flex flex-wrap gap-4"
                         >
                             <button class="cta-button cta-button--primary">
                                 Primary
@@ -296,6 +296,202 @@ const icons = [
                         <span
                             >Design System • Components • Typography • Colors •</span
                         >
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Spacing & Layout Section -->
+        <section class="space-y-8">
+            <h2 class="text-2xl font-display border-b border-border pb-4">
+                Spacing & Layout
+            </h2>
+
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-xl font-serif font-bold mb-4">
+                        Spacing Scale
+                    </h3>
+                    <p class="text-muted-foreground mb-6">
+                        Base spacing unit is 0.25rem (4px). Use these tokens for
+                        padding, margin, and gap.
+                    </p>
+                    <div class="grid gap-4">
+                        {
+                            [
+                                { name: "0.5", val: "0.125rem", px: "2px" },
+                                { name: "1", val: "0.25rem", px: "4px" },
+                                { name: "2", val: "0.5rem", px: "8px" },
+                                { name: "3", val: "0.75rem", px: "12px" },
+                                { name: "4", val: "1rem", px: "16px" },
+                                { name: "6", val: "1.5rem", px: "24px" },
+                                { name: "8", val: "2rem", px: "32px" },
+                                { name: "12", val: "3rem", px: "48px" },
+                                { name: "16", val: "4rem", px: "64px" },
+                            ].map((space) => (
+                                <div class="flex items-center gap-4">
+                                    <div class="w-16 font-mono text-sm text-muted-foreground">
+                                        {space.name}
+                                    </div>
+                                    <div class="flex-1 flex items-center gap-4">
+                                        <div
+                                            class="bg-zag-accent-light dark:bg-zag-accent-dark h-8 rounded"
+                                            style={`width: ${space.val}`}
+                                        />
+                                        <span class="text-xs font-mono text-muted-foreground">
+                                            {space.val} ({space.px})
+                                        </span>
+                                    </div>
+                                </div>
+                            ))
+                        }
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-serif font-bold mb-4">Container</h3>
+                    <p class="text-muted-foreground mb-4">
+                        Standard container widths for responsive layouts.
+                    </p>
+                    <div class="space-y-2 font-mono text-sm">
+                        <div
+                            class="flex justify-between border-b border-border py-2"
+                        >
+                            <span>sm</span>
+                            <span class="text-muted-foreground">640px</span>
+                        </div>
+                        <div
+                            class="flex justify-between border-b border-border py-2"
+                        >
+                            <span>md</span>
+                            <span class="text-muted-foreground">768px</span>
+                        </div>
+                        <div
+                            class="flex justify-between border-b border-border py-2"
+                        >
+                            <span>lg</span>
+                            <span class="text-muted-foreground">1024px</span>
+                        </div>
+                        <div
+                            class="flex justify-between border-b border-border py-2"
+                        >
+                            <span>xl</span>
+                            <span class="text-muted-foreground">1280px</span>
+                        </div>
+                        <div
+                            class="flex justify-between border-b border-border py-2"
+                        >
+                            <span>2xl</span>
+                            <span class="text-muted-foreground">1536px</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Effects Section -->
+        <section class="space-y-8">
+            <h2 class="text-2xl font-display border-b border-border pb-4">
+                Effects
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- Border Radius -->
+                <div>
+                    <h3 class="text-xl font-serif font-bold mb-4">
+                        Border Radius
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-24 h-24 bg-muted border border-border rounded-sm flex items-center justify-center text-xs font-mono"
+                            >
+                                sm
+                            </div>
+                            <span
+                                class="font-mono text-sm text-muted-foreground"
+                                >rounded-sm</span
+                            >
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-24 h-24 bg-muted border border-border rounded flex items-center justify-center text-xs font-mono"
+                            >
+                                default
+                            </div>
+                            <span
+                                class="font-mono text-sm text-muted-foreground"
+                                >rounded</span
+                            >
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-24 h-24 bg-muted border border-border rounded-md flex items-center justify-center text-xs font-mono"
+                            >
+                                md
+                            </div>
+                            <span
+                                class="font-mono text-sm text-muted-foreground"
+                                >rounded-md</span
+                            >
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-24 h-24 bg-muted border border-border rounded-lg flex items-center justify-center text-xs font-mono"
+                            >
+                                lg
+                            </div>
+                            <span
+                                class="font-mono text-sm text-muted-foreground"
+                                >rounded-lg</span
+                            >
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-24 h-24 bg-muted border border-border rounded-full flex items-center justify-center text-xs font-mono"
+                            >
+                                full
+                            </div>
+                            <span
+                                class="font-mono text-sm text-muted-foreground"
+                                >rounded-full</span
+                            >
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shadows -->
+                <div>
+                    <h3 class="text-xl font-serif font-bold mb-4">Shadows</h3>
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-full h-16 bg-card text-card-foreground border border-border shadow-sm rounded flex items-center justify-center text-xs font-mono"
+                            >
+                                shadow-sm
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-full h-16 bg-card text-card-foreground border border-border shadow rounded flex items-center justify-center text-xs font-mono"
+                            >
+                                shadow
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-full h-16 bg-card text-card-foreground border border-border shadow-md rounded flex items-center justify-center text-xs font-mono"
+                            >
+                                shadow-md
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-full h-16 bg-card text-card-foreground border border-border shadow-lg rounded flex items-center justify-center text-xs font-mono"
+                            >
+                                shadow-lg
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
