@@ -64,11 +64,15 @@ export const POST: APIRoute = async ({ request }) => {
             deletedLocally = true;
             console.log(`[Admin API] Local file deleted at ${localFilePath}`);
         } catch (localError: any) {
+<<<<<<< HEAD
             if (localError?.code === 'ENOENT') {
                 // Nothing to delete locally
             } else if (localError?.code === 'EROFS') {
                 console.warn('[Admin API] Local filesystem is read-only; skipping local delete.');
             } else {
+=======
+            if (localError?.code !== 'ENOENT') {
+>>>>>>> af2d5b4421841a0afe43e14c1084b606c3105ee0
                 console.error('[Admin API] Error deleting local file:', localError);
                 if (!deletedViaGitHub) throw localError;
             }

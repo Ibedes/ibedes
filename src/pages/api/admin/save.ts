@@ -57,6 +57,7 @@ export const POST: APIRoute = async ({ request }) => {
             );
         }
 
+<<<<<<< HEAD
         try {
             await fs.mkdir(path.dirname(localFilePath), { recursive: true });
             await fs.writeFile(localFilePath, content, 'utf-8');
@@ -70,6 +71,11 @@ export const POST: APIRoute = async ({ request }) => {
                 console.warn('[Admin API] Failed to save local copy:', localError?.message ?? localError);
             }
         }
+=======
+        await fs.mkdir(path.dirname(localFilePath), { recursive: true });
+        await fs.writeFile(localFilePath, content, 'utf-8');
+        console.log(`[Admin API] Local copy saved at ${localFilePath}`);
+>>>>>>> af2d5b4421841a0afe43e14c1084b606c3105ee0
 
         return new Response(JSON.stringify({
             success: true,
