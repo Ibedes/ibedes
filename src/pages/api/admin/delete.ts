@@ -1,4 +1,6 @@
 import type { APIRoute } from 'astro';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { getGitHubCMS } from '../../../lib/github-cms';
 
 export const prerender = false;
@@ -37,18 +39,47 @@ export const POST: APIRoute = async ({ request }) => {
             });
         }
 
-        // Use GitHub CMS to delete file
-        const github = getGitHubCMS();
-        const filePath = `src/pages/blog/${filename}`;
+        const repoFilePath = `src/pages/blog/${filename}`;
+        const localFilePath = path.join(process.cwd(), repoFilePath);
         const commitMessage = `Delete article: ${filename}`;
 
-        await github.deleteFile(filePath, commitMessage);
+        let deletedViaGitHub = false;
 
-        console.log(`[Admin API] File deleted successfully via GitHub`);
+        try {
+            const github = getGitHubCMS();
+            await github.deleteFile(repoFilePath, commitMessage);
+            deletedViaGitHub = true;
+            console.log(`[Admin API] File deleted successfully via GitHub`);
+        } catch (githubError: any) {
+            if (githubError?.status === 404) {
+                console.warn('[Admin API] GitHub file not found, falling back to local delete.');
+            } else {
+                console.warn('[Admin API] GitHub delete failed, falling back to local delete:', githubError?.message ?? githubError);
+            }
+        }
+
+        let deletedLocally = false;
+        try {
+            await fs.unlink(localFilePath);
+            deletedLocally = true;
+            console.log(`[Admin API] Local file deleted at ${localFilePath}`);
+        } catch (localError: any) {
+            if (localError?.code !== 'ENOENT') {
+                console.error('[Admin API] Error deleting local file:', localError);
+                if (!deletedViaGitHub) throw localError;
+            }
+        }
+
+        if (!deletedViaGitHub && !deletedLocally) {
+            throw new Error('Unable to delete article on GitHub or local filesystem.');
+        }
 
         return new Response(JSON.stringify({
             success: true,
-            message: 'File deleted successfully. Netlify will auto-deploy in ~2 minutes.'
+            message: deletedViaGitHub
+                ? 'File deleted via GitHub dan salinan lokal dibersihkan.'
+                : 'File lokal dihapus. Commit manual diperlukan untuk sinkronisasi.',
+            mode: deletedViaGitHub ? 'github' : 'local'
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

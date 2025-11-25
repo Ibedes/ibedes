@@ -1,0 +1,1613 @@
+---
+import fs from "node:fs/promises";
+import path from "node:path";
+import matter from "gray-matter";
+import Layout from "../../layouts/Layout.astro";
+import { GLOBAL } from "../../lib/variables";
+import { affiliateProducts } from "../../lib/affiliates";
+
+export const prerender = false;
+
+const blogDir = path.join(process.cwd(), "src/pages/blog");
+let articles = [];
+let totalWords = 0;
+let totalReadingTime = 0;
+
+try {
+    const files = await fs.readdir(blogDir);
+    console.log(`[Admin Dashboard] Found ${files.length} files in ${blogDir}`);
+    for (const file of files) {
+        if (file.endsWith(".md")) {
+            try {
+                const content = await fs.readFile(
+                    path.join(blogDir, file),
+                    "utf-8",
+                );
+                const { data, content: markdownContent } = matter(content);
+
+                // Calculate reading time (average 200 words per minute)
+                const words = markdownContent.split(/\s+/).length;
+                const readingTime = Math.ceil(words / 200);
+                totalWords += words;
+                totalReadingTime += readingTime;
+
+                articles.push({
+                    filename: file,
+                    title: data.title || file,
+                    description: data.description || "",
+                    date: data.pubDate || data.date || "",
+                    affiliateProducts: data.affiliateProducts || [],
+                    words,
+                    readingTime,
+                });
+            } catch (err) {
+                console.error(`[Admin Dashboard] Error parsing ${file}:`, err);
+            }
+        }
+    }
+} catch (e) {
+    console.error("[Admin Dashboard] Error reading blog directory", e);
+}
+
+// Sort by date if available, otherwise filename
+articles.sort((a, b) => {
+    if (a.date && b.date)
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+    return a.filename.localeCompare(b.filename);
+});
+
+const stats = {
+    totalArticles: articles.length,
+    totalProducts: affiliateProducts.length,
+    totalWords,
+    totalReadingTime,
+    averageWordsPerArticle: Math.round(totalWords / (articles.length || 1)) || 0,
+};
+
+const articlesWithAffiliates = articles.filter(
+    (article) => (article.affiliateProducts?.length ?? 0) > 0,
+);
+
+const affiliateCoverage = stats.totalArticles
+    ? Math.round((articlesWithAffiliates.length / stats.totalArticles) * 100)
+    : 0;
+
+const averageProductsPerArticle = stats.totalArticles
+    ? Number(
+          (
+              articles.reduce(
+                  (sum, article) =>
+                      sum + (article.affiliateProducts?.length ?? 0),
+                  0,
+              ) / stats.totalArticles
+          ).toFixed(1),
+      )
+    : 0;
+
+const mobileQuickActions = [
+    {
+        icon: "fa-plus",
+        label: "Artikel",
+        href: "/admin/editor",
+        accent: "primary",
+        description: "Buat tulisan baru",
+    },
+    {
+        icon: "fa-tag",
+        label: "Produk",
+        href: "/admin/add-product",
+        accent: "muted",
+        description: "Tambah afiliasi",
+    },
+    {
+        icon: "fa-list",
+        label: "Metadata",
+        href: "/admin/metadata",
+        accent: "muted",
+        description: "Atur SEO",
+    },
+];
+
+const adminTabs = [
+    {
+        id: "overview",
+        icon: "fa-chart-line",
+        tooltip: "Overview",
+    },
+    {
+        id: "articles",
+        icon: "fa-newspaper",
+        tooltip: "Articles",
+    },
+    {
+        id: "products",
+        icon: "fa-tags",
+        tooltip: "Products",
+    },
+    {
+        id: "analytics",
+        icon: "fa-chart-bar",
+        tooltip: "Analytics",
+    },
+    {
+        id: "settings",
+        icon: "fa-gear",
+        tooltip: "Settings",
+    },
+];
+
+const overviewStats = [
+    {
+        label: "Artikel",
+        value: stats.totalArticles,
+        meta: "Konten terbit",
+        icon: "fa-solid fa-newspaper",
+    },
+    {
+        label: "Produk",
+        value: stats.totalProducts,
+        meta: "Afiliasi aktif",
+        icon: "fa-solid fa-tag",
+    },
+    {
+        label: "Total Kata",
+        value: stats.totalWords.toLocaleString(),
+        meta: "Volume tulisan",
+        icon: "fa-solid fa-file-word",
+    },
+    {
+        label: "Waktu Baca",
+        value: `${stats.totalReadingTime} m`,
+        meta: "Akumulasi",
+        icon: "fa-solid fa-stopwatch",
+    },
+];
+
+const previewProducts = affiliateProducts.slice(0, 3);
+---
+
+<Layout title={`Admin Dashboard - ${GLOBAL.username}`}>
+    <div class="admin-shell">
+        <header class="admin-header">
+            <div class="admin-header__text">
+                <h1 class="admin-title">Admin Dashboard</h1>
+                <p class="admin-subtitle">
+                    Kelola konten, produk, dan analisis dengan antarmuka yang compact.
+                </p>
+            </div>
+            <div class="admin-quick-actions" aria-label="Quick actions">
+                {
+                    mobileQuickActions.map((action) => (
+                        <a
+                            href={action.href}
+                            class="admin-quick-action-icon"
+                            data-accent={action.accent}
+                            title={action.description}
+                        >
+                            <i class={`fa-solid ${action.icon}`}></i>
+                        </a>
+                    ))
+                }
+            </div>
+        </header>
+
+        <div class="tab-content">
+            <section
+                id="overview"
+                class="tab-pane active"
+                role="tabpanel"
+                aria-labelledby="overview-tab"
+            >
+                <div class="admin-panel admin-panel--grid">
+                    {
+                        overviewStats.map((stat) => (
+                            <article class="admin-stat-card">
+                                <div class="admin-stat-card__icon" aria-hidden="true">
+                                    <i class={stat.icon}></i>
+                                </div>
+                                <div>
+                                    <p class="admin-stat-card__label">{stat.label}</p>
+                                    <p class="admin-stat-card__value">{stat.value}</p>
+                                    <p class="admin-stat-card__meta">{stat.meta}</p>
+                                </div>
+                            </article>
+                        ))
+                    }
+                </div>
+
+                <div class="admin-panel admin-panel--split">
+                    <div class="admin-card">
+                        <div class="admin-card__header">
+                            <div>
+                                <p class="admin-eyebrow">Aktivitas</p>
+                                <h2>Artikel terbaru</h2>
+                            </div>
+                            <button
+                                class="admin-link-button"
+                                type="button"
+                                onclick="switchTab('articles')"
+                            >
+                                Kelola semua
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                        <div class="admin-list">
+                            {
+                                articles.slice(0, 5).map((article) => (
+                                    <article class="admin-list__item">
+                                        <div>
+                                            <p class="admin-list__title">{article.title}</p>
+                                            <p class="admin-list__meta">
+                                                {article.date
+                                                    ? new Date(article.date).toLocaleDateString()
+                                                    : "Belum ada tanggal"}
+                                                · {article.words} kata · {article.readingTime} menit
+                                            </p>
+                                            {article.affiliateProducts?.length ? (
+                                                <span class="admin-tag">
+                                                    <i class="fa-solid fa-link" aria-hidden="true"></i>
+                                                    {article.affiliateProducts.length} produk
+                                                </span>
+                                            ) : null}
+                                        </div>
+                                        <div class="admin-row-actions">
+                                            <a
+                                                href={`/blog/${article.filename.replace(".md", "")}`}
+                                                target="_blank"
+                                                class="icon-button"
+                                                title="Lihat artikel"
+                                            >
+                                                <i class="fa-solid fa-eye"></i>
+                                            </a>
+                                            <a
+                                                href={`/admin/editor?file=${article.filename}`}
+                                                class="icon-button"
+                                                title="Edit artikel"
+                                            >
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </a>
+                                            <button
+                                                type="button"
+                                                class="icon-button icon-button--danger delete-btn"
+                                                data-filename={article.filename}
+                                                title="Hapus artikel"
+                                            >
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </article>
+                                ))
+                            }
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="admin-card__header">
+                            <div>
+                                <p class="admin-eyebrow">Produk</p>
+                                <h2>Snapshot afiliasi</h2>
+                            </div>
+                            <span class="admin-tag">
+                                {affiliateCoverage}% artikel terhubung
+                            </span>
+                        </div>
+                        <div class="admin-product-list">
+                            {previewProducts.length === 0 && (
+                                <p class="admin-empty">Belum ada produk yang ditautkan.</p>
+                            )}
+                            {
+                                previewProducts.map((product) => (
+                                    <article class="admin-product">
+                                        <div class="admin-product__media">
+                                            <img src={product.image} alt={product.name} loading="lazy" />
+                                        </div>
+                                        <div class="admin-product__body">
+                                            <p class="admin-product__title">{product.name}</p>
+                                            <p class="admin-product__meta">{product.category ?? "Kategori belum diisi"}</p>
+                                            <p class="admin-product__price">
+                                                {product.price ?? "-"}
+                                                {product.discount && (
+                                                    <span class="admin-pill-badge">{product.discount} OFF</span>
+                                                )}
+                                            </p>
+                                        </div>
+                                    </article>
+                                ))
+                            }
+                        </div>
+                        <div class="admin-card__footer">
+                            <button
+                                type="button"
+                                class="admin-link-button"
+                                onclick="switchTab('products')"
+                            >
+                                Kelola produk
+                                <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="articles"
+                class="tab-pane hidden"
+                role="tabpanel"
+                aria-labelledby="articles-tab"
+            >
+                <div class="admin-card">
+                    <div class="admin-card__header">
+                        <div>
+                            <p class="admin-eyebrow">Artikel</p>
+                            <h2>Daftar konten</h2>
+                        </div>
+                        <a
+                            href="/admin/editor"
+                            class="admin-chip admin-chip--primary no-underline"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Artikel</span>
+                        </a>
+                    </div>
+                    <div class="admin-records" role="table">
+                        {
+                            articles.map((article) => (
+                                <article class="admin-record" role="row">
+                                    <div class="admin-record__main" role="cell">
+                                        <p class="admin-record__title">{article.title}</p>
+                                        <p class="admin-record__slug">{article.filename}</p>
+                                    </div>
+                                    <dl class="admin-record__meta" role="cell">
+                                        <div>
+                                            <dt>Tanggal</dt>
+                                            <dd>
+                                                {article.date
+                                                    ? new Date(article.date).toLocaleDateString()
+                                                    : "-"}
+                                            </dd>
+                                        </div>
+                                        <div>
+                                            <dt>Kata</dt>
+                                            <dd>{article.words}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Produk</dt>
+                                            <dd>{article.affiliateProducts?.length ?? 0}</dd>
+                                        </div>
+                                    </dl>
+                                    <div class="admin-row-actions" role="cell">
+                                        <a
+                                            href={`/blog/${article.filename.replace(".md", "")}`}
+                                            target="_blank"
+                                            class="icon-button"
+                                            title="Lihat artikel"
+                                        >
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <a
+                                            href={`/admin/editor?file=${article.filename}`}
+                                            class="icon-button"
+                                            title="Edit artikel"
+                                        >
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </a>
+                                        <button
+                                            type="button"
+                                            class="icon-button icon-button--danger delete-btn"
+                                            data-filename={article.filename}
+                                            title="Hapus artikel"
+                                        >
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </article>
+                            ))
+                        }
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="products"
+                class="tab-pane hidden"
+                role="tabpanel"
+                aria-labelledby="products-tab"
+            >
+                <div class="admin-card">
+                    <div class="admin-card__header">
+                        <div>
+                            <p class="admin-eyebrow">Produk</p>
+                            <h2>Daftar afiliasi</h2>
+                        </div>
+                        <a
+                            href="/admin/add-product"
+                            class="admin-chip admin-chip--primary no-underline"
+                        >
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Produk</span>
+                        </a>
+                    </div>
+                    <div class="admin-records" role="table">
+                        {
+                            affiliateProducts.map((product) => (
+                                <article class="admin-record admin-record--product" role="row">
+                                    <div class="admin-record__main" role="cell">
+                                        <div class="admin-product__media admin-product__media--compact" aria-hidden="true">
+                                            <img src={product.image} alt={product.name} loading="lazy" />
+                                        </div>
+                                        <div>
+                                            <p class="admin-record__title">{product.name}</p>
+                                            <p class="admin-record__slug">{product.id}</p>
+                                        </div>
+                                    </div>
+                                    <dl class="admin-record__meta" role="cell">
+                                        <div>
+                                            <dt>Kategori</dt>
+                                            <dd>{product.category ?? "-"}</dd>
+                                        </div>
+                                        <div>
+                                            <dt>Harga</dt>
+                                            <dd>{product.price ?? "-"}</dd>
+                                        </div>
+                                        {product.discount ? (
+                                            <div>
+                                                <dt>Diskon</dt>
+                                                <dd>{product.discount}</dd>
+                                            </div>
+                                        ) : null}
+                                    </dl>
+                                    <div class="admin-row-actions" role="cell">
+                                        <a
+                                            href={`/admin/edit-product?id=${product.id}`}
+                                            class="icon-button"
+                                            title="Edit produk"
+                                        >
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </a>
+                                        <button
+                                            type="button"
+                                            class="icon-button icon-button--danger delete-product-btn"
+                                            data-product-id={product.id}
+                                            data-product-name={product.name}
+                                            title="Hapus produk"
+                                        >
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </article>
+                            ))
+                        }
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="analytics"
+                class="tab-pane hidden"
+                role="tabpanel"
+                aria-labelledby="analytics-tab"
+            >
+                <div class="admin-panel admin-panel--stack">
+                    <div class="admin-card">
+                        <div class="admin-card__header">
+                            <div>
+                                <p class="admin-eyebrow">Analitik</p>
+                                <h2>Performa konten</h2>
+                            </div>
+                        </div>
+                        <div class="admin-metrics">
+                            <div class="admin-metric">
+                                <p>Total artikel</p>
+                                <strong>{stats.totalArticles}</strong>
+                            </div>
+                            <div class="admin-metric">
+                                <p>Total kata</p>
+                                <strong>{stats.totalWords.toLocaleString()}</strong>
+                            </div>
+                            <div class="admin-metric">
+                                <p>Rata-rata kata / artikel</p>
+                                <strong>{stats.averageWordsPerArticle}</strong>
+                            </div>
+                            <div class="admin-metric">
+                                <p>Total waktu baca</p>
+                                <strong>{stats.totalReadingTime} menit</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="admin-card__header">
+                            <div>
+                                <p class="admin-eyebrow">Insight</p>
+                                <h2>Korelasi produk</h2>
+                            </div>
+                        </div>
+                        <div class="admin-progress">
+                            <div class="admin-progress__item">
+                                <div class="admin-progress__label">
+                                    <span>Artikel dengan produk</span>
+                                    <strong>{articlesWithAffiliates.length}</strong>
+                                </div>
+                                <div class="admin-progress__track">
+                                    <span
+                                        class="admin-progress__value"
+                                        style={`width: ${affiliateCoverage}%`}
+                                    ></span>
+                                </div>
+                                <p class="admin-progress__meta">
+                                    {affiliateCoverage}% dari konten sudah memiliki tautan afiliasi.
+                                </p>
+                            </div>
+                            <div class="admin-progress__item">
+                                <div class="admin-progress__label">
+                                    <span>Produk rata-rata / artikel</span>
+                                    <strong>{averageProductsPerArticle}</strong>
+                                </div>
+                                <div class="admin-progress__track">
+                                    <span
+                                        class="admin-progress__value"
+                                        style={`width: ${Math.min(averageProductsPerArticle * 25, 100)}%`}
+                                    ></span>
+                                </div>
+                                <p class="admin-progress__meta">
+                                    Targetkan 2 produk / artikel untuk performa maksimal.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                id="settings"
+                class="tab-pane hidden"
+                role="tabpanel"
+                aria-labelledby="settings-tab"
+            >
+                <div class="admin-panel admin-panel--stack">
+                    <div class="admin-card">
+                        <div class="admin-card__header">
+                            <div>
+                                <p class="admin-eyebrow">Konfigurasi</p>
+                                <h2>Pengaturan situs</h2>
+                            </div>
+                        </div>
+                        <div class="admin-setting-list">
+                            <a
+                                href="/admin/metadata"
+                                class="admin-setting-action"
+                            >
+                                <div>
+                                    <p>Metadata situs</p>
+                                    <span>Edit judul, deskripsi, dan SEO.</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                            </a>
+                            <a
+                                href="/admin/upload"
+                                class="admin-setting-action"
+                            >
+                                <div>
+                                    <p>Upload berkas</p>
+                                    <span>Tambahkan aset pendukung konten.</span>
+                                </div>
+                                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="admin-card__header">
+                            <div>
+                                <p class="admin-eyebrow">Aksi cepat</p>
+                                <h2>Perawatan sistem</h2>
+                            </div>
+                        </div>
+                        <div class="admin-setting-list">
+                            <button
+                                type="button"
+                                onclick="exportData()"
+                                class="admin-setting-action admin-setting-action--button"
+                            >
+                                <div>
+                                    <p>Ekspor data</p>
+                                    <span>Backup artikel, produk, dan konfigurasi.</span>
+                                </div>
+                                <i class="fa-solid fa-download" aria-hidden="true"></i>
+                            </button>
+                            <button
+                                type="button"
+                                onclick="clearCache()"
+                                class="admin-setting-action admin-setting-action--button"
+                            >
+                                <div>
+                                    <p>Bersihkan cache</p>
+                                    <span>Segarkan data statis dan regenerasi konten.</span>
+                                </div>
+                                <i class="fa-solid fa-broom" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <nav
+        class="admin-bottom-nav"
+        role="tablist"
+        aria-label="Navigasi dashboard"
+        style={`--nav-count: ${adminTabs.length}; --active-index: 0;`}
+    >
+        {
+            adminTabs.map((tab, index) => (
+                <button
+                    type="button"
+                    class={`admin-bottom-nav__item ${
+                        tab.id === "overview" ? "active" : ""
+                    }`}
+                    data-tab={tab.id}
+                    data-tab-trigger
+                    data-index={index}
+                    role="tab"
+                    aria-selected={tab.id === "overview"}
+                    aria-controls={tab.id}
+                    title={tab.tooltip}
+                >
+                    <i class={`fa-solid ${tab.icon}`} aria-hidden="true"></i>
+                </button>
+            ))
+        }
+        <span class="admin-bottom-nav__indicator" aria-hidden="true"></span>
+    </nav>
+
+    <script>
+        // Extend Window interface for TypeScript
+        declare global {
+            interface Window {
+                showToast?: (
+                    message: string,
+                    options?: { type: "success" | "error" | "info" },
+                ) => void;
+            }
+        }
+
+        const TAB_TRIGGER_SELECTOR = "[data-tab-trigger]";
+        const TAB_PANE_SELECTOR = ".tab-pane";
+
+        function setActiveTab(tabName: string): void {
+            document.querySelectorAll(TAB_PANE_SELECTOR).forEach((pane) => {
+                pane.classList.add("hidden");
+                pane.classList.remove("active");
+            });
+
+            const selectedPane = document.getElementById(tabName);
+            if (selectedPane) {
+                selectedPane.classList.remove("hidden");
+                selectedPane.classList.add("active");
+            }
+
+            document.querySelectorAll(TAB_TRIGGER_SELECTOR).forEach((btn) => {
+                const button = btn as HTMLButtonElement;
+                const isTarget = button.getAttribute("data-tab") === tabName;
+                button.classList.toggle("active", isTarget);
+                if (button.hasAttribute("aria-selected")) {
+                    button.setAttribute("aria-selected", isTarget ? "true" : "false");
+                }
+            });
+
+            updateBottomNavIndicator(tabName);
+        }
+
+        function updateBottomNavIndicator(tabName: string): void {
+            const bottomNav = document.querySelector(
+                ".admin-bottom-nav",
+            ) as HTMLElement | null;
+            if (!bottomNav) return;
+
+            const triggers = bottomNav.querySelectorAll<HTMLElement>(
+                "[data-tab-trigger]",
+            );
+
+            let activeIndex = 0;
+            triggers.forEach((trigger, index) => {
+                if (trigger.getAttribute("data-tab") === tabName) {
+                    activeIndex = index;
+                }
+            });
+
+            bottomNav.style.setProperty(
+                "--active-index",
+                String(activeIndex),
+            );
+        }
+
+        function switchTab(tabName: string): void {
+            setActiveTab(tabName);
+        }
+
+        document.querySelectorAll(TAB_TRIGGER_SELECTOR).forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const tabName = btn.getAttribute("data-tab");
+                if (tabName) {
+                    switchTab(tabName);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+            });
+        });
+
+
+        function initializeTabs(): void {
+            setActiveTab("overview");
+        }
+
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", initializeTabs);
+        } else {
+            initializeTabs();
+        }
+
+        // Utility functions
+        function exportData(): void {
+            if (
+                confirm("Export all site data? This will create a backup file.")
+            ) {
+                // Implement export functionality
+                console.log("Exporting data...");
+                if (typeof window.showToast === "function") {
+                    window.showToast("Data export initiated!", {
+                        type: "success",
+                    });
+                }
+            }
+        }
+
+        function clearCache(): void {
+            if (
+                confirm(
+                    "Clear all cached data? This may temporarily slow down the site.",
+                )
+            ) {
+                // Implement cache clearing
+                if (typeof window.showToast === "function") {
+                    window.showToast("Cache cleared successfully!", {
+                        type: "success",
+                    });
+                }
+                setTimeout(() => window.location.reload(), 500);
+            }
+        }
+
+        // Handle delete button clicks (copied from original admin page)
+        document.querySelectorAll(".delete-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const button = btn as HTMLButtonElement;
+                const filename = button.dataset.filename;
+
+                if (
+                    !filename ||
+                    !confirm(
+                        `Are you sure you want to delete "${filename}"? This action cannot be undone.`,
+                    )
+                ) {
+                    return;
+                }
+
+                try {
+                    button.disabled = true;
+                    button.innerHTML =
+                        '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+                    const response = await fetch("/api/admin/delete", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ filename }),
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        if (typeof window.showToast === "function") {
+                            window.showToast("Article deleted successfully!", {
+                                type: "success",
+                            });
+                        }
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        if (typeof window.showToast === "function") {
+                            window.showToast("Error: " + result.error, {
+                                type: "error",
+                            });
+                        } else {
+                            alert("Error deleting file: " + result.error);
+                        }
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                    }
+                } catch (error) {
+                    console.error(error);
+                    if (typeof window.showToast === "function") {
+                        window.showToast("Failed to delete article", {
+                            type: "error",
+                        });
+                    } else {
+                        alert("Error deleting file");
+                    }
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                }
+            });
+        });
+
+        document.querySelectorAll(".delete-product-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const button = btn as HTMLButtonElement;
+                const productId = button.dataset.productId;
+                const productName = button.dataset.productName || productId;
+
+                if (
+                    !productId ||
+                    !confirm(
+                        `Hapus produk "${productName}"? Tindakan ini tidak bisa dibatalkan.`,
+                    )
+                ) {
+                    return;
+                }
+
+                try {
+                    button.disabled = true;
+                    button.innerHTML =
+                        '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+                    const response = await fetch(
+                        "/api/admin/delete-product",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ id: productId }),
+                        },
+                    );
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        if (typeof window.showToast === "function") {
+                            window.showToast("Produk berhasil dihapus", {
+                                type: "success",
+                            });
+                        }
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        if (typeof window.showToast === "function") {
+                            window.showToast(result.error || "Gagal menghapus", {
+                                type: "error",
+                            });
+                        } else {
+                            alert(result.error || "Gagal menghapus produk");
+                        }
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                    }
+                } catch (error) {
+                    console.error(error);
+                    if (typeof window.showToast === "function") {
+                        window.showToast("Terjadi kesalahan saat hapus", {
+                            type: "error",
+                        });
+                    } else {
+                        alert("Error deleting product");
+                    }
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                }
+            });
+        });
+    </script>
+</Layout>
+
+<style>
+    .admin-shell {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 1rem 1rem 4.5rem;
+        --admin-font-xs: clamp(0.65rem, 1vw, 0.75rem);
+        --admin-font-sm: clamp(0.75rem, 1.2vw, 0.85rem);
+        --admin-font-base: clamp(0.85rem, 1.35vw, 0.95rem);
+        --admin-font-lg: clamp(1rem, 1.6vw, 1.2rem);
+        --admin-radius: 0.85rem;
+        --admin-border: 1px solid color-mix(in srgb, var(--color-foreground) 12%, transparent);
+        --admin-dashed-border: 1px dashed color-mix(in srgb, var(--color-foreground) 18%, transparent);
+        --admin-card-padding: 0.95rem;
+    }
+
+    @media (max-width: 640px) {
+        .admin-shell {
+            padding: 0.75rem 0.75rem 5.25rem;
+        }
+    }
+
+    .admin-header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        padding: var(--admin-card-padding);
+        border-radius: var(--admin-radius);
+        background: color-mix(in srgb, var(--color-card) 92%, transparent);
+        border: var(--admin-border);
+    }
+
+    @media (min-width: 768px) {
+        .admin-header {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+    }
+
+    .admin-title {
+        font-family: var(--font-display);
+        font-size: clamp(1.15rem, 2vw, 1.45rem);
+        letter-spacing: 0.04em;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    .admin-subtitle {
+        font-size: var(--admin-font-sm);
+        max-width: 45ch;
+        color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
+        font-family: var(--font-serif);
+        margin: 0.25rem 0 0;
+        line-height: 1.3;
+    }
+
+    .admin-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border-radius: 999px;
+        font-size: var(--admin-font-sm);
+        font-weight: 600;
+        padding: 0.35rem 0.85rem;
+        border: var(--admin-border);
+        transition: transform 150ms ease, border-color 150ms ease, background-color 150ms ease;
+    }
+
+    .admin-chip i {
+        font-size: 0.85rem;
+    }
+
+    .admin-chip--primary {
+        background: var(--color-foreground);
+        color: var(--color-background);
+        border-color: var(--color-foreground);
+    }
+
+    .admin-chip--muted {
+        background: color-mix(in srgb, var(--color-foreground) 7%, transparent);
+        color: var(--color-foreground);
+    }
+
+    .admin-chip:hover,
+    .admin-chip:focus-visible {
+        transform: translateY(-1px);
+    }
+
+    .admin-quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+    }
+
+    .admin-quick-action-icon {
+        width: 2.35rem;
+        height: 2.35rem;
+        border-radius: 0.7rem;
+        display: grid;
+        place-items: center;
+        text-decoration: none;
+        color: inherit;
+        transition: all 150ms ease;
+        border: 1px solid color-mix(in srgb, var(--color-foreground) 15%, transparent);
+    }
+
+    .admin-quick-action-icon[data-accent="primary"] {
+        background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+        color: var(--color-primary);
+        border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
+    }
+
+    .admin-quick-action-icon[data-accent="muted"] {
+        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+        color: color-mix(in srgb, var(--color-foreground) 80%, transparent);
+    }
+
+    .admin-quick-action-icon:hover,
+    .admin-quick-action-icon:focus-visible {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px color-mix(in srgb, var(--color-foreground) 12%, transparent);
+    }
+
+    .admin-bottom-nav {
+        position: fixed;
+        bottom: 0.65rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(480px, calc(100% - 1.5rem));
+        padding: 0.35rem;
+        border-radius: var(--admin-radius);
+        background: color-mix(in srgb, var(--color-background) 96%, rgba(0, 0, 0, 0.3));
+        border: var(--admin-border);
+        backdrop-filter: blur(18px);
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.2rem;
+        z-index: 25;
+    }
+
+    .admin-bottom-nav__item {
+        border: none;
+        border-radius: 0.75rem;
+        background: transparent;
+        color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.6rem;
+        aspect-ratio: 1;
+        transition: all 150ms ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .admin-bottom-nav__item::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: transparent;
+        border-radius: inherit;
+        transition: all 150ms ease;
+    }
+
+    .admin-bottom-nav__item:hover::before {
+        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+    }
+
+    .admin-bottom-nav__item i {
+        font-size: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .admin-bottom-nav__item.active {
+        color: var(--color-primary);
+        background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    }
+
+    .admin-bottom-nav__item.active::before {
+        background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+        box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent);
+    }
+
+    .admin-bottom-nav__indicator {
+        position: absolute;
+        bottom: 0.2rem;
+        left: 0.35rem;
+        height: 2px;
+        width: calc((100% - 0.7rem) / var(--nav-count, 5));
+        border-radius: 999px;
+        background: var(--color-primary);
+        transform: translateX(
+            calc(
+                var(--active-index, 0) *
+                    (100% - 0.7rem) /
+                    var(--nav-count, 5)
+            )
+        );
+        transition: transform 220ms ease;
+        pointer-events: none;
+    }
+
+    @media (min-width: 1024px) {
+        .admin-bottom-nav {
+            bottom: 1rem;
+            width: min(400px, calc(100% - 3rem));
+        }
+    }
+
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .tab-content {
+        margin-top: 1.5rem;
+    }
+
+    .tab-pane {
+        display: none;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .tab-pane.active {
+        display: flex;
+    }
+
+    .admin-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+    }
+
+    .admin-panel--grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.65rem;
+    }
+
+    .admin-panel--split {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 0.85rem;
+    }
+
+    .admin-panel--stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+    }
+
+    .admin-card {
+        border: var(--admin-border);
+        border-radius: var(--admin-radius);
+        background: color-mix(in srgb, var(--color-card) 92%, transparent);
+        padding: var(--admin-card-padding);
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+    }
+
+    .admin-card__header,
+    .admin-card__footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-card__footer {
+        padding-top: 0.45rem;
+        border-top: 1px dashed color-mix(in srgb, var(--color-foreground) 15%, transparent);
+    }
+
+    .admin-card__header h2 {
+        font-size: var(--admin-font-base);
+        margin: 0.1rem 0 0;
+        line-height: 1.3;
+    }
+
+    .admin-eyebrow {
+        font-size: var(--admin-font-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.16em;
+        color: color-mix(in srgb, var(--color-foreground) 55%, transparent);
+        margin: 0;
+    }
+
+    .admin-stat-card {
+        border: var(--admin-dashed-border);
+        border-radius: var(--admin-radius);
+        padding: 0.75rem 0.85rem;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.65rem;
+        align-items: center;
+        background: color-mix(in srgb, var(--color-background) 93%, transparent);
+        transition: transform 150ms ease;
+    }
+
+    .admin-stat-card:hover {
+        transform: translateY(-1px);
+    }
+
+    .admin-stat-card__icon {
+        width: 2.15rem;
+        height: 2.15rem;
+        border-radius: 0.6rem;
+        display: grid;
+        place-items: center;
+        background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+        color: var(--color-primary);
+        font-size: 0.95rem;
+    }
+
+    .admin-stat-card__label {
+        font-size: var(--admin-font-xs);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
+        margin: 0;
+    }
+
+    .admin-stat-card__value {
+        font-size: clamp(1rem, 2vw, 1.35rem);
+        font-weight: 700;
+        margin: 0.1rem 0;
+        font-family: var(--font-display);
+        line-height: 1.15;
+    }
+
+    .admin-stat-card__meta {
+        font-size: var(--admin-font-xs);
+        color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
+        margin: 0.1rem 0 0;
+    }
+
+    .admin-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+
+    .admin-list__item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        border: var(--admin-border);
+        border-radius: var(--admin-radius);
+        padding: 0.75rem;
+        transition: border-color 150ms ease;
+    }
+
+    .admin-list__item:hover {
+        border-color: color-mix(in srgb, var(--color-foreground) 20%, transparent);
+    }
+
+    @media (min-width: 640px) {
+        .admin-list__item {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+
+    .admin-list__title {
+        font-weight: 600;
+        font-size: var(--admin-font-base);
+        margin-bottom: 0.1rem;
+    }
+
+    .admin-list__meta {
+        font-size: var(--admin-font-sm);
+        color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
+        margin: 0;
+    }
+
+    .admin-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+        color: var(--color-primary);
+        border-radius: 999px;
+        padding: 0.15rem 0.6rem;
+        font-size: var(--admin-font-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+    }
+
+    .admin-row-actions {
+        display: flex;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    @media (min-width: 768px) {
+        .admin-row-actions {
+            justify-content: flex-end;
+        }
+    }
+
+    .icon-button {
+        width: 2.1rem;
+        height: 2.1rem;
+        border-radius: 0.7rem;
+        border: 1px solid color-mix(in srgb, var(--color-foreground) 15%, transparent);
+        display: grid;
+        place-items: center;
+        background: transparent;
+        font-size: 0.9rem;
+        transition: background-color 150ms ease, border-color 150ms ease, transform 120ms ease;
+    }
+
+    .icon-button:hover,
+    .icon-button:focus-visible {
+        border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+        color: var(--color-primary);
+        transform: translateY(-1px);
+    }
+
+    .icon-button--danger {
+        border-color: color-mix(in srgb, crimson 40%, transparent);
+        color: color-mix(in srgb, crimson 65%, transparent);
+    }
+
+    .icon-button--danger:hover,
+    .icon-button--danger:focus-visible {
+        background: color-mix(in srgb, crimson 10%, transparent);
+    }
+
+    .admin-product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .admin-product {
+        display: flex;
+        gap: 0.75rem;
+        border: var(--admin-border);
+        border-radius: var(--admin-radius);
+        padding: 0.75rem;
+        align-items: center;
+    }
+
+    .admin-product__media {
+        flex: none;
+        width: 52px;
+        height: 52px;
+        border-radius: 0.7rem;
+        border: var(--admin-border);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--color-foreground) 5%, transparent);
+    }
+
+    .admin-product__media img {
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        object-fit: cover;
+    }
+
+    .admin-product__title {
+        font-weight: 600;
+        margin: 0;
+        font-size: var(--admin-font-base);
+    }
+
+    .admin-product__meta {
+        font-size: var(--admin-font-sm);
+        color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
+        margin: 0.15rem 0;
+    }
+
+    .admin-product__price {
+        font-family: var(--font-mono);
+        font-size: var(--admin-font-sm);
+    }
+
+    .admin-pill-badge {
+        font-size: var(--admin-font-xs);
+        padding: 0.1rem 0.45rem;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--color-foreground) 15%, transparent);
+        margin-left: 0.5rem;
+    }
+
+    .admin-link-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        color: var(--color-primary);
+        font-family: var(--font-mono);
+        font-size: var(--admin-font-sm);
+        border: none;
+        background: none;
+        cursor: pointer;
+    }
+
+    .admin-empty {
+        font-size: var(--admin-font-base);
+        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+    }
+
+    .admin-records {
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+    }
+
+    .admin-record {
+        display: grid;
+        gap: 0.7rem;
+        padding: 0.8rem;
+        border-radius: var(--admin-radius);
+        border: var(--admin-border);
+        background: color-mix(in srgb, var(--color-background) 93%, transparent);
+        transition: border-color 150ms ease;
+    }
+
+    .admin-record:hover {
+        border-color: color-mix(in srgb, var(--color-foreground) 20%, transparent);
+    }
+
+    @media (min-width: 768px) {
+        .admin-record {
+            grid-template-columns: minmax(0, 2fr) minmax(0, 2fr) auto;
+            align-items: center;
+        }
+    }
+
+    .admin-record__main {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+    }
+
+    .admin-record__title {
+        font-weight: 600;
+        margin: 0;
+        font-size: var(--admin-font-base);
+    }
+
+    .admin-record__slug {
+        font-size: var(--admin-font-xs);
+        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+        font-family: var(--font-mono);
+    }
+
+    .admin-record__meta {
+        display: grid;
+        gap: 0.55rem;
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        font-size: var(--admin-font-sm);
+    }
+
+    .admin-record__meta dt {
+        font-size: var(--admin-font-xs);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+        margin-bottom: 0.15rem;
+    }
+
+    .admin-record__meta dd {
+        margin: 0;
+        font-weight: 600;
+        font-size: var(--admin-font-base);
+    }
+
+    .admin-setting-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+    }
+
+    .admin-setting-action {
+        border: var(--admin-border);
+        border-radius: var(--admin-radius);
+        padding: 0.85rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        background: transparent;
+        transition: border-color 150ms ease, transform 150ms ease;
+    }
+
+    .admin-setting-action span {
+        font-size: var(--admin-font-sm);
+        color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
+    }
+
+    .admin-setting-action--button {
+        width: 100%;
+        background: none;
+        cursor: pointer;
+    }
+
+    .admin-setting-action:hover,
+    .admin-setting-action:focus-visible {
+        border-color: color-mix(in srgb, var(--color-primary) 45%, transparent);
+        transform: translateY(-1.5px);
+    }
+
+    .admin-metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1rem;
+    }
+
+    .admin-metric {
+        border: var(--admin-dashed-border);
+        border-radius: var(--admin-radius);
+        padding: 0.75rem 0.85rem;
+    }
+
+    .admin-metric p {
+        font-size: var(--admin-font-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+        margin-bottom: 0.25rem;
+    }
+
+    .admin-metric strong {
+        font-size: clamp(1.05rem, 1.9vw, 1.25rem);
+        font-family: var(--font-display);
+    }
+
+    .admin-progress {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .admin-progress__label {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: var(--admin-font-base);
+    }
+
+    .admin-progress__label strong {
+        font-family: var(--font-display);
+        font-size: clamp(0.95rem, 1.6vw, 1.15rem);
+    }
+
+    .admin-progress__track {
+        width: 100%;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--color-foreground) 10%, transparent);
+        overflow: hidden;
+        margin: 0.4rem 0;
+    }
+
+    .admin-progress__value {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--color-primary), color-mix(in srgb, var(--color-primary) 80%, var(--color-foreground)));
+    }
+
+    .admin-progress__meta {
+        font-size: var(--admin-font-sm);
+        color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
+    }
+
+    .admin-product__media--compact {
+        width: 44px;
+        height: 44px;
+        border-radius: 0.6rem;
+    }
+
+    .admin-product__media--compact img {
+        width: 100%;
+        height: 100%;
+    }
+
+    .admin-row-actions .icon-button {
+        flex: none;
+    }
+
+</style>

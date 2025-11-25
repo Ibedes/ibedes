@@ -25,22 +25,7 @@ export interface ArticleAffiliate {
 // Database affiliate produk
 export const affiliateProducts: AffiliateProduct[] = [
     // Produk untuk artikel motivasi
-    
-    {
-        id: 'jas-hujan-sp2',
-        name: 'Jas Hujan Setelan Pria Wanita Anti Rembes Tebal',
-        description: 'Jas hujan setelan pria wanita anti rembes tebal, cocok untuk perjalanan hujan.',
-        price: 'Rp 80.000',
-        originalPrice: '-', // Optional, untuk show discount
-        discount: '-', // Optional
-        image: 'https://down-tx-id.img.susercontent.com/id-11134207-81ztf-mf24l8x0wglp96.webp',
-        link: 'https://s.shopee.co.id/5VNhWKJC84',
-        platform: 'shopee', // shopee, tokopedia, lazada, blibli, tiktok, amazon, other
-        category: 'Productivity', // Kategori produk
-        tags: ['tag1', 'tag2', 'relevant'], // Tags untuk matching
-        rating: 4.8, // Optional
-        verified: true // Set true kalau udah dicek/rekomendasi
-    },
+
     {
         id: 'jas-hujan-sp3',
         name: 'Jas Hujan Setelan Pria Wanita Anti Rembes Tebal',
@@ -84,6 +69,21 @@ export const affiliateProducts: AffiliateProduct[] = [
         category: "Productivity, smartwatch",
         tags: ["camera", "smartwatch"],
         rating: 4.7,
+        verified: true
+    },
+    {
+        id: "kipas",
+        name: "kipas",
+        description: "sf",
+        price: "79699",
+        
+        
+        image: "https://down-bs-id.img.susercontent.com/sg-11134201-8258x-mev4122dts05ef.webp",
+        link: "https://s.shopee.co.id/7V8qfWo2B0",
+        platform: "shopee",
+        category: "Productivity",
+        tags: ["tag1"],
+        
         verified: true
     }
 ];

@@ -1,49 +1,8 @@
 ---
-import fs from "node:fs/promises";
-import path from "node:path";
-import matter from "gray-matter";
-import Layout from "../../layouts/Layout.astro";
-import { GLOBAL } from "../../lib/variables";
-import { affiliateProducts } from "../../lib/affiliates";
-
+// Redirect to the new dashboard
 export const prerender = false;
 
-const blogDir = path.join(process.cwd(), "src/pages/blog");
-let articles = [];
-
-try {
-    const files = await fs.readdir(blogDir);
-    console.log(`[Admin] Found ${files.length} files in ${blogDir}`);
-    for (const file of files) {
-        if (file.endsWith(".md")) {
-            try {
-                const content = await fs.readFile(
-                    path.join(blogDir, file),
-                    "utf-8",
-                );
-                const { data } = matter(content);
-                articles.push({
-                    filename: file,
-                    title: data.title || file,
-                    description: data.description || "",
-                    date: data.pubDate || data.date || "",
-                    affiliateProducts: data.affiliateProducts || [],
-                });
-            } catch (err) {
-                console.error(`[Admin] Error parsing ${file}:`, err);
-            }
-        }
-    }
-} catch (e) {
-    console.error("[Admin] Error reading blog directory", e);
-}
-
-// Sort by date if available, otherwise filename
-articles.sort((a, b) => {
-    if (a.date && b.date)
-        return new Date(b.date).getTime() - new Date(a.date).getTime();
-    return a.filename.localeCompare(b.filename);
-});
+return Astro.redirect("/admin/dashboard");
 ---
 
 <Layout title={`Admin Dashboard - ${GLOBAL.username}`}>
@@ -328,13 +287,23 @@ articles.sort((a, b) => {
                                             )}
                                         </td>
                                         <td class="px-6 py-4 text-right">
-                                            <a
-                                                href={`/admin/edit-product?id=${product.id}`}
-                                                class="text-primary hover:text-primary/80 transition-colors"
-                                                title="Edit"
-                                            >
-                                                <i class="fa-solid fa-pen-to-square" />
-                                            </a>
+                                            <div class="flex items-center justify-end gap-3">
+                                                <a
+                                                    href={`/admin/edit-product?id=${product.id}`}
+                                                    class="text-primary hover:text-primary/80 transition-colors"
+                                                    title="Edit"
+                                                >
+                                                    <i class="fa-solid fa-pen-to-square" />
+                                                </a>
+                                                <button
+                                                    class="delete-product-btn text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                                                    data-product-id={product.id}
+                                                    data-product-name={product.name}
+                                                    title="Delete product"
+                                                >
+                                                    <i class="fa-solid fa-trash" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -349,7 +318,7 @@ articles.sort((a, b) => {
     <script>
         // Handle delete button clicks
         document.querySelectorAll(".delete-btn").forEach((btn) => {
-            btn.addEventListener("click", async (e) => {
+            btn.addEventListener("click", async () => {
                 const button = btn as HTMLButtonElement;
                 const filename = button.dataset.filename;
 
@@ -384,7 +353,7 @@ articles.sort((a, b) => {
                             });
                         }
                         // Reload the page to show updated list
-                        setTimeout(() => window.location.reload(), 500);
+                        setTimeout(() => window.location.reload(), 1200);
                     } else {
                         if (typeof window.showToast === "function") {
                             window.showToast("Error: " + result.error, {
@@ -404,6 +373,72 @@ articles.sort((a, b) => {
                         });
                     } else {
                         alert("Error deleting file");
+                    }
+                    button.disabled = false;
+                    button.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                }
+            });
+        });
+
+        document.querySelectorAll(".delete-product-btn").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+                const button = btn as HTMLButtonElement;
+                const productId = button.dataset.productId;
+                const productName = button.dataset.productName || productId;
+
+                if (
+                    !productId ||
+                    !confirm(
+                        `Are you sure you want to delete \"${productName}\"? This action cannot be undone.`,
+                    )
+                ) {
+                    return;
+                }
+
+                try {
+                    button.disabled = true;
+                    button.innerHTML =
+                        '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+                    const response = await fetch(
+                        "/api/admin/delete-product",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify({ id: productId }),
+                        },
+                    );
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        if (typeof window.showToast === "function") {
+                            window.showToast("Product deleted successfully!", {
+                                type: "success",
+                            });
+                        }
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        if (typeof window.showToast === "function") {
+                            window.showToast(result.error || "Failed to delete product", {
+                                type: "error",
+                            });
+                        } else {
+                            alert(result.error || "Failed to delete product");
+                        }
+                        button.disabled = false;
+                        button.innerHTML = '<i class="fa-solid fa-trash"></i>';
+                    }
+                } catch (error) {
+                    console.error(error);
+                    if (typeof window.showToast === "function") {
+                        window.showToast("Failed to delete product", {
+                            type: "error",
+                        });
+                    } else {
+                        alert("Error deleting product");
                     }
                     button.disabled = false;
                     button.innerHTML = '<i class="fa-solid fa-trash"></i>';

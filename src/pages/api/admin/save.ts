@@ -1,4 +1,6 @@
 import type { APIRoute } from 'astro';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { getGitHubCMS } from '../../../lib/github-cms';
 
 export const prerender = false;
@@ -37,18 +39,34 @@ export const POST: APIRoute = async ({ request }) => {
             });
         }
 
-        // Use GitHub CMS to save file
-        const github = getGitHubCMS();
-        const filePath = `src/pages/blog/${filename}`;
+        const repoFilePath = `src/pages/blog/${filename}`;
+        const localFilePath = path.join(process.cwd(), repoFilePath);
         const commitMessage = `Update article: ${filename}`;
 
-        await github.saveFile(filePath, content, commitMessage);
+        let savedViaGitHub = false;
 
-        console.log(`[Admin API] File saved successfully via GitHub`);
+        try {
+            const github = getGitHubCMS();
+            await github.saveFile(repoFilePath, content, commitMessage);
+            savedViaGitHub = true;
+            console.log(`[Admin API] File saved successfully via GitHub`);
+        } catch (githubError) {
+            console.warn(
+                '[Admin API] GitHub save unavailable, falling back to local write:',
+                githubError instanceof Error ? githubError.message : githubError,
+            );
+        }
+
+        await fs.mkdir(path.dirname(localFilePath), { recursive: true });
+        await fs.writeFile(localFilePath, content, 'utf-8');
+        console.log(`[Admin API] Local copy saved at ${localFilePath}`);
 
         return new Response(JSON.stringify({
             success: true,
-            message: 'File saved successfully. Netlify will auto-deploy in ~2 minutes.'
+            message: savedViaGitHub
+                ? 'File tersimpan di GitHub dan salinan lokal diperbarui. Netlify akan deploy otomatis dalam ±2 menit.'
+                : 'File disimpan secara lokal. Commit & deploy manual diperlukan sampai token GitHub aktif.',
+            mode: savedViaGitHub ? 'github' : 'local'
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

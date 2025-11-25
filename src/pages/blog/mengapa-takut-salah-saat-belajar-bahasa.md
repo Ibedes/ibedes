@@ -14,6 +14,7 @@ title: "Mengapa Kita Takut Salah Saat Belajar Bahasa?"
 description: "Refleksi tentang rasa takut, gengsi, dan tekanan mental yang membuat orang dewasa sering merasa sulit berkembang dalam belajar bahasa — serta cara mengatasinya dengan lebih santai dan realistis."
 pubDate: "2025-11-24"
 affiliateProducts:
+  - "jas-hujan-sp2"
   - "jas-hujan-sp3"
 ---
 
