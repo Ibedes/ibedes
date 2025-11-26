@@ -468,7 +468,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
                             <p class="admin-eyebrow">Notifikasi</p>
                             <h2>Aktivitas terbaru</h2>
                         </div>
-                        <div class="admin-notifications__summary">
+                    <div class="admin-notifications__summary">
                             <div
                                 class="admin-notifications__pill admin-notifications__pill--accent"
                             >
@@ -494,9 +494,12 @@ const previewProducts = affiliateProducts.slice(0, 3);
                                 </div>
                                 <div class="admin-notifications__pill-body">
                                     <p class="admin-notifications__pill-label">
-                                        Total aktivitas
+                                        Total notifikasi
                                     </p>
-                                    <p class="admin-notifications__pill-value">
+                                    <p
+                                        class="admin-notifications__pill-value"
+                                        data-total-count
+                                    >
                                         {notifications.length} notifikasi
                                     </p>
                                 </div>
@@ -515,6 +518,28 @@ const previewProducts = affiliateProducts.slice(0, 3);
                                         </span>
                                     </p>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="admin-notifications__controls">
+                            <label class="admin-checkbox">
+                                <input type="checkbox" data-select-all />
+                                <span>Pilih semua</span>
+                            </label>
+                            <div class="admin-notifications__control-actions">
+                                <button
+                                    type="button"
+                                    class="admin-chip admin-chip--muted"
+                                    data-mark-selected
+                                >
+                                    Tandai dibaca
+                                </button>
+                                <button
+                                    type="button"
+                                    class="admin-chip admin-chip--primary"
+                                    data-delete-selected
+                                >
+                                    Hapus terpilih
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1039,11 +1064,23 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const unreadSummaryCount = document.querySelector<HTMLElement>(
             "[data-unread-pill-count]",
         );
+        const totalCountLabel = document.querySelector<HTMLElement>(
+            "[data-total-count]",
+        );
         const latestTimeLabel = document.querySelector<HTMLElement>(
             "[data-latest-time]",
         );
         const notificationTrigger = document.querySelector<HTMLElement>(
             "[data-notification-trigger]",
+        );
+        const selectAllCheckbox = document.querySelector<HTMLInputElement>(
+            "[data-select-all]",
+        );
+        const markSelectedButton = document.querySelector<HTMLButtonElement>(
+            "[data-mark-selected]",
+        );
+        const deleteSelectedButton = document.querySelector<HTMLButtonElement>(
+            "[data-delete-selected]",
         );
         const notificationsData = document.getElementById(
             "admin-notifications-data",
@@ -1085,6 +1122,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const supabaseKey = notificationContainer?.dataset.supabaseKey ?? "";
 
         let notificationState: AdminNotification[] = initialNotifications;
+        const selectedNotificationIds = new Set<string>();
         let supabaseClientPromise: Promise<any> | null = null;
         let notificationChannel: any = null;
 
@@ -1153,6 +1191,163 @@ const previewProducts = affiliateProducts.slice(0, 3);
             }
         };
 
+        const updateTotalCount = (total: number) => {
+            if (totalCountLabel) {
+                totalCountLabel.textContent = `${total} notifikasi`;
+            }
+        };
+
+        const setNotificationState = (
+            nextState: AdminNotification[],
+        ): void => {
+            notificationState = nextState;
+            [...selectedNotificationIds].forEach((id) => {
+                if (!notificationState.some((item) => item.id === id)) {
+                    selectedNotificationIds.delete(id);
+                }
+            });
+            renderNotifications(notificationState);
+        };
+
+        const syncBulkControls = () => {
+            const hasSelection = selectedNotificationIds.size > 0;
+            if (markSelectedButton) {
+                markSelectedButton.disabled = !hasSelection;
+            }
+            if (deleteSelectedButton) {
+                deleteSelectedButton.disabled = !hasSelection;
+            }
+            if (selectAllCheckbox) {
+                selectAllCheckbox.indeterminate =
+                    hasSelection &&
+                    selectedNotificationIds.size < notificationState.length;
+                selectAllCheckbox.checked =
+                    notificationState.length > 0 &&
+                    selectedNotificationIds.size === notificationState.length;
+            }
+        };
+
+        const toggleSelectAll = (checked: boolean) => {
+            selectedNotificationIds.clear();
+            if (checked) {
+                notificationState.forEach((item) =>
+                    selectedNotificationIds.add(item.id),
+                );
+            }
+            renderNotifications(notificationState);
+        };
+
+        const markSelectedAsRead = () => {
+            if (!selectedNotificationIds.size) return;
+            const updated = notificationState.map((item) =>
+                selectedNotificationIds.has(item.id)
+                    ? { ...item, status: "read" as const }
+                    : item,
+            );
+            selectedNotificationIds.clear();
+            setNotificationState(updated);
+        };
+
+        const deleteSelected = () => {
+            if (!selectedNotificationIds.size) return;
+            const remaining = notificationState.filter(
+                (item) => !selectedNotificationIds.has(item.id),
+            );
+            selectedNotificationIds.clear();
+            setNotificationState(remaining);
+        };
+
+        const attachSwipeGestures = (
+            article: HTMLElement,
+            main: HTMLElement,
+            actions: HTMLElement,
+        ) => {
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+            let isOpen = false;
+
+            article.dataset.swipe = "closed";
+
+            const actionWidth = () =>
+                Math.min(
+                    Math.max(actions.offsetWidth || 160, 140),
+                    240,
+                );
+
+            const resetTransition = () => {
+                main.style.transition = "transform 180ms ease";
+            };
+
+            const clearTransition = () => {
+                main.style.transition = "none";
+            };
+
+            const closePanel = () => {
+                resetTransition();
+                main.style.transform = "translateX(0)";
+                isOpen = false;
+                article.dataset.swipe = "closed";
+            };
+
+            const openPanel = () => {
+                resetTransition();
+                main.style.transform = `translateX(-${actionWidth()}px)`;
+                isOpen = true;
+                article.dataset.swipe = "open";
+            };
+
+            const handlePointerDown = (event: PointerEvent) => {
+                isDragging = true;
+                startX = event.clientX;
+                currentX = 0;
+                clearTransition();
+                main.setPointerCapture(event.pointerId);
+            };
+
+            const handlePointerMove = (event: PointerEvent) => {
+                if (!isDragging) return;
+                currentX = event.clientX - startX;
+                const limit = actionWidth();
+                const offset = Math.max(-limit, Math.min(0, currentX));
+                main.style.transform = `translateX(${offset}px)`;
+                if (Math.abs(currentX) > 4) {
+                    event.preventDefault();
+                }
+            };
+
+            const handlePointerUp = (event: PointerEvent) => {
+                if (!isDragging) return;
+                isDragging = false;
+                main.releasePointerCapture(event.pointerId);
+                const limit = actionWidth();
+                const shouldOpen = currentX < -limit * 0.35;
+                const shouldClose = currentX > -10;
+                if (shouldClose) {
+                    closePanel();
+                    return;
+                }
+                if (shouldOpen || isOpen) {
+                    openPanel();
+                } else {
+                    closePanel();
+                }
+            };
+
+            main.addEventListener("pointerdown", handlePointerDown);
+            main.addEventListener("pointermove", handlePointerMove);
+            main.addEventListener("pointerup", handlePointerUp);
+            main.addEventListener("pointercancel", handlePointerUp);
+            article.addEventListener("mouseleave", () => {
+                if (!isDragging && isOpen) closePanel();
+            });
+            main.addEventListener("click", () => {
+                if (isOpen) {
+                    closePanel();
+                }
+            });
+        };
+
         const renderNotifications = (items: AdminNotification[]) => {
             if (!notificationContainer) return;
             notificationContainer.innerHTML = "";
@@ -1161,6 +1356,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 notificationContainer.innerHTML =
                     '<p class="admin-empty-state">Belum ada aktivitas baru.</p>';
                 updateUnreadIndicators(0);
+                updateTotalCount(0);
                 return;
             }
 
@@ -1169,6 +1365,74 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 article.className = "admin-notification";
                 article.dataset.status = item.status ?? "unread";
                 article.dataset.type = item.type;
+                article.classList.toggle(
+                    "is-new",
+                    (item.status ?? "unread") === "unread",
+                );
+
+                const swipeWrapper = document.createElement("div");
+                swipeWrapper.className = "admin-notification__swipe";
+
+                const actionsPanel = document.createElement("div");
+                actionsPanel.className = "admin-notification__swipe-actions";
+
+                const markButton = document.createElement("button");
+                markButton.type = "button";
+                markButton.className = "admin-notification__swipe-button";
+                markButton.dataset.variant = "mark";
+                const nextStatus =
+                    (item.status ?? "unread") === "unread"
+                        ? "read"
+                        : "unread";
+                markButton.textContent =
+                    nextStatus === "read"
+                        ? "Tandai dibaca"
+                        : "Tandai belum dibaca";
+                markButton.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    const updated = notificationState.map((notif) =>
+                        notif.id === item.id
+                            ? { ...notif, status: nextStatus }
+                            : notif,
+                    );
+                    setNotificationState(updated);
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className =
+                    "admin-notification__swipe-button admin-notification__swipe-button--danger";
+                deleteButton.textContent = "Hapus";
+                deleteButton.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    const remaining = notificationState.filter(
+                        (notif) => notif.id !== item.id,
+                    );
+                    setNotificationState(remaining);
+                });
+
+                actionsPanel.appendChild(markButton);
+                actionsPanel.appendChild(deleteButton);
+
+                const main = document.createElement("div");
+                main.className = "admin-notification__main";
+
+                const selection = document.createElement("div");
+                selection.className = "admin-notification__select";
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.setAttribute("aria-label", "Pilih notifikasi");
+                checkbox.dataset.selectionCheckbox = "true";
+                checkbox.checked = selectedNotificationIds.has(item.id);
+                checkbox.addEventListener("change", () => {
+                    if (checkbox.checked) {
+                        selectedNotificationIds.add(item.id);
+                    } else {
+                        selectedNotificationIds.delete(item.id);
+                    }
+                    syncBulkControls();
+                });
+                selection.appendChild(checkbox);
 
                 const icon = document.createElement("div");
                 icon.className = "admin-notification__icon";
@@ -1265,9 +1529,34 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 content.appendChild(text);
                 content.appendChild(footer);
 
-                article.appendChild(icon);
-                article.appendChild(content);
+                main.appendChild(selection);
+                main.appendChild(icon);
+                main.appendChild(content);
+
+                swipeWrapper.appendChild(actionsPanel);
+                swipeWrapper.appendChild(main);
+
+                article.appendChild(swipeWrapper);
                 notificationContainer.appendChild(article);
+
+                attachSwipeGestures(article, main, actionsPanel);
+
+                main.addEventListener("click", (event) => {
+                    const target = event.target as HTMLElement | null;
+                    if (
+                        target?.closest("[data-selection-checkbox]") ||
+                        article.dataset.swipe === "open"
+                    )
+                        return;
+                    if ((item.status ?? "unread") === "unread") {
+                        const updated = notificationState.map((notif) =>
+                            notif.id === item.id
+                                ? { ...notif, status: "read" as const }
+                                : notif,
+                        );
+                        setNotificationState(updated);
+                    }
+                });
             });
 
             const latestItem = items.reduce<AdminNotification | null>(
@@ -1291,6 +1580,8 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 (item) => (item.status ?? "unread") === "unread",
             ).length;
             updateUnreadIndicators(unreadCount);
+            updateTotalCount(items.length);
+            syncBulkControls();
         };
 
         const normalizeCommentNotification = (record: any) => {
@@ -1460,6 +1751,19 @@ const previewProducts = affiliateProducts.slice(0, 3);
             }
             subscribeRealtimeNotifications();
         };
+
+        selectAllCheckbox?.addEventListener("change", (event) => {
+            const target = event.target as HTMLInputElement;
+            toggleSelectAll(target.checked);
+        });
+
+        markSelectedButton?.addEventListener("click", () => {
+            markSelectedAsRead();
+        });
+
+        deleteSelectedButton?.addEventListener("click", () => {
+            deleteSelected();
+        });
 
         function setActiveTab(tabName: string): void {
             document.querySelectorAll(TAB_PANE_SELECTOR).forEach((pane) => {
@@ -2200,6 +2504,37 @@ const previewProducts = affiliateProducts.slice(0, 3);
         width: 100%;
     }
 
+    .admin-notifications__controls {
+        margin-top: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .admin-checkbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        color: color-mix(in srgb, var(--color-foreground) 75%, transparent);
+        font-size: var(--admin-font-sm);
+    }
+
+    .admin-checkbox input[type="checkbox"] {
+        width: 1.05rem;
+        height: 1.05rem;
+        accent-color: var(--color-primary);
+        border-radius: 0.35rem;
+    }
+
+    .admin-notifications__control-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+    }
+
     .admin-notifications__pill {
         display: grid;
         grid-template-columns: auto 1fr;
@@ -2262,14 +2597,88 @@ const previewProducts = affiliateProducts.slice(0, 3);
     }
 
     .admin-notification {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 0.75rem;
-        align-items: start;
+        position: relative;
         border: var(--admin-border);
         border-radius: var(--admin-radius);
-        padding: 0.75rem;
         background: color-mix(in srgb, var(--color-background) 94%, transparent);
+        overflow: hidden;
+    }
+
+    .admin-notification.is-new::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            120deg,
+            color-mix(in srgb, var(--color-primary) 12%, transparent),
+            transparent 45%
+        );
+        opacity: 0.35;
+        pointer-events: none;
+    }
+
+    .admin-notification__swipe {
+        position: relative;
+    }
+
+    .admin-notification__main {
+        display: grid;
+        grid-template-columns: auto auto 1fr;
+        gap: 0.55rem;
+        align-items: start;
+        padding: 0.6rem 0.7rem;
+        transition: transform 220ms ease;
+        touch-action: pan-y;
+        will-change: transform;
+    }
+
+    .admin-notification__select input[type="checkbox"] {
+        width: 0.95rem;
+        height: 0.95rem;
+        accent-color: var(--color-primary);
+    }
+
+    .admin-notification__swipe-actions {
+        position: absolute;
+        inset: 0;
+        width: min(14.5rem, 60%);
+        margin-left: auto;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.55rem;
+        background: color-mix(
+            in srgb,
+            var(--color-card, var(--color-background)) 92%,
+            transparent
+        );
+    }
+
+    .admin-notification__swipe-button {
+        border: none;
+        border-radius: 0.7rem;
+        padding: 0.55rem 0.8rem;
+        font-weight: 700;
+        font-size: var(--admin-font-sm);
+        color: var(--color-foreground);
+        background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+        cursor: pointer;
+        transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    .admin-notification__swipe-button:hover,
+    .admin-notification__swipe-button:focus-visible {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px -16px color-mix(in srgb, var(--color-primary) 40%, transparent);
+        outline: none;
+    }
+
+    .admin-notification__swipe-button--danger {
+        background: color-mix(in srgb, #ff6b6b 16%, transparent);
+        border-color: color-mix(in srgb, #ff6b6b 35%, transparent);
+        color: color-mix(in srgb, #ff2d55 80%, transparent);
     }
 
     .admin-notification__icon {
