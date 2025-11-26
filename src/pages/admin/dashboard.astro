@@ -468,7 +468,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
                             <p class="admin-eyebrow">Notifikasi</p>
                             <h2>Aktivitas terbaru</h2>
                         </div>
-                        <div class="admin-notifications__summary">
+                    <div class="admin-notifications__summary">
                             <div
                                 class="admin-notifications__pill admin-notifications__pill--accent"
                             >
@@ -518,6 +518,28 @@ const previewProducts = affiliateProducts.slice(0, 3);
                                         </span>
                                     </p>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="admin-notifications__controls">
+                            <label class="admin-checkbox">
+                                <input type="checkbox" data-select-all />
+                                <span>Pilih semua</span>
+                            </label>
+                            <div class="admin-notifications__control-actions">
+                                <button
+                                    type="button"
+                                    class="admin-chip admin-chip--muted"
+                                    data-mark-selected
+                                >
+                                    Tandai dibaca
+                                </button>
+                                <button
+                                    type="button"
+                                    class="admin-chip admin-chip--primary"
+                                    data-delete-selected
+                                >
+                                    Hapus terpilih
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -1051,6 +1073,15 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const notificationTrigger = document.querySelector<HTMLElement>(
             "[data-notification-trigger]",
         );
+        const selectAllCheckbox = document.querySelector<HTMLInputElement>(
+            "[data-select-all]",
+        );
+        const markSelectedButton = document.querySelector<HTMLButtonElement>(
+            "[data-mark-selected]",
+        );
+        const deleteSelectedButton = document.querySelector<HTMLButtonElement>(
+            "[data-delete-selected]",
+        );
         const notificationsData = document.getElementById(
             "admin-notifications-data",
         ) as HTMLScriptElement | null;
@@ -1091,6 +1122,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const supabaseKey = notificationContainer?.dataset.supabaseKey ?? "";
 
         let notificationState: AdminNotification[] = initialNotifications;
+        const selectedNotificationIds = new Set<string>();
         let supabaseClientPromise: Promise<any> | null = null;
         let notificationChannel: any = null;
 
@@ -1276,6 +1308,74 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 article.className = "admin-notification";
                 article.dataset.status = item.status ?? "unread";
                 article.dataset.type = item.type;
+                article.classList.toggle(
+                    "is-new",
+                    (item.status ?? "unread") === "unread",
+                );
+
+                const swipeWrapper = document.createElement("div");
+                swipeWrapper.className = "admin-notification__swipe";
+
+                const actionsPanel = document.createElement("div");
+                actionsPanel.className = "admin-notification__swipe-actions";
+
+                const markButton = document.createElement("button");
+                markButton.type = "button";
+                markButton.className = "admin-notification__swipe-button";
+                markButton.dataset.variant = "mark";
+                const nextStatus =
+                    (item.status ?? "unread") === "unread"
+                        ? "read"
+                        : "unread";
+                markButton.textContent =
+                    nextStatus === "read"
+                        ? "Tandai dibaca"
+                        : "Tandai belum dibaca";
+                markButton.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    const updated = notificationState.map((notif) =>
+                        notif.id === item.id
+                            ? { ...notif, status: nextStatus }
+                            : notif,
+                    );
+                    setNotificationState(updated);
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className =
+                    "admin-notification__swipe-button admin-notification__swipe-button--danger";
+                deleteButton.textContent = "Hapus";
+                deleteButton.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    const remaining = notificationState.filter(
+                        (notif) => notif.id !== item.id,
+                    );
+                    setNotificationState(remaining);
+                });
+
+                actionsPanel.appendChild(markButton);
+                actionsPanel.appendChild(deleteButton);
+
+                const main = document.createElement("div");
+                main.className = "admin-notification__main";
+
+                const selection = document.createElement("div");
+                selection.className = "admin-notification__select";
+                const checkbox = document.createElement("input");
+                checkbox.type = "checkbox";
+                checkbox.setAttribute("aria-label", "Pilih notifikasi");
+                checkbox.dataset.selectionCheckbox = "true";
+                checkbox.checked = selectedNotificationIds.has(item.id);
+                checkbox.addEventListener("change", () => {
+                    if (checkbox.checked) {
+                        selectedNotificationIds.add(item.id);
+                    } else {
+                        selectedNotificationIds.delete(item.id);
+                    }
+                    syncBulkControls();
+                });
+                selection.appendChild(checkbox);
 
                 const swipeWrapper = document.createElement("div");
                 swipeWrapper.className = "admin-notification__swipe";
@@ -1622,6 +1722,19 @@ const previewProducts = affiliateProducts.slice(0, 3);
             }
             subscribeRealtimeNotifications();
         };
+
+        selectAllCheckbox?.addEventListener("change", (event) => {
+            const target = event.target as HTMLInputElement;
+            toggleSelectAll(target.checked);
+        });
+
+        markSelectedButton?.addEventListener("click", () => {
+            markSelectedAsRead();
+        });
+
+        deleteSelectedButton?.addEventListener("click", () => {
+            deleteSelected();
+        });
 
         function setActiveTab(tabName: string): void {
             document.querySelectorAll(TAB_PANE_SELECTOR).forEach((pane) => {
@@ -2360,6 +2473,37 @@ const previewProducts = affiliateProducts.slice(0, 3);
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 0.65rem;
         width: 100%;
+    }
+
+    .admin-notifications__controls {
+        margin-top: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .admin-checkbox {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 700;
+        color: color-mix(in srgb, var(--color-foreground) 75%, transparent);
+        font-size: var(--admin-font-sm);
+    }
+
+    .admin-checkbox input[type="checkbox"] {
+        width: 1.05rem;
+        height: 1.05rem;
+        accent-color: var(--color-primary);
+        border-radius: 0.35rem;
+    }
+
+    .admin-notifications__control-actions {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
     }
 
     .admin-notifications__pill {
