@@ -53,29 +53,29 @@ const seoKeywords = "kontak ibedes, hubungi web developer, kolaborasi astro, jas
   canonicalURL="/contact"
   breadcrumbs={breadcrumbItems}
 >
-  <Section class="py-14 sm:py-20 space-y-12 sm:space-y-16 max-w-5xl lg:max-w-6xl">
+  <Section class="py-10 sm:py-16 space-y-10 sm:space-y-14">
     <Breadcrumb items={breadcrumbItems} />
 
-    <header class="space-y-4 text-center max-w-4xl mx-auto">
+    <header class="space-y-4 text-center">
       <p class="text-xs sm:text-sm font-mono uppercase tracking-[0.3em] text-primary">Mari Terhubung</p>
       <h1 class="text-3xl sm:text-4xl md:text-5xl font-display uppercase tracking-wide">
         Kontak
       </h1>
-      <p class="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto font-serif leading-relaxed">
+      <p class="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto font-serif">
         Senang berdiskusi tentang ide, kolaborasi, atau tantangan teknis. Pilih kanal yang paling nyaman dan saya akan segera merespons.
       </p>
     </header>
 
-    <div class="grid gap-7 sm:gap-8 md:grid-cols-2">
+    <div class="grid gap-6 sm:gap-8 md:grid-cols-2">
       {contactMethods.map((method) => (
         <a
-          class="group block h-full p-7 sm:p-8 border-2 border-border rounded-2xl bg-card/60 hover:border-primary hover:-translate-y-1 transition duration-200"
+          class="group block p-6 sm:p-7 border-2 border-border rounded-xl bg-card/60 hover:border-primary hover:-translate-y-1 transition duration-200"
           href={method.href}
           target={method.label === "Lokasi" ? "_blank" : undefined}
           rel={method.label === "Lokasi" ? "noreferrer" : undefined}
         >
           <div class="flex items-start gap-4 sm:gap-5">
-            <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary text-xl">
+            <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary text-xl">
               <i class={method.icon} />
             </div>
             <div class="space-y-2">
@@ -92,20 +92,20 @@ const seoKeywords = "kontak ibedes, hubungi web developer, kolaborasi astro, jas
       ))}
     </div>
 
-    <div class="grid gap-7 sm:gap-9 md:grid-cols-3">
-      <div class="p-7 sm:p-8 border-2 border-dashed border-border rounded-2xl bg-muted/40 h-full">
+    <div class="grid gap-6 sm:gap-8 md:grid-cols-3">
+      <div class="p-6 border-2 border-dashed border-border rounded-xl bg-muted/40">
         <h2 class="text-lg font-display uppercase tracking-wide mb-3">Kolaborasi</h2>
         <p class="text-sm text-muted-foreground font-serif leading-relaxed">
           Ajukan kerja sama produk digital, pembuatan landing page, atau eksperimen front-end dengan stack Astro, React, dan Tailwind.
         </p>
       </div>
-      <div class="p-7 sm:p-8 border-2 border-dashed border-border rounded-2xl bg-muted/40 h-full">
+      <div class="p-6 border-2 border-dashed border-border rounded-xl bg-muted/40">
         <h2 class="text-lg font-display uppercase tracking-wide mb-3">Konsultasi</h2>
         <p class="text-sm text-muted-foreground font-serif leading-relaxed">
           Butuh second opinion soal arsitektur, performa, atau DX? Saya terbuka untuk sesi konsultasi terjadwal via video call.
         </p>
       </div>
-      <div class="p-7 sm:p-8 border-2 border-dashed border-border rounded-2xl bg-muted/40 h-full">
+      <div class="p-6 border-2 border-dashed border-border rounded-xl bg-muted/40">
         <h2 class="text-lg font-display uppercase tracking-wide mb-3">Media &amp; Speaking</h2>
         <p class="text-sm text-muted-foreground font-serif leading-relaxed">
           Undang saya berbagi soal Astro, konten teknis, atau produktivitas developer untuk komunitas, podcast, maupun event internal.
