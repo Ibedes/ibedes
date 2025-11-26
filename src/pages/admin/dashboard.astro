@@ -494,9 +494,12 @@ const previewProducts = affiliateProducts.slice(0, 3);
                                 </div>
                                 <div class="admin-notifications__pill-body">
                                     <p class="admin-notifications__pill-label">
-                                        Total aktivitas
+                                        Total notifikasi
                                     </p>
-                                    <p class="admin-notifications__pill-value">
+                                    <p
+                                        class="admin-notifications__pill-value"
+                                        data-total-count
+                                    >
                                         {notifications.length} notifikasi
                                     </p>
                                 </div>
@@ -1039,6 +1042,9 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const unreadSummaryCount = document.querySelector<HTMLElement>(
             "[data-unread-pill-count]",
         );
+        const totalCountLabel = document.querySelector<HTMLElement>(
+            "[data-total-count]",
+        );
         const latestTimeLabel = document.querySelector<HTMLElement>(
             "[data-latest-time]",
         );
@@ -1153,6 +1159,106 @@ const previewProducts = affiliateProducts.slice(0, 3);
             }
         };
 
+        const updateTotalCount = (total: number) => {
+            if (totalCountLabel) {
+                totalCountLabel.textContent = `${total} notifikasi`;
+            }
+        };
+
+        const setNotificationState = (
+            nextState: AdminNotification[],
+        ): void => {
+            notificationState = nextState;
+            renderNotifications(notificationState);
+        };
+
+        const attachSwipeGestures = (
+            article: HTMLElement,
+            main: HTMLElement,
+            actions: HTMLElement,
+        ) => {
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+            let isOpen = false;
+
+            const actionWidth = () =>
+                Math.min(
+                    Math.max(actions.offsetWidth || 160, 140),
+                    240,
+                );
+
+            const resetTransition = () => {
+                main.style.transition = "transform 180ms ease";
+            };
+
+            const clearTransition = () => {
+                main.style.transition = "none";
+            };
+
+            const closePanel = () => {
+                resetTransition();
+                main.style.transform = "translateX(0)";
+                isOpen = false;
+            };
+
+            const openPanel = () => {
+                resetTransition();
+                main.style.transform = `translateX(-${actionWidth()}px)`;
+                isOpen = true;
+            };
+
+            const handlePointerDown = (event: PointerEvent) => {
+                isDragging = true;
+                startX = event.clientX;
+                currentX = 0;
+                clearTransition();
+                main.setPointerCapture(event.pointerId);
+            };
+
+            const handlePointerMove = (event: PointerEvent) => {
+                if (!isDragging) return;
+                currentX = event.clientX - startX;
+                const limit = actionWidth();
+                const offset = Math.max(-limit, Math.min(0, currentX));
+                main.style.transform = `translateX(${offset}px)`;
+                if (Math.abs(currentX) > 4) {
+                    event.preventDefault();
+                }
+            };
+
+            const handlePointerUp = (event: PointerEvent) => {
+                if (!isDragging) return;
+                isDragging = false;
+                main.releasePointerCapture(event.pointerId);
+                const limit = actionWidth();
+                const shouldOpen = currentX < -limit * 0.35;
+                const shouldClose = currentX > -10;
+                if (shouldClose) {
+                    closePanel();
+                    return;
+                }
+                if (shouldOpen || isOpen) {
+                    openPanel();
+                } else {
+                    closePanel();
+                }
+            };
+
+            main.addEventListener("pointerdown", handlePointerDown);
+            main.addEventListener("pointermove", handlePointerMove);
+            main.addEventListener("pointerup", handlePointerUp);
+            main.addEventListener("pointercancel", handlePointerUp);
+            article.addEventListener("mouseleave", () => {
+                if (!isDragging && isOpen) closePanel();
+            });
+            main.addEventListener("click", () => {
+                if (isOpen) {
+                    closePanel();
+                }
+            });
+        };
+
         const renderNotifications = (items: AdminNotification[]) => {
             if (!notificationContainer) return;
             notificationContainer.innerHTML = "";
@@ -1161,6 +1267,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 notificationContainer.innerHTML =
                     '<p class="admin-empty-state">Belum ada aktivitas baru.</p>';
                 updateUnreadIndicators(0);
+                updateTotalCount(0);
                 return;
             }
 
@@ -1169,6 +1276,53 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 article.className = "admin-notification";
                 article.dataset.status = item.status ?? "unread";
                 article.dataset.type = item.type;
+
+                const swipeWrapper = document.createElement("div");
+                swipeWrapper.className = "admin-notification__swipe";
+
+                const actionsPanel = document.createElement("div");
+                actionsPanel.className = "admin-notification__swipe-actions";
+
+                const markButton = document.createElement("button");
+                markButton.type = "button";
+                markButton.className = "admin-notification__swipe-button";
+                markButton.dataset.variant = "mark";
+                const nextStatus =
+                    (item.status ?? "unread") === "unread"
+                        ? "read"
+                        : "unread";
+                markButton.textContent =
+                    nextStatus === "read"
+                        ? "Tandai dibaca"
+                        : "Tandai belum dibaca";
+                markButton.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    const updated = notificationState.map((notif) =>
+                        notif.id === item.id
+                            ? { ...notif, status: nextStatus }
+                            : notif,
+                    );
+                    setNotificationState(updated);
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.type = "button";
+                deleteButton.className =
+                    "admin-notification__swipe-button admin-notification__swipe-button--danger";
+                deleteButton.textContent = "Hapus";
+                deleteButton.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    const remaining = notificationState.filter(
+                        (notif) => notif.id !== item.id,
+                    );
+                    setNotificationState(remaining);
+                });
+
+                actionsPanel.appendChild(markButton);
+                actionsPanel.appendChild(deleteButton);
+
+                const main = document.createElement("div");
+                main.className = "admin-notification__main";
 
                 const icon = document.createElement("div");
                 icon.className = "admin-notification__icon";
@@ -1265,9 +1419,16 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 content.appendChild(text);
                 content.appendChild(footer);
 
-                article.appendChild(icon);
-                article.appendChild(content);
+                main.appendChild(icon);
+                main.appendChild(content);
+
+                swipeWrapper.appendChild(actionsPanel);
+                swipeWrapper.appendChild(main);
+
+                article.appendChild(swipeWrapper);
                 notificationContainer.appendChild(article);
+
+                attachSwipeGestures(article, main, actionsPanel);
             });
 
             const latestItem = items.reduce<AdminNotification | null>(
@@ -1291,6 +1452,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 (item) => (item.status ?? "unread") === "unread",
             ).length;
             updateUnreadIndicators(unreadCount);
+            updateTotalCount(items.length);
         };
 
         const normalizeCommentNotification = (record: any) => {
@@ -2262,14 +2424,64 @@ const previewProducts = affiliateProducts.slice(0, 3);
     }
 
     .admin-notification {
+        position: relative;
+        border: var(--admin-border);
+        border-radius: var(--admin-radius);
+        background: color-mix(in srgb, var(--color-background) 94%, transparent);
+        overflow: hidden;
+    }
+
+    .admin-notification__swipe {
+        position: relative;
+    }
+
+    .admin-notification__main {
         display: grid;
         grid-template-columns: auto 1fr;
         gap: 0.75rem;
         align-items: start;
-        border: var(--admin-border);
-        border-radius: var(--admin-radius);
         padding: 0.75rem;
-        background: color-mix(in srgb, var(--color-background) 94%, transparent);
+        transition: transform 180ms ease;
+        touch-action: pan-y;
+    }
+
+    .admin-notification__swipe-actions {
+        position: absolute;
+        inset: 0;
+        width: min(14rem, 58%);
+        margin-left: auto;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 0.6rem;
+        background: color-mix(in srgb, var(--color-card, var(--color-background)) 88%, transparent);
+    }
+
+    .admin-notification__swipe-button {
+        border: none;
+        border-radius: 0.75rem;
+        padding: 0.65rem 0.9rem;
+        font-weight: 700;
+        font-size: var(--admin-font-sm);
+        color: var(--color-foreground);
+        background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+        border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+        cursor: pointer;
+        transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    .admin-notification__swipe-button:hover,
+    .admin-notification__swipe-button:focus-visible {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px -16px color-mix(in srgb, var(--color-primary) 40%, transparent);
+        outline: none;
+    }
+
+    .admin-notification__swipe-button--danger {
+        background: color-mix(in srgb, #ff6b6b 16%, transparent);
+        border-color: color-mix(in srgb, #ff6b6b 35%, transparent);
+        color: color-mix(in srgb, #ff2d55 80%, transparent);
     }
 
     .admin-notification__icon {
