@@ -150,6 +150,9 @@ const unreadNotifications = notifications.filter(
     (item) => item.status === "unread",
 ).length;
 
+const latestNotificationTime =
+    notifications[0]?.time ?? new Date().toISOString();
+
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
 const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
@@ -460,14 +463,60 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 </div>
 
                 <div class="admin-card" id="notifications">
-                    <div class="admin-card__header">
+                    <div class="admin-card__header admin-card__header--stacked">
                         <div>
                             <p class="admin-eyebrow">Notifikasi</p>
                             <h2>Aktivitas terbaru</h2>
                         </div>
-                        <span class="admin-chip admin-chip--muted" data-unread-count>
-                            {unreadNotifications} baru
-                        </span>
+                        <div class="admin-notifications__summary">
+                            <div
+                                class="admin-notifications__pill admin-notifications__pill--accent"
+                            >
+                                <div class="admin-notifications__pill-icon">
+                                    <i class="fa-solid fa-circle-dot" aria-hidden="true"></i>
+                                </div>
+                                <div class="admin-notifications__pill-body">
+                                    <p class="admin-notifications__pill-label">
+                                        Belum dibaca
+                                    </p>
+                                    <p
+                                        class="admin-notifications__pill-value"
+                                        data-unread-count
+                                        data-unread-pill-count
+                                    >
+                                        {unreadNotifications} notif
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="admin-notifications__pill">
+                                <div class="admin-notifications__pill-icon">
+                                    <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                                </div>
+                                <div class="admin-notifications__pill-body">
+                                    <p class="admin-notifications__pill-label">
+                                        Total aktivitas
+                                    </p>
+                                    <p class="admin-notifications__pill-value">
+                                        {notifications.length} notifikasi
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="admin-notifications__pill">
+                                <div class="admin-notifications__pill-icon admin-notifications__pill-icon--success">
+                                    <i class="fa-solid fa-rotate" aria-hidden="true"></i>
+                                </div>
+                                <div class="admin-notifications__pill-body">
+                                    <p class="admin-notifications__pill-label">
+                                        Terakhir diperbarui
+                                    </p>
+                                    <p class="admin-notifications__pill-value">
+                                        <span data-latest-time>
+                                            {formatNotificationTime(latestNotificationTime)}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div
                         class="admin-notifications"
@@ -503,50 +552,61 @@ const previewProducts = affiliateProducts.slice(0, 3);
                                         />
                                     </div>
                                     <div class="admin-notification__content">
-                                        <div class="admin-notification__header">
-                                            <p class="admin-notification__title">
-                                                {item.title}
-                                            </p>
-                                            <span
-                                                class="admin-notification__type"
-                                                data-type={item.type}
-                                            >
-                                                {formatNotificationType(
-                                                    item.type,
-                                                )}
-                                            </span>
-                                            {item.status === "unread" ? (
-                                                <span class="admin-pill-badge admin-pill-badge--new">
-                                                    Baru
+                                        <div class="admin-notification__top">
+                                            <div class="admin-notification__titles">
+                                                <p class="admin-notification__title">
+                                                    {item.title}
+                                                </p>
+                                                <p class="admin-notification__meta">
+                                                    {formatNotificationTime(item.time)}
+                                                </p>
+                                            </div>
+                                            <div class="admin-notification__labels">
+                                                <span
+                                                    class="admin-notification__type"
+                                                    data-type={item.type}
+                                                >
+                                                    {formatNotificationType(
+                                                        item.type,
+                                                    )}
                                                 </span>
-                                            ) : null}
+                                                {item.status === "unread" ? (
+                                                    <span class="admin-pill-badge admin-pill-badge--new">
+                                                        Baru
+                                                    </span>
+                                                ) : null}
+                                            </div>
                                         </div>
-                                        <p class="admin-notification__meta">
-                                            {formatNotificationTime(item.time)}
-                                        </p>
                                         <p class="admin-notification__text">
                                             {item.message}
                                         </p>
-                                    </div>
-                                    <div class="admin-notification__actions">
-                                        {item.status === "unread" ? (
-                                            <span
-                                                class="admin-dot"
-                                                aria-label="Notifikasi baru"
-                                            ></span>
-                                        ) : null}
-                                        {item.href ? (
-                                            <a
-                                                class="admin-link-button"
-                                                href={item.href}
-                                            >
-                                                Lihat
-                                                <i
-                                                    class="fa-solid fa-arrow-right"
+                                        <div class="admin-notification__footer">
+                                            <div class="admin-notification__status">
+                                                <span
+                                                    class="admin-dot"
                                                     aria-hidden="true"
-                                                ></i>
-                                            </a>
-                                        ) : null}
+                                                ></span>
+                                                <span class="admin-notification__status-text">
+                                                    {item.status === "unread"
+                                                        ? "Menunggu aksi"
+                                                        : "Sudah dilihat"}
+                                                </span>
+                                            </div>
+                                            <div class="admin-notification__actions">
+                                                {item.href ? (
+                                                    <a
+                                                        class="admin-link-button"
+                                                        href={item.href}
+                                                    >
+                                                        Lihat
+                                                        <i
+                                                            class="fa-solid fa-arrow-right"
+                                                            aria-hidden="true"
+                                                        ></i>
+                                                    </a>
+                                                ) : null}
+                                            </div>
+                                        </div>
                                     </div>
                                 </article>
                             ))
@@ -973,6 +1033,15 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const unreadBadge = document.querySelector<HTMLElement>(
             "[data-unread-count]",
         );
+        const bellUnreadBadge = document.querySelector<HTMLElement>(
+            "[data-unread-badge]",
+        );
+        const unreadSummaryCount = document.querySelector<HTMLElement>(
+            "[data-unread-pill-count]",
+        );
+        const latestTimeLabel = document.querySelector<HTMLElement>(
+            "[data-latest-time]",
+        );
         const notificationTrigger = document.querySelector<HTMLElement>(
             "[data-notification-trigger]",
         );
@@ -1044,19 +1113,62 @@ const previewProducts = affiliateProducts.slice(0, 3);
             return "Sistem";
         };
 
+        const updateUnreadIndicators = (unreadCount: number) => {
+            const summaryLabel =
+                unreadCount === 0
+                    ? "Tidak ada notif baru"
+                    : `${unreadCount} notif`;
+
+            if (unreadBadge) {
+                unreadBadge.textContent = summaryLabel;
+                if (unreadCount === 0) {
+                    unreadBadge.setAttribute("data-empty", "true");
+                } else {
+                    unreadBadge.removeAttribute("data-empty");
+                }
+            }
+
+            if (unreadSummaryCount) {
+                unreadSummaryCount.textContent = summaryLabel;
+            }
+
+            if (bellUnreadBadge) {
+                bellUnreadBadge.textContent = String(unreadCount);
+                if (unreadCount === 0) {
+                    bellUnreadBadge.setAttribute("hidden", "true");
+                } else {
+                    bellUnreadBadge.removeAttribute("hidden");
+                }
+            }
+
+            if (notificationTrigger) {
+                notificationTrigger.setAttribute(
+                    "data-has-unread",
+                    unreadCount > 0 ? "true" : "false",
+                );
+                notificationTrigger.setAttribute(
+                    "aria-label",
+                    `Lihat notifikasi (${summaryLabel})`,
+                );
+            }
+        };
+
         const renderNotifications = (items: AdminNotification[]) => {
             if (!notificationContainer) return;
             notificationContainer.innerHTML = "";
 
             if (!items.length) {
                 notificationContainer.innerHTML =
-                    '<p class="admin-empty">Belum ada aktivitas baru.</p>';
+                    '<p class="admin-empty-state">Belum ada aktivitas baru.</p>';
+                updateUnreadIndicators(0);
+                return;
             }
 
             items.forEach((item) => {
                 const article = document.createElement("article");
                 article.className = "admin-notification";
                 article.dataset.status = item.status ?? "unread";
+                article.dataset.type = item.type;
 
                 const icon = document.createElement("div");
                 icon.className = "admin-notification__icon";
@@ -1075,48 +1187,68 @@ const previewProducts = affiliateProducts.slice(0, 3);
 
                 const content = document.createElement("div");
                 content.className = "admin-notification__content";
-                const header = document.createElement("div");
-                header.className = "admin-notification__header";
+
+                const top = document.createElement("div");
+                top.className = "admin-notification__top";
+
+                const titles = document.createElement("div");
+                titles.className = "admin-notification__titles";
 
                 const title = document.createElement("p");
                 title.className = "admin-notification__title";
                 title.textContent = item.title;
 
+                const meta = document.createElement("p");
+                meta.className = "admin-notification__meta";
+                meta.textContent = formatRelativeTime(item.time);
+
+                titles.appendChild(title);
+                titles.appendChild(meta);
+
+                const labels = document.createElement("div");
+                labels.className = "admin-notification__labels";
+
                 const typeBadge = document.createElement("span");
                 typeBadge.className = "admin-notification__type";
                 typeBadge.dataset.type = item.type;
                 typeBadge.textContent = formatNotificationTypeLabel(item.type);
-
-                header.appendChild(title);
-                header.appendChild(typeBadge);
+                labels.appendChild(typeBadge);
 
                 if ((item.status ?? "unread") === "unread") {
                     const badge = document.createElement("span");
                     badge.className = "admin-pill-badge admin-pill-badge--new";
                     badge.textContent = "Baru";
-                    header.appendChild(badge);
+                    labels.appendChild(badge);
                 }
 
-                const meta = document.createElement("p");
-                meta.className = "admin-notification__meta";
-                meta.textContent = formatRelativeTime(item.time);
+                top.appendChild(titles);
+                top.appendChild(labels);
 
                 const text = document.createElement("p");
                 text.className = "admin-notification__text";
                 text.textContent = item.message;
 
-                content.appendChild(header);
-                content.appendChild(meta);
-                content.appendChild(text);
+                const footer = document.createElement("div");
+                footer.className = "admin-notification__footer";
+
+                const status = document.createElement("div");
+                status.className = "admin-notification__status";
+
+                const dot = document.createElement("span");
+                dot.className = "admin-dot";
+                dot.setAttribute("aria-hidden", "true");
+                status.appendChild(dot);
+
+                const statusText = document.createElement("span");
+                statusText.className = "admin-notification__status-text";
+                statusText.textContent =
+                    (item.status ?? "unread") === "unread"
+                        ? "Menunggu aksi"
+                        : "Sudah dilihat";
+                status.appendChild(statusText);
 
                 const actions = document.createElement("div");
                 actions.className = "admin-notification__actions";
-                if (item.status === "unread") {
-                    const dot = document.createElement("span");
-                    dot.className = "admin-dot";
-                    dot.setAttribute("aria-label", "Notifikasi baru");
-                    actions.appendChild(dot);
-                }
                 if (item.href) {
                     const link = document.createElement("a");
                     link.className = "admin-link-button";
@@ -1126,33 +1258,39 @@ const previewProducts = affiliateProducts.slice(0, 3);
                     actions.appendChild(link);
                 }
 
+                footer.appendChild(status);
+                footer.appendChild(actions);
+
+                content.appendChild(top);
+                content.appendChild(text);
+                content.appendChild(footer);
+
                 article.appendChild(icon);
                 article.appendChild(content);
-                article.appendChild(actions);
                 notificationContainer.appendChild(article);
             });
+
+            const latestItem = items.reduce<AdminNotification | null>(
+                (latest, current) => {
+                    if (!latest) return current;
+                    return new Date(current.time).getTime() >
+                        new Date(latest.time).getTime()
+                        ? current
+                        : latest;
+                },
+                null,
+            );
+
+            if (latestItem && latestTimeLabel) {
+                latestTimeLabel.textContent = formatRelativeTime(
+                    latestItem.time,
+                );
+            }
 
             const unreadCount = items.filter(
                 (item) => (item.status ?? "unread") === "unread",
             ).length;
-            if (unreadBadge) {
-                unreadBadge.textContent = `${unreadCount} baru`;
-                if (unreadCount === 0) {
-                    unreadBadge.setAttribute("hidden", "true");
-                } else {
-                    unreadBadge.removeAttribute("hidden");
-                }
-            }
-            if (notificationTrigger) {
-                notificationTrigger.setAttribute(
-                    "data-has-unread",
-                    unreadCount > 0 ? "true" : "false",
-                );
-                notificationTrigger.setAttribute(
-                    "aria-label",
-                    `Lihat notifikasi (${unreadCount} baru)`,
-                );
-            }
+            updateUnreadIndicators(unreadCount);
         };
 
         const normalizeCommentNotification = (record: any) => {
@@ -1926,6 +2064,18 @@ const previewProducts = affiliateProducts.slice(0, 3);
         flex-wrap: wrap;
     }
 
+    .admin-card__header--stacked {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    @media (min-width: 768px) {
+        .admin-card__header--stacked {
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+    }
+
     .admin-card__footer {
         padding-top: 0.45rem;
         border-top: 1px dashed
@@ -2043,6 +2193,68 @@ const previewProducts = affiliateProducts.slice(0, 3);
         margin: 0;
     }
 
+    .admin-notifications__summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.65rem;
+        width: 100%;
+    }
+
+    .admin-notifications__pill {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.65rem;
+        align-items: center;
+        padding: 0.65rem 0.75rem;
+        border-radius: calc(var(--admin-radius) - 0.35rem);
+        border: var(--admin-border);
+        background: color-mix(in srgb, var(--color-background) 96%, transparent);
+    }
+
+    .admin-notifications__pill--accent {
+        border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-primary) 8%,
+            color-mix(in srgb, var(--color-card) 92%, transparent)
+        );
+    }
+
+    .admin-notifications__pill-icon {
+        width: 2.4rem;
+        height: 2.4rem;
+        border-radius: 0.85rem;
+        display: grid;
+        place-items: center;
+        background: color-mix(in srgb, var(--color-foreground) 12%, transparent);
+        color: color-mix(in srgb, var(--color-foreground) 80%, transparent);
+    }
+
+    .admin-notifications__pill-icon--success {
+        background: color-mix(in srgb, var(--color-success, #3fcf8e) 18%, transparent);
+        color: color-mix(in srgb, var(--color-success, #3fcf8e) 85%, transparent);
+    }
+
+    .admin-notifications__pill-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .admin-notifications__pill-label {
+        margin: 0;
+        font-size: var(--admin-font-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+    }
+
+    .admin-notifications__pill-value {
+        margin: 0;
+        font-weight: 700;
+        font-size: var(--admin-font-base);
+    }
+
     .admin-notifications {
         display: flex;
         flex-direction: column;
@@ -2051,24 +2263,13 @@ const previewProducts = affiliateProducts.slice(0, 3);
 
     .admin-notification {
         display: grid;
-        grid-template-columns: auto 1fr auto;
-        gap: 0.65rem;
+        grid-template-columns: auto 1fr;
+        gap: 0.75rem;
         align-items: start;
         border: var(--admin-border);
         border-radius: var(--admin-radius);
         padding: 0.75rem;
         background: color-mix(in srgb, var(--color-background) 94%, transparent);
-    }
-
-    @media (max-width: 640px) {
-        .admin-notification {
-            grid-template-columns: auto 1fr;
-        }
-
-        .admin-notification__actions {
-            grid-column: 1 / -1;
-            justify-content: space-between;
-        }
     }
 
     .admin-notification__icon {
@@ -2095,14 +2296,29 @@ const previewProducts = affiliateProducts.slice(0, 3);
     .admin-notification__content {
         display: flex;
         flex-direction: column;
-        gap: 0.15rem;
+        gap: 0.4rem;
     }
 
-    .admin-notification__header {
+    .admin-notification__top {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+
+    .admin-notification__titles {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+    }
+
+    .admin-notification__labels {
         display: flex;
         align-items: center;
-        flex-wrap: wrap;
         gap: 0.35rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     .admin-notification__title {
@@ -2147,10 +2363,30 @@ const previewProducts = affiliateProducts.slice(0, 3);
     }
 
     .admin-notification__text {
-        margin: 0;
+        margin: 0.1rem 0 0;
         font-size: var(--admin-font-sm);
         color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
         line-height: 1.5;
+    }
+
+    .admin-notification__footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+        padding-top: 0.25rem;
+    }
+
+    .admin-notification__status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .admin-notification__status-text {
+        font-size: var(--admin-font-sm);
+        color: color-mix(in srgb, var(--color-foreground) 68%, transparent);
     }
 
     .admin-notification__actions {
@@ -2172,6 +2408,12 @@ const previewProducts = affiliateProducts.slice(0, 3);
             var(--color-primary) 6%,
             color-mix(in srgb, var(--color-card, var(--color-background)) 94%, transparent)
         );
+    }
+
+    .admin-notification[data-status="read"] .admin-dot {
+        background: color-mix(in srgb, var(--color-foreground) 35%, transparent);
+        box-shadow: none;
+        animation: none;
     }
 
     .admin-dot {
@@ -2328,9 +2570,11 @@ const previewProducts = affiliateProducts.slice(0, 3);
         cursor: pointer;
     }
 
-    .admin-empty {
+    .admin-empty,
+    .admin-empty-state {
         font-size: var(--admin-font-base);
         color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+        margin: 0.25rem 0;
     }
 
     .admin-records {
