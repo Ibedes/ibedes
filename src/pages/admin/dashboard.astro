@@ -89,27 +89,6 @@ const averageProductsPerArticle = stats.totalArticles
 
 const notifications = [
     {
-        id: "notif-comment-01",
-        type: "comment",
-        title: "Komentar baru",
-        message:
-            "Rina menanggapi " +
-            "\"Memulai dengan Berani\" dan meminta contoh kasus tambahan.",
-        time: "12 menit lalu",
-        status: "unread",
-        href: "/blog/memulai-dengan-berani",
-    },
-    {
-        id: "notif-message-02",
-        type: "message",
-        title: "Pesan kontak",
-        message:
-            "Andre mengirim brief podcast dan menanyakan slot rekaman pekan depan.",
-        time: "1 jam lalu",
-        status: "unread",
-        href: "/contact",
-    },
-    {
         id: "notif-system-03",
         type: "system",
         title: "Aksi diperlukan",
@@ -123,6 +102,10 @@ const notifications = [
 const unreadNotifications = notifications.filter(
     (item) => item.status === "unread",
 ).length;
+
+const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
+const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
+const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
 
 const mobileQuickActions = [
     {
@@ -417,16 +400,25 @@ const previewProducts = affiliateProducts.slice(0, 3);
                             <p class="admin-eyebrow">Notifikasi</p>
                             <h2>Aktivitas terbaru</h2>
                         </div>
-                        <span class="admin-chip admin-chip--muted">
+                        <span class="admin-chip admin-chip--muted" data-unread-count>
                             {unreadNotifications} baru
                         </span>
                     </div>
-                    <div class="admin-notifications">
+                    <div
+                        class="admin-notifications"
+                        data-admin-notifications
+                        data-supabase-ready={supabaseEnabled ? "true" : "false"}
+                        data-supabase-url={supabaseEnabled ? supabaseUrl : undefined}
+                        data-supabase-key={
+                            supabaseEnabled ? supabaseAnonKey : undefined
+                        }
+                    >
                         {
                             notifications.map((item) => (
                                 <article
                                     class="admin-notification"
                                     data-status={item.status}
+                                    data-notification-item
                                 >
                                     <div
                                         class="admin-notification__icon"
@@ -478,6 +470,9 @@ const previewProducts = affiliateProducts.slice(0, 3);
                             ))
                         }
                     </div>
+                    <script type="application/json" id="admin-notifications-data">
+                        {JSON.stringify(notifications)}
+                    </script>
                 </div>
             </section>
 
@@ -890,6 +885,317 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const TAB_TRIGGER_SELECTOR = "[data-tab-trigger]";
         const TAB_PANE_SELECTOR = ".tab-pane";
 
+        const notificationContainer = document.querySelector<HTMLElement>(
+            "[data-admin-notifications]",
+        );
+        const unreadBadge = document.querySelector<HTMLElement>(
+            "[data-unread-count]",
+        );
+        const notificationsData = document.getElementById(
+            "admin-notifications-data",
+        ) as HTMLScriptElement | null;
+
+        const parseJSON = (value: string | null) => {
+            try {
+                return value ? JSON.parse(value) : [];
+            } catch (error) {
+                console.warn("[Admin] Failed to parse notifications", error);
+                return [];
+            }
+        };
+
+        type AdminNotification = {
+            id: string;
+            type: "comment" | "message" | "system";
+            title: string;
+            message: string;
+            time: string;
+            status?: "unread" | "read";
+            href?: string;
+        };
+
+        const parsedNotifications = parseJSON(
+            notificationsData?.textContent ?? "[]",
+        );
+
+        const initialNotifications: AdminNotification[] = Array.isArray(
+            parsedNotifications,
+        )
+            ? parsedNotifications
+            : [];
+
+        const supabaseReady =
+            notificationContainer?.dataset.supabaseReady === "true";
+        const supabaseUrl =
+            notificationContainer?.dataset.supabaseUrl?.replace(/\/+$/, "") ?? "";
+        const supabaseKey = notificationContainer?.dataset.supabaseKey ?? "";
+
+        let notificationState: AdminNotification[] = initialNotifications;
+        let supabaseClientPromise: Promise<any> | null = null;
+        let notificationChannel: any = null;
+
+        const supabaseHeaders = () => ({
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+        });
+
+        const formatRelativeTime = (value: string) => {
+            const target = new Date(value);
+            if (Number.isNaN(target.getTime())) return "Baru saja";
+            const diffMs = Date.now() - target.getTime();
+            const diffMinutes = Math.round(diffMs / 60000);
+            if (diffMinutes < 1) return "Baru saja";
+            if (diffMinutes < 60) return `${diffMinutes} menit lalu`;
+            const diffHours = Math.round(diffMinutes / 60);
+            if (diffHours < 24) return `${diffHours} jam lalu`;
+            const diffDays = Math.round(diffHours / 24);
+            return `${diffDays} hari lalu`;
+        };
+
+        const renderNotifications = (items: AdminNotification[]) => {
+            if (!notificationContainer) return;
+            notificationContainer.innerHTML = "";
+
+            if (!items.length) {
+                notificationContainer.innerHTML =
+                    '<p class="admin-empty">Belum ada aktivitas baru.</p>';
+            }
+
+            items.forEach((item) => {
+                const article = document.createElement("article");
+                article.className = "admin-notification";
+                article.dataset.status = item.status ?? "unread";
+
+                const icon = document.createElement("div");
+                icon.className = "admin-notification__icon";
+                icon.dataset.type = item.type;
+                icon.setAttribute("aria-hidden", "true");
+
+                const iconClass =
+                    item.type === "comment"
+                        ? "fa-comment-dots"
+                        : item.type === "message"
+                          ? "fa-inbox"
+                          : "fa-bell";
+                icon.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+
+                const content = document.createElement("div");
+                content.className = "admin-notification__content";
+                const title = document.createElement("p");
+                title.className = "admin-notification__title";
+                title.textContent = item.title;
+
+                const meta = document.createElement("p");
+                meta.className = "admin-notification__meta";
+                meta.textContent = formatRelativeTime(item.time);
+
+                const text = document.createElement("p");
+                text.className = "admin-notification__text";
+                text.textContent = item.message;
+
+                content.appendChild(title);
+                content.appendChild(meta);
+                content.appendChild(text);
+
+                const actions = document.createElement("div");
+                actions.className = "admin-notification__actions";
+                if (item.status === "unread") {
+                    const dot = document.createElement("span");
+                    dot.className = "admin-dot";
+                    dot.setAttribute("aria-label", "Notifikasi baru");
+                    actions.appendChild(dot);
+                }
+                if (item.href) {
+                    const link = document.createElement("a");
+                    link.className = "admin-link-button";
+                    link.href = item.href;
+                    link.innerHTML =
+                        'Lihat <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>';
+                    actions.appendChild(link);
+                }
+
+                article.appendChild(icon);
+                article.appendChild(content);
+                article.appendChild(actions);
+                notificationContainer.appendChild(article);
+            });
+
+            const unreadCount = items.filter(
+                (item) => (item.status ?? "unread") === "unread",
+            ).length;
+            if (unreadBadge) {
+                unreadBadge.textContent = `${unreadCount} baru`;
+            }
+        };
+
+        const normalizeCommentNotification = (record: any) => {
+            if (!record) return null;
+            const slug = String(record.slug ?? "").replace(/^\/+|\/+$/g, "");
+            return {
+                id: `comment-${record.id ?? record.created_at}`,
+                type: "comment",
+                title: "Komentar baru",
+                message: `${record.name || "Anonim"} mengomentari ${
+                    slug || "artikel"
+                }.`,
+                time: record.created_at ?? new Date().toISOString(),
+                status: "unread" as const,
+                href: slug ? `/blog/${slug}` : undefined,
+            } satisfies AdminNotification;
+        };
+
+        const normalizeLikeNotification = (record: any) => {
+            if (!record) return null;
+            const slug = String(record.slug ?? "").replace(/^\/+|\/+$/g, "");
+            return {
+                id: `like-${record.id ?? record.created_at}`,
+                type: "system",
+                title: "Tepuk baru",
+                message: `Artikel ${slug || "ini"} mendapat tepuk baru.`,
+                time: record.created_at ?? new Date().toISOString(),
+                status: "unread" as const,
+                href: slug ? `/blog/${slug}` : undefined,
+            } satisfies AdminNotification;
+        };
+
+        const fetchRecentNotifications = async () => {
+            if (!supabaseReady || !supabaseUrl || !supabaseKey) return [];
+            const params = new URLSearchParams({
+                select: "id,name,message,slug,created_at", // comments
+                order: "created_at.desc",
+                limit: "5",
+            });
+            const likeParams = new URLSearchParams({
+                select: "id,slug,created_at",
+                order: "created_at.desc",
+                limit: "5",
+            });
+
+            const [commentsRes, likesRes] = await Promise.all([
+                fetch(
+                    `${supabaseUrl}/rest/v1/article_comments?${params.toString()}`,
+                    { headers: supabaseHeaders() },
+                ),
+                fetch(
+                    `${supabaseUrl}/rest/v1/article_likes?${likeParams.toString()}`,
+                    { headers: supabaseHeaders() },
+                ),
+            ]);
+
+            if (!commentsRes.ok || !likesRes.ok) {
+                throw new Error("Gagal memuat data notifikasi Supabase");
+            }
+
+            const [comments, likes] = await Promise.all([
+                commentsRes.json(),
+                likesRes.json(),
+            ]);
+
+            const items: AdminNotification[] = [];
+            if (Array.isArray(comments)) {
+                comments
+                    .map((item) => normalizeCommentNotification(item))
+                    .filter(Boolean)
+                    .forEach((item) => items.push(item as AdminNotification));
+            }
+            if (Array.isArray(likes)) {
+                likes
+                    .map((item) => normalizeLikeNotification(item))
+                    .filter(Boolean)
+                    .forEach((item) => items.push(item as AdminNotification));
+            }
+
+            return items.sort((a, b) =>
+                new Date(b.time).getTime() - new Date(a.time).getTime(),
+            );
+        };
+
+        const loadSupabaseClient = async () => {
+            if (!supabaseReady || !supabaseUrl || !supabaseKey) return null;
+            if (!supabaseClientPromise) {
+                supabaseClientPromise = import(
+                    "https://esm.sh/@supabase/supabase-js@2.45.2"
+                ).then(({ createClient }) =>
+                    createClient(supabaseUrl, supabaseKey, {
+                        auth: { persistSession: false },
+                    }),
+                );
+            }
+            return supabaseClientPromise;
+        };
+
+        const subscribeRealtimeNotifications = async () => {
+            if (!supabaseReady || notificationChannel) return;
+            const client = await loadSupabaseClient();
+            if (!client) return;
+
+            notificationChannel = client.channel("admin-notifications");
+
+            notificationChannel.on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "article_comments",
+                },
+                (payload: any) => {
+                    const normalized = normalizeCommentNotification(payload.new);
+                    if (!normalized) return;
+                    const exists = notificationState.some(
+                        (item) => item.id === normalized.id,
+                    );
+                    if (!exists) {
+                        notificationState = [
+                            normalized,
+                            ...notificationState,
+                        ].slice(0, 15);
+                        renderNotifications(notificationState);
+                    }
+                },
+            );
+
+            notificationChannel.on(
+                "postgres_changes",
+                {
+                    event: "INSERT",
+                    schema: "public",
+                    table: "article_likes",
+                },
+                (payload: any) => {
+                    const normalized = normalizeLikeNotification(payload.new);
+                    if (!normalized) return;
+                    const exists = notificationState.some(
+                        (item) => item.id === normalized.id,
+                    );
+                    if (!exists) {
+                        notificationState = [
+                            normalized,
+                            ...notificationState,
+                        ].slice(0, 15);
+                        renderNotifications(notificationState);
+                    }
+                },
+            );
+
+            notificationChannel.subscribe();
+        };
+
+        const bootstrapNotifications = async () => {
+            if (!notificationContainer) return;
+            renderNotifications(notificationState);
+            if (!supabaseReady) return;
+            try {
+                const items = await fetchRecentNotifications();
+                if (items.length) {
+                    notificationState = items.slice(0, 15);
+                    renderNotifications(notificationState);
+                }
+            } catch (error) {
+                console.warn("[Admin] Notifikasi Supabase gagal dimuat", error);
+            }
+            subscribeRealtimeNotifications();
+        };
+
         function setActiveTab(tabName: string): void {
             document.querySelectorAll(TAB_PANE_SELECTOR).forEach((pane) => {
                 pane.classList.add("hidden");
@@ -952,6 +1258,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
 
         function initializeTabs(): void {
             setActiveTab("overview");
+            bootstrapNotifications();
         }
 
         // Hide bottom nav when approaching footer
