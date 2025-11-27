@@ -107,92 +107,11 @@ const formatNotificationType = (value: string) => {
     return "Sistem";
 };
 
-const notifications = [
-    {
-        id: "notif-comment-01",
-        type: "comment",
-        title: "Komentar baru",
-        message: "Rani membalas diskusi di artikel produktivitas.",
-        time: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
-        status: "unread",
-        href: "/blog/menumbuhkan-kebiasaan-baca",
-        priority: "high",
-        category: "Engagement",
-        source: "manual",
-        tags: ["komentar", "artikel"],
-    },
-    {
-        id: "notif-like-02",
-        type: "like",
-        title: "Love diterima",
-        message: "Artikel UX Writing mendapat 12 love baru hari ini.",
-        time: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
-        status: "unread",
-        href: "/blog/ux-writing-untuk-pemula",
-        priority: "medium",
-        category: "Engagement",
-        source: "manual",
-        tags: ["reaksi", "artikel"],
-    },
-    {
-        id: "notif-message-03",
-        type: "message",
-        title: "Kotak masuk",
-        message: "Ada pertanyaan baru dari halaman kontak.",
-        time: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        status: "unread",
-        href: "/admin/messages",
-        priority: "medium",
-        category: "Support",
-        source: "manual",
-        tags: ["pertanyaan", "kontak"],
-    },
-    {
-        id: "notif-system-03",
-        type: "system",
-        title: "Aksi diperlukan",
-        message: "Ada 2 produk afiliasi belum memiliki deskripsi lengkap.",
-        time: new Date(Date.now() - 26 * 60 * 60 * 1000).toISOString(),
-        status: "read",
-        href: "/admin/add-product",
-        priority: "high",
-        category: "Konten",
-        source: "manual",
-        tags: ["afiliasi", "kelengkapan"],
-    },
-    {
-        id: "notif-system-04",
-        type: "system",
-        title: "Backup mingguan siap",
-        message: "Pencadangan situs otomatis selesai tanpa error.",
-        time: new Date(Date.now() - 40 * 60 * 60 * 1000).toISOString(),
-        status: "read",
-        priority: "low",
-        category: "Operasional",
-        source: "manual",
-        tags: ["backup", "infra"],
-    },
-    {
-        id: "notif-comment-05",
-        type: "comment",
-        title: "Diskusi trending",
-        message: "Ada 6 balasan baru pada artikel desain berkelanjutan.",
-        time: new Date(Date.now() - 75 * 60 * 60 * 1000).toISOString(),
-        status: "read",
-        href: "/blog/desain-berkelanjutan",
-        priority: "high",
-        category: "Engagement",
-        source: "manual",
-        tags: ["diskusi", "tren"],
-    },
-];
+const notifications: any[] = [];
 
-const unreadNotifications = notifications.filter(
-    (item) => item.status === "unread",
-).length;
+const unreadNotifications = 0;
 
-const latestNotificationTime =
-    notifications[0]?.time ?? new Date().toISOString();
+const latestNotificationTime = new Date().toISOString();
 
 const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
 const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
@@ -504,286 +423,19 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 </div>
 
                 <div class="admin-card" id="notifications">
-                    <div class="admin-card__header admin-card__header--stacked">
+                    <div class="admin-card__header">
                         <div>
                             <p class="admin-eyebrow">Notifikasi</p>
                             <h2>Aktivitas terbaru</h2>
                         </div>
-                        <div class="admin-notifications__summary">
-                            <div
-                                class="admin-notifications__pill admin-notifications__pill--accent"
-                            >
-                                <div class="admin-notifications__pill-icon">
-                                    <i class="fa-solid fa-circle-dot" aria-hidden="true"></i>
-                                </div>
-                                <div class="admin-notifications__pill-body">
-                                    <p class="admin-notifications__pill-label">
-                                        Belum dibaca
-                                    </p>
-                                    <p
-                                        class="admin-notifications__pill-value"
-                                        data-unread-count
-                                        data-unread-pill-count
-                                    >
-                                        {unreadNotifications} notif
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="admin-notifications__pill">
-                                <div class="admin-notifications__pill-icon admin-notifications__pill-icon--warning">
-                                    <i class="fa-solid fa-signal" aria-hidden="true"></i>
-                                </div>
-                                <div class="admin-notifications__pill-body">
-                                    <p class="admin-notifications__pill-label">
-                                        Prioritas tinggi
-                                    </p>
-                                    <p
-                                        class="admin-notifications__pill-value"
-                                        data-priority-count
-                                    >
-                                        0 item
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="admin-notifications__pill">
-                                <div class="admin-notifications__pill-icon">
-                                    <i class="fa-regular fa-bell" aria-hidden="true"></i>
-                                </div>
-                                <div class="admin-notifications__pill-body">
-                                    <p class="admin-notifications__pill-label">
-                                        Total notifikasi
-                                    </p>
-                                    <p
-                                        class="admin-notifications__pill-value"
-                                        data-total-count
-                                    >
-                                        {notifications.length} notifikasi
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="admin-notifications__pill">
-                                <div class="admin-notifications__pill-icon admin-notifications__pill-icon--success">
-                                    <i class="fa-solid fa-rotate" aria-hidden="true"></i>
-                                </div>
-                                <div class="admin-notifications__pill-body">
-                                    <p class="admin-notifications__pill-label">
-                                        Terakhir diperbarui
-                                    </p>
-                                    <p class="admin-notifications__pill-value">
-                                        <span data-latest-time>
-                                            {formatNotificationTime(latestNotificationTime)}
-                                        </span>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="admin-notifications__controls">
-                            <div class="admin-notifications__toolbar">
-                                <div class="admin-notifications__search">
-                                    <i
-                                        class="fa-solid fa-magnifying-glass"
-                                        aria-hidden="true"
-                                    ></i>
-                                    <input
-                                        type="search"
-                                        placeholder="Cari judul, pesan, atau tag..."
-                                        aria-label="Cari notifikasi"
-                                        data-notification-search
-                                        autocomplete="off"
-                                    />
-                                </div>
-                                <div class="admin-notifications__control-actions">
-                                    <button
-                                        type="button"
-                                        class="admin-chip admin-chip--ghost"
-                                        data-reset-filters
-                                    >
-                                        Reset filter
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="admin-chip admin-chip--muted"
-                                        data-mark-all
-                                    >
-                                        Tandai semua dibaca
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="admin-chip admin-chip--primary"
-                                        data-mark-selected
-                                    >
-                                        Tandai dipilih
-                                    </button>
-                                    <button
-                                        type="button"
-                                        class="admin-chip admin-chip--danger"
-                                        data-delete-selected
-                                    >
-                                        Hapus terpilih
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="admin-filter-grid">
-                                <div class="admin-filter">
-                                    <p class="admin-filter__label">Status</p>
-                                    <div class="admin-filter__chips" role="group">
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip is-active"
-                                            data-filter-type="status"
-                                            data-filter-value="all"
-                                        >
-                                            Semua
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip"
-                                            data-filter-type="status"
-                                            data-filter-value="unread"
-                                        >
-                                            Belum dibaca
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip"
-                                            data-filter-type="status"
-                                            data-filter-value="read"
-                                        >
-                                            Sudah dibaca
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="admin-filter">
-                                    <p class="admin-filter__label">Jenis</p>
-                                    <div class="admin-filter__chips" role="group">
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip is-active"
-                                            data-filter-type="type"
-                                            data-filter-value="all"
-                                        >
-                                            Semua
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip"
-                                            data-filter-type="type"
-                                            data-filter-value="comment"
-                                        >
-                                            Komentar
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip"
-                                            data-filter-type="type"
-                                            data-filter-value="like"
-                                        >
-                                            Love
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip"
-                                            data-filter-type="type"
-                                            data-filter-value="message"
-                                        >
-                                            Pesan
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip"
-                                            data-filter-type="type"
-                                            data-filter-value="system"
-                                        >
-                                            Sistem
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="admin-filter">
-                                    <p class="admin-filter__label">Prioritas</p>
-                                    <div class="admin-filter__chips" role="group">
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip is-active"
-                                            data-filter-type="priority"
-                                            data-filter-value="all"
-                                        >
-                                            Semua
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip"
-                                            data-filter-type="priority"
-                                            data-filter-value="high"
-                                        >
-                                            Tinggi
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip"
-                                            data-filter-type="priority"
-                                            data-filter-value="medium"
-                                        >
-                                            Sedang
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="admin-filter-chip"
-                                            data-filter-type="priority"
-                                            data-filter-value="low"
-                                        >
-                                            Rendah
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="admin-filter">
-                                    <p class="admin-filter__label">Fokus</p>
-                                    <div class="admin-filter__toggles">
-                                        <label class="admin-toggle">
-                                            <input
-                                                type="checkbox"
-                                                data-unread-toggle
-                                            />
-                                            <span class="admin-toggle__label">
-                                                Hanya yang belum dibaca
-                                            </span>
-                                        </label>
-                                        <label class="admin-toggle">
-                                            <input type="checkbox" data-select-all />
-                                            <span class="admin-toggle__label">
-                                                Pilih semua terlihat
-                                            </span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="admin-notifications__meta">
-                                <p class="admin-notifications__meta-item" data-visible-count>
-                                    Menampilkan {notifications.length} notifikasi
-                                </p>
-                                <p
-                                    class="admin-notifications__meta-item"
-                                    data-filter-summary
-                                >
-                                    Filter aktif: semua
-                                </p>
-                            </div>
-                            <div class="admin-notifications__control-actions admin-notifications__control-actions--simple">
-                                <button
-                                    type="button"
-                                    class="admin-chip admin-chip--ghost"
-                                    data-reset-feed
-                                >
-                                    Segarkan daftar
-                                </button>
-                                <button
-                                    type="button"
-                                    class="admin-chip admin-chip--muted"
-                                    data-delete-selected
-                                >
-                                    Hapus pilihan
-                                </button>
-                            </div>
-                        </div>
+                        <button
+                            type="button"
+                            class="admin-chip admin-chip--ghost"
+                            data-reset-feed
+                        >
+                            <i class="fa-solid fa-rotate"></i>
+                            <span>Segarkan</span>
+                        </button>
                     </div>
                     <div
                         class="admin-notifications"
@@ -794,90 +446,12 @@ const previewProducts = affiliateProducts.slice(0, 3);
                             supabaseEnabled ? supabaseAnonKey : undefined
                         }
                     >
-                        {
-                            notifications.map((item) => (
-                                <article
-                                    class="admin-notification"
-                                    data-status={item.status}
-                                    data-notification-item
-                                >
-                                    <div
-                                        class="admin-notification__icon"
-                                        data-type={item.type}
-                                        aria-hidden="true"
-                                    >
-                                        <i
-                                            class={`fa-solid ${
-                                                item.type === "comment"
-                                                    ? "fa-comment-dots"
-                                                    : item.type === "like"
-                                                      ? "fa-heart"
-                                                      : item.type === "message"
-                                                        ? "fa-inbox"
-                                                        : "fa-bell"
-                                            }`}
-                                        />
-                                    </div>
-                                    <div class="admin-notification__content">
-                                        <div class="admin-notification__top">
-                                            <div class="admin-notification__titles">
-                                                <p class="admin-notification__title">
-                                                    {item.title}
-                                                </p>
-                                                <p class="admin-notification__meta">
-                                                    {formatNotificationTime(item.time)}
-                                                </p>
-                                            </div>
-                                            <div class="admin-notification__labels">
-                                                <span
-                                                    class="admin-notification__type"
-                                                    data-type={item.type}
-                                                >
-                                                    {formatNotificationType(
-                                                        item.type,
-                                                    )}
-                                                </span>
-                                                {item.status === "unread" ? (
-                                                    <span class="admin-pill-badge admin-pill-badge--new">
-                                                        Baru
-                                                    </span>
-                                                ) : null}
-                                            </div>
-                                        </div>
-                                        <p class="admin-notification__text">
-                                            {item.message}
-                                        </p>
-                                        <div class="admin-notification__footer">
-                                            <div class="admin-notification__status">
-                                                <span
-                                                    class="admin-dot"
-                                                    aria-hidden="true"
-                                                ></span>
-                                                <span class="admin-notification__status-text">
-                                                    {item.status === "unread"
-                                                        ? "Menunggu aksi"
-                                                        : "Sudah dilihat"}
-                                                </span>
-                                            </div>
-                                            <div class="admin-notification__actions">
-                                                {item.href ? (
-                                                    <a
-                                                        class="admin-link-button"
-                                                        href={item.href}
-                                                    >
-                                                        Lihat
-                                                        <i
-                                                            class="fa-solid fa-arrow-right"
-                                                            aria-hidden="true"
-                                                        ></i>
-                                                    </a>
-                                                ) : null}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </article>
-                            ))
-                        }
+                        <div class="admin-empty-state admin-empty-state--inline">
+                            <p>
+                                Belum ada notifikasi. Interaksi baru akan muncul
+                                di sini.
+                            </p>
+                        </div>
                     </div>
                     <script type="application/json" id="admin-notifications-data">
                         {JSON.stringify(notifications)}
@@ -1069,32 +643,18 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 aria-labelledby="analytics-tab"
             >
                 <div class="admin-panel admin-panel--stack">
-                    <div class="admin-card" data-realtime-card>
+                    <div class="admin-card">
                         <div class="admin-card__header">
                             <div>
-                                <p class="admin-eyebrow">Live</p>
-                                <h2>Pengunjung aktif</h2>
-                                <p class="admin-card__meta">
-                                    Data real-time dari Google Analytics 4
-                                </p>
+                                <p class="admin-eyebrow">Analitik</p>
+                                <h2>Google Analytics</h2>
                             </div>
-                            <span
-                                class="admin-chip admin-chip--muted"
-                                data-realtime-status
-                            >
-                                Menyambung...
-                            </span>
                         </div>
-
-                        <div class="admin-realtime">
-                            <div class="admin-realtime__value" data-realtime-value>
-                                --
-                            </div>
-                            <p class="admin-realtime__label">
-                                pengunjung sedang aktif
-                            </p>
-                            <p class="admin-realtime__meta" data-realtime-meta>
-                                Mengambil data terbaru...
+                        <div class="admin-empty-state">
+                            <p>Fitur analitik belum dikonfigurasi.</p>
+                            <p class="admin-empty-state__hint">
+                                Tambahkan variabel environment GA4 di server
+                                untuk mengaktifkan.
                             </p>
                         </div>
                     </div>
@@ -1327,73 +887,16 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const notificationContainer = document.querySelector<HTMLElement>(
             "[data-admin-notifications]",
         );
-        const unreadBadge = document.querySelector<HTMLElement>(
-            "[data-unread-count]",
-        );
         const bellUnreadBadge = document.querySelector<HTMLElement>(
             "[data-unread-badge]",
-        );
-        const unreadSummaryCount = document.querySelector<HTMLElement>(
-            "[data-unread-pill-count]",
-        );
-        const totalCountLabel = document.querySelector<HTMLElement>(
-            "[data-total-count]",
-        );
-        const latestTimeLabel = document.querySelector<HTMLElement>(
-            "[data-latest-time]",
         );
         const notificationTrigger = document.querySelector<HTMLElement>(
             "[data-notification-trigger]",
         );
-        const selectAllCheckbox = document.querySelector<HTMLInputElement>(
-            "[data-select-all]",
-        );
-        const markSelectedButton = document.querySelector<HTMLButtonElement>(
-            "[data-mark-selected]",
-        );
-        const deleteSelectedButton = document.querySelector<HTMLButtonElement>(
-            "[data-delete-selected]",
-        );
-        const markAllButton = document.querySelector<HTMLButtonElement>(
-            "[data-mark-all]",
-        );
         const resetFeedButton = document.querySelector<HTMLButtonElement>(
             "[data-reset-feed]",
         );
-        const resetFiltersButton = document.querySelector<HTMLButtonElement>(
-            "[data-reset-filters]",
-        );
-        const priorityCountLabel = document.querySelector<HTMLElement>(
-            "[data-priority-count]",
-        );
-        const visibleCountLabel = document.querySelector<HTMLElement>(
-            "[data-visible-count]",
-        );
-        const filterSummaryLabel = document.querySelector<HTMLElement>(
-            "[data-filter-summary]",
-        );
-        const realtimeCard = document.querySelector<HTMLElement>(
-            "[data-realtime-card]",
-        );
-        const realtimeValue = document.querySelector<HTMLElement>(
-            "[data-realtime-value]",
-        );
-        const realtimeStatus = document.querySelector<HTMLElement>(
-            "[data-realtime-status]",
-        );
-        const realtimeMeta = document.querySelector<HTMLElement>(
-            "[data-realtime-meta]",
-        );
         let realtimeIntervalId: number | null = null;
-        const searchInput = document.querySelector<HTMLInputElement>(
-            "[data-notification-search]",
-        );
-        const filterButtons = Array.from(
-            document.querySelectorAll<HTMLButtonElement>("[data-filter-type]"),
-        );
-        const unreadToggle = document.querySelector<HTMLInputElement>(
-            "[data-unread-toggle]",
-        );
         const notificationsData = document.getElementById(
             "admin-notifications-data",
         ) as HTMLScriptElement | null;
@@ -1407,63 +910,8 @@ const previewProducts = affiliateProducts.slice(0, 3);
             }
         };
 
-        const setRealtimeStatus = (
-            label: string,
-            state: "loading" | "ok" | "error",
-        ) => {
-            if (realtimeStatus) {
-                realtimeStatus.textContent = label;
-                realtimeStatus.dataset.state = state;
-            }
-        };
-
-        const formatErrorMessage = (error: unknown) => {
-            if (error instanceof Error) return error.message;
-            if (typeof error === "string") return error;
-            return "Terjadi kesalahan";
-        };
-
-        const updateRealtimeAnalytics = async () => {
-            if (!realtimeCard) return;
-            setRealtimeStatus("Menyambung...", "loading");
-
-            try {
-                const response = await fetch("/api/analytics/realtime", {
-                    headers: { Accept: "application/json" },
-                });
-
-                const payload = await response.json().catch(() => ({}));
-
-                if (!response.ok) {
-                    throw new Error(
-                        payload?.error || "Gagal memuat data pengunjung real-time",
-                    );
-                }
-
-                const activeUsers = Number(payload?.activeUsers ?? 0);
-                if (realtimeValue) {
-                    realtimeValue.textContent = Number.isFinite(activeUsers)
-                        ? activeUsers.toLocaleString("id-ID")
-                        : "0";
-                }
-                if (realtimeMeta) {
-                    realtimeMeta.textContent = `Diperbarui ${new Date().toLocaleTimeString("id-ID")}`;
-                }
-                setRealtimeStatus("Tersambung", "ok");
-            } catch (error) {
-                console.error("[Admin] Realtime analytics error", error);
-                setRealtimeStatus("Tidak terhubung", "error");
-                if (realtimeMeta) {
-                    realtimeMeta.textContent = formatErrorMessage(error);
-                }
-            }
-        };
-
         const startRealtimePolling = () => {
-            if (!realtimeCard) return;
-            updateRealtimeAnalytics();
-            if (realtimeIntervalId) window.clearInterval(realtimeIntervalId);
-            realtimeIntervalId = window.setInterval(updateRealtimeAnalytics, 30000);
+            return;
         };
 
         type AdminNotification = {
@@ -1487,19 +935,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const STORAGE_KEY = "admin-notifications-state";
 
         const loadStoredNotifications = (): AdminNotification[] | null => {
-            if (typeof window === "undefined") return null;
-            try {
-                const stored = localStorage.getItem(STORAGE_KEY);
-                if (!stored) return null;
-                const parsed = parseJSON(stored);
-                return Array.isArray(parsed) ? parsed : null;
-            } catch (error) {
-                console.warn(
-                    "[Admin] Failed to load stored notifications",
-                    error,
-                );
-                return null;
-            }
+            return null;
         };
 
         const baseNotifications: AdminNotification[] = Array.isArray(
@@ -1531,17 +967,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
 
         const persistNotificationState = (
             items: AdminNotification[],
-        ): void => {
-            if (typeof window === "undefined") return;
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-            } catch (error) {
-                console.warn(
-                    "[Admin] Failed to persist notifications",
-                    error,
-                );
-            }
-        };
+        ): void => {};
 
         const filters = {
             status: "all" as "all" | "unread" | "read",
@@ -1563,15 +989,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
         };
 
         const buildFilterSummary = () => {
-            const parts: string[] = [];
-            if (filters.query.trim()) parts.push(`kata kunci "${filters.query}"`);
-            if (filters.status !== "all") parts.push(`status ${filters.status}`);
-            if (filters.type !== "all")
-                parts.push(`jenis ${formatNotificationTypeLabel(filters.type)}`);
-            if (filters.priority !== "all")
-                parts.push(formatPriorityLabel(filters.priority));
-            if (filters.onlyUnread) parts.push("mode fokus belum dibaca");
-            return parts.length ? parts.join(" • ") : "semua";
+            return "semua";
         };
 
         const formatRelativeTime = (value: string) => {
@@ -1600,19 +1018,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
                     ? "Tidak ada notif baru"
                     : `${unreadCount} notif`;
 
-            if (unreadBadge) {
-                unreadBadge.textContent = summaryLabel;
-                if (unreadCount === 0) {
-                    unreadBadge.setAttribute("data-empty", "true");
-                } else {
-                    unreadBadge.removeAttribute("data-empty");
-                }
-            }
-
-            if (unreadSummaryCount) {
-                unreadSummaryCount.textContent = summaryLabel;
-            }
-
             if (bellUnreadBadge) {
                 bellUnreadBadge.textContent = String(unreadCount);
                 if (unreadCount === 0) {
@@ -1634,72 +1039,17 @@ const previewProducts = affiliateProducts.slice(0, 3);
             }
         };
 
-        const updateTotalCount = (total: number) => {
-            if (totalCountLabel) {
-                totalCountLabel.textContent = `${total} notifikasi`;
-            }
-        };
+        const updateTotalCount = (total: number) => {};
 
-        const updatePriorityCount = (items: AdminNotification[]) => {
-            const highPriority = items.filter(
-                (item) => (item.priority ?? "medium") === "high",
-            ).length;
-            if (priorityCountLabel) {
-                priorityCountLabel.textContent = `${highPriority} item`;
-            }
-        };
+        const updatePriorityCount = (items: AdminNotification[]) => {};
 
         const updateMetaSummary = (
             allItems: AdminNotification[],
             visibleItems: AdminNotification[],
-        ) => {
-            if (visibleCountLabel) {
-                visibleCountLabel.textContent = `Menampilkan ${visibleItems.length} dari ${allItems.length} notifikasi`;
-            }
-
-            if (filterSummaryLabel) {
-                filterSummaryLabel.textContent = `Filter aktif: ${buildFilterSummary()}`;
-            }
-
-            const latestItem = allItems.reduce<AdminNotification | null>(
-                (latest, current) => {
-                    if (!latest) return current;
-                    return new Date(current.time).getTime() >
-                        new Date(latest.time).getTime()
-                        ? current
-                        : latest;
-                },
-                null,
-            );
-
-            if (latestItem && latestTimeLabel) {
-                latestTimeLabel.textContent = formatRelativeTime(latestItem.time);
-            }
-        };
+        ) => {};
 
         const applyFilters = (items: AdminNotification[]) => {
-            const query = filters.query.trim().toLowerCase();
-            const matchesQuery = (item: AdminNotification) => {
-                if (!query) return true;
-                const base = `${item.title} ${item.message} ${
-                    item.category ?? ""
-                } ${item.tags?.join(" ") ?? ""}`.toLowerCase();
-                return base.includes(query);
-            };
-
-            return items.filter((item) => {
-                if (filters.onlyUnread && (item.status ?? "unread") !== "unread")
-                    return false;
-                if (filters.status !== "all" && (item.status ?? "unread") !== filters.status)
-                    return false;
-                if (filters.type !== "all" && item.type !== filters.type) return false;
-                if (
-                    filters.priority !== "all" &&
-                    (item.priority ?? "medium") !== filters.priority
-                )
-                    return false;
-                return matchesQuery(item);
-            });
+            return items;
         };
 
         const allItemsAreRead = () =>
@@ -1707,26 +1057,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 (item) => (item.status ?? "unread") === "read",
             );
 
-        const syncBulkControls = () => {
-            const checkboxes = notificationContainer?.querySelectorAll<HTMLInputElement>(
-                "[data-selection-checkbox]",
-            );
-            const visibleCheckboxes = Array.from(checkboxes ?? []);
-            if (selectAllCheckbox) {
-                const selectedVisible = visibleCheckboxes.filter((box) => box.checked);
-                selectAllCheckbox.indeterminate =
-                    selectedVisible.length > 0 &&
-                    selectedVisible.length < visibleCheckboxes.length;
-                selectAllCheckbox.checked =
-                    visibleCheckboxes.length > 0 &&
-                    selectedVisible.length === visibleCheckboxes.length;
-            }
-
-            const hasSelection = selectedNotificationIds.size > 0;
-            markSelectedButton?.toggleAttribute("disabled", !hasSelection);
-            deleteSelectedButton?.toggleAttribute("disabled", !hasSelection);
-            markAllButton?.toggleAttribute("disabled", allItemsAreRead());
-        };
+        const syncBulkControls = () => {};
 
         const refreshNotifications = (override?: AdminNotification[]) => {
             const base = override ?? notificationState;
@@ -1844,10 +1175,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
             if (!items.length) {
                 notificationContainer.innerHTML = `
                     <div class="admin-empty-state admin-empty-state--inline">
-                        <p>Tidak ada notifikasi untuk filter yang dipilih.</p>
-                        <p class="admin-empty-state__hint">
-                            Coba reset filter atau tunggu update baru.
-                        </p>
+                        <p>Belum ada notifikasi. Interaksi baru akan muncul di sini.</p>
                     </div>
                 `;
                 return;
@@ -1858,76 +1186,13 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 article.className = "admin-notification";
                 article.dataset.status = item.status ?? "unread";
                 article.dataset.type = item.type;
-                article.dataset.priority = item.priority ?? "medium";
                 article.classList.toggle(
                     "is-new",
                     (item.status ?? "unread") === "unread",
                 );
 
-                const swipeWrapper = document.createElement("div");
-                swipeWrapper.className = "admin-notification__swipe";
-
-                const actionsPanel = document.createElement("div");
-                actionsPanel.className = "admin-notification__swipe-actions";
-
-                const markButton = document.createElement("button");
-                markButton.type = "button";
-                markButton.className = "admin-notification__swipe-button";
-                markButton.dataset.variant = "mark";
-                const nextStatus =
-                    (item.status ?? "unread") === "unread"
-                        ? "read"
-                        : "unread";
-                markButton.textContent =
-                    nextStatus === "read"
-                        ? "Tandai dibaca"
-                        : "Tandai belum dibaca";
-                markButton.addEventListener("click", (event) => {
-                    event.stopPropagation();
-                    const updated = notificationState.map((notif) =>
-                        notif.id === item.id
-                            ? { ...notif, status: nextStatus }
-                            : notif,
-                    );
-                    setNotificationState(updated);
-                });
-
-                const deleteButton = document.createElement("button");
-                deleteButton.type = "button";
-                deleteButton.className =
-                    "admin-notification__swipe-button admin-notification__swipe-button--danger";
-                deleteButton.textContent = "Hapus";
-                deleteButton.addEventListener("click", (event) => {
-                    event.stopPropagation();
-                    const remaining = notificationState.filter(
-                        (notif) => notif.id !== item.id,
-                    );
-                    setNotificationState(remaining);
-                });
-
-                actionsPanel.appendChild(markButton);
-                actionsPanel.appendChild(deleteButton);
-
                 const main = document.createElement("div");
                 main.className = "admin-notification__main";
-
-                const selection = document.createElement("div");
-                selection.className = "admin-notification__select";
-                const checkbox = document.createElement("input");
-                checkbox.type = "checkbox";
-                checkbox.setAttribute("aria-label", "Pilih notifikasi");
-                checkbox.dataset.selectionCheckbox = "true";
-                checkbox.dataset.id = item.id;
-                checkbox.checked = selectedNotificationIds.has(item.id);
-                checkbox.addEventListener("change", () => {
-                    if (checkbox.checked) {
-                        selectedNotificationIds.add(item.id);
-                    } else {
-                        selectedNotificationIds.delete(item.id);
-                    }
-                    syncBulkControls();
-                });
-                selection.appendChild(checkbox);
 
                 const icon = document.createElement("div");
                 icon.className = "admin-notification__icon";
@@ -1973,24 +1238,11 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 typeBadge.textContent = formatNotificationTypeLabel(item.type);
                 labels.appendChild(typeBadge);
 
-                const priority = document.createElement("span");
-                priority.className = "admin-notification__priority";
-                priority.dataset.priority = item.priority ?? "medium";
-                priority.textContent = formatPriorityLabel(item.priority);
-                labels.appendChild(priority);
-
                 if ((item.status ?? "unread") === "unread") {
                     const badge = document.createElement("span");
                     badge.className = "admin-pill-badge admin-pill-badge--new";
                     badge.textContent = "Baru";
                     labels.appendChild(badge);
-                }
-
-                if (item.category) {
-                    const category = document.createElement("span");
-                    category.className = "admin-notification__category";
-                    category.textContent = item.category;
-                    labels.appendChild(category);
                 }
 
                 top.appendChild(titles);
@@ -1999,18 +1251,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 const text = document.createElement("p");
                 text.className = "admin-notification__text";
                 text.textContent = item.message;
-
-                if (item.tags?.length) {
-                    const tags = document.createElement("div");
-                    tags.className = "admin-notification__tags";
-                    item.tags.slice(0, 3).forEach((tag) => {
-                        const pill = document.createElement("span");
-                        pill.className = "admin-notification__tag";
-                        pill.textContent = tag;
-                        tags.appendChild(pill);
-                    });
-                    text.appendChild(tags);
-                }
 
                 const footer = document.createElement("div");
                 footer.className = "admin-notification__footer";
@@ -2049,133 +1289,16 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 content.appendChild(text);
                 content.appendChild(footer);
 
-                const metaBar = document.createElement("div");
-                metaBar.className = "admin-notification__meta-bar";
-                metaBar.innerHTML = `
-                    <span class="admin-pill-chip">
-                        <i class="fa-solid fa-clock" aria-hidden="true"></i>
-                        ${formatRelativeTime(item.time)}
-                    </span>
-                    <span class="admin-pill-chip">
-                        <i class="fa-solid fa-wave-square" aria-hidden="true"></i>
-                        ${item.source ?? "Manual"}
-                    </span>
-                    <span
-                        class="admin-pill-chip"
-                        data-priority-chip="${item.priority ?? "medium"}"
-                    >
-                        <i class="fa-solid fa-signal" aria-hidden="true"></i>
-                        ${formatPriorityLabel(item.priority)}
-                    </span>
-                `;
-
-                content.appendChild(metaBar);
-
-                main.appendChild(selection);
                 main.appendChild(icon);
                 main.appendChild(content);
 
-                swipeWrapper.appendChild(actionsPanel);
-                swipeWrapper.appendChild(main);
-
-                article.appendChild(swipeWrapper);
+                article.appendChild(main);
                 notificationContainer.appendChild(article);
-
-                attachSwipeGestures(article, main, actionsPanel);
             });
-            syncBulkControls();
-        };
-
-        const toggleSelectAll = (checked: boolean) => {
-            const checkboxes = notificationContainer?.querySelectorAll<HTMLInputElement>(
-                "[data-selection-checkbox]",
-            );
-            checkboxes?.forEach((box) => {
-                const id = box.dataset.id;
-                box.checked = checked;
-                if (checked) {
-                    if (id) selectedNotificationIds.add(id);
-                } else if (id) {
-                    selectedNotificationIds.delete(id);
-                }
-            });
-            if (!checked) selectedNotificationIds.clear();
-            syncBulkControls();
-        };
-
-        const markSelectedAsRead = () => {
-            if (!selectedNotificationIds.size) return;
-            const updated = notificationState.map((item) =>
-                selectedNotificationIds.has(item.id)
-                    ? { ...item, status: "read" as const }
-                    : item,
-            );
-            selectedNotificationIds.clear();
-            setNotificationState(updated);
-        };
-
-        const deleteSelected = () => {
-            if (!selectedNotificationIds.size) return;
-            const remaining = notificationState.filter(
-                (item) => !selectedNotificationIds.has(item.id),
-            );
-            selectedNotificationIds.clear();
-            setNotificationState(remaining);
-        };
-
-        const markAllAsRead = () => {
-            if (allItemsAreRead()) return;
-            const updated = notificationState.map((item) => ({
-                ...item,
-                status: "read" as const,
-            }));
-            selectedNotificationIds.clear();
-            setNotificationState(updated);
-        };
-
-        const updateFilterChips = () => {
-            filterButtons.forEach((button) => {
-                const type = button.dataset.filterType as
-                    | "status"
-                    | "type"
-                    | "priority";
-                const value = (button.dataset.filterValue ?? "all") as string;
-                const isActive = (filters as any)[type] === value;
-                button.classList.toggle("is-active", isActive);
-            });
-        };
-
-        const setFilter = (
-            type: "status" | "type" | "priority",
-            value: string,
-        ) => {
-            (filters as any)[type] = value;
-            updateFilterChips();
-            refreshNotifications();
-        };
-
-        const resetFilters = () => {
-            filters.status = "all";
-            filters.type = "all";
-            filters.priority = "all";
-            filters.query = "";
-            filters.onlyUnread = false;
-            if (searchInput) searchInput.value = "";
-            if (unreadToggle) unreadToggle.checked = false;
-            selectedNotificationIds.clear();
-            notificationContainer
-                ?.querySelectorAll<HTMLInputElement>("[data-selection-checkbox]")
-                .forEach((checkbox) => {
-                    checkbox.checked = false;
-                });
-            updateFilterChips();
-            refreshNotifications();
         };
 
         const resetFeed = () => {
-            selectedNotificationIds.clear();
             setNotificationState([...defaultNotifications]);
-            resetFilters();
         };
 
         const normalizeCommentNotification = (record: any) => {
@@ -2349,52 +1472,8 @@ const previewProducts = affiliateProducts.slice(0, 3);
             subscribeRealtimeNotifications();
         };
 
-        selectAllCheckbox?.addEventListener("change", (event) => {
-            const target = event.target as HTMLInputElement;
-            toggleSelectAll(target.checked);
-        });
-
-        markSelectedButton?.addEventListener("click", () => {
-            markSelectedAsRead();
-        });
-
-        deleteSelectedButton?.addEventListener("click", () => {
-            deleteSelected();
-        });
-
-        markAllButton?.addEventListener("click", () => {
-            markAllAsRead();
-        });
-
         resetFeedButton?.addEventListener("click", () => {
             resetFeed();
-        });
-
-        resetFiltersButton?.addEventListener("click", () => {
-            resetFilters();
-        });
-
-        filterButtons.forEach((button) => {
-            button.addEventListener("click", () => {
-                const type = button.dataset.filterType as
-                    | "status"
-                    | "type"
-                    | "priority";
-                const value = button.dataset.filterValue ?? "all";
-                setFilter(type, value);
-            });
-        });
-
-        searchInput?.addEventListener("input", (event) => {
-            const target = event.target as HTMLInputElement;
-            filters.query = target.value;
-            refreshNotifications();
-        });
-
-        unreadToggle?.addEventListener("change", (event) => {
-            const target = event.target as HTMLInputElement;
-            filters.onlyUnread = target.checked;
-            refreshNotifications();
         });
 
         function setActiveTab(tabName: string): void {
@@ -2462,7 +1541,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
 
         function initializeTabs(): void {
             setActiveTab("overview");
-            updateFilterChips();
             bootstrapNotifications();
             startRealtimePolling();
         }
