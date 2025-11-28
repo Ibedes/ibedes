@@ -3,7 +3,7 @@ main = "./dist/_worker.js"
 compatibility_date = "2024-11-28"
 
 # Optional but recommended if you have the value handy
-# account_id = "replace-with-your-account-id"
+# account_id = "ff565e1f37619e3c11556e7dde52bb73"
 
 [site]
 bucket = "./dist"
