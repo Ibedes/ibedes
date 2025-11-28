@@ -7,12 +7,17 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 
 import node from "@astrojs/node";
+import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://ibedes.xyz",
   output: "server",
-  adapter: node({ mode: "standalone" }),
+  adapter: cloudflare({
+    platformProxy: {
+      enabled: true
+    }
+  }),
   image: {
     remotePatterns: [
       { protocol: "https", hostname: "**.susercontent.com" },
