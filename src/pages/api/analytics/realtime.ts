@@ -1,19 +1,23 @@
 import type { APIRoute } from "astro";
-import { getRealtimeMetrics, getTopPages } from "../../../lib/ga4";
+import { getRealtimeSnapshot, getTopPages } from "../../../lib/analytics-store";
 
-// Simple in-memory cache
-let cache: {
-    data: any;
+interface CacheEntry {
+    data: Record<string, unknown>;
     timestamp: number;
-} | null = null;
+    minutes: number;
+}
 
-const CACHE_TTL = 60 * 1000; // 1 minute cache for realtime data
+let cache: CacheEntry | null = null;
+const CACHE_TTL = 60 * 1000; // 1 minute
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ url }) => {
+    const minutesParam = Number(url.searchParams.get("minutes"));
+    const minutes = Number.isFinite(minutesParam)
+        ? Math.max(5, Math.min(60, minutesParam))
+        : 30;
     const now = Date.now();
 
-    // Return cached data if valid
-    if (cache && now - cache.timestamp < CACHE_TTL) {
+    if (cache && now - cache.timestamp < CACHE_TTL && cache.minutes === minutes) {
         return new Response(JSON.stringify(cache.data), {
             status: 200,
             headers: {
@@ -23,23 +27,19 @@ export const GET: APIRoute = async () => {
     }
 
     try {
-        const [metrics, topPages] = await Promise.all([
-            getRealtimeMetrics(),
-            getTopPages(5) // Get top 5 pages from last 7 days as context
+        const [snapshot, topPages] = await Promise.all([
+            getRealtimeSnapshot(minutes),
+            getTopPages(7, 5),
         ]);
 
         const data = {
-            activeUsers: metrics?.activeUsers || 0,
-            pageViews: metrics?.screenPageViews || 0,
-            topPages: topPages || [],
-            timestamp: now
+            activeUsers: snapshot.activeUsers,
+            pageViews: snapshot.pageViews,
+            topPages,
+            timestamp: snapshot.timestamp,
         };
 
-        // Update cache
-        cache = {
-            data,
-            timestamp: now
-        };
+        cache = { data, timestamp: now, minutes };
 
         return new Response(JSON.stringify(data), {
             status: 200,
@@ -48,12 +48,15 @@ export const GET: APIRoute = async () => {
             },
         });
     } catch (error) {
-        console.error("API Error:", error);
-        return new Response(JSON.stringify({ error: "Failed to fetch analytics" }), {
-            status: 500,
-            headers: {
-                "Content-Type": "application/json",
+        console.error("[Analytics] Realtime endpoint error:", error);
+        return new Response(
+            JSON.stringify({ error: "Failed to fetch realtime analytics" }),
+            {
+                status: 500,
+                headers: {
+                    "Content-Type": "application/json",
+                },
             },
-        });
+        );
     }
 };

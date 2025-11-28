@@ -6,8 +6,8 @@ import Layout from "../../layouts/Layout.astro";
 import { GLOBAL } from "../../lib/variables";
 import AnalyticsCard from "../../components/admin/AnalyticsCard.astro";
 import TopPagesList from "../../components/admin/TopPagesList.astro";
+import EnhancedAnalytics from "../../components/admin/EnhancedAnalytics.astro";
 import { loadAffiliateProducts } from "../../lib/affiliates";
-import { formatRupiah } from "../../lib/utils";
 import { formatRupiah } from "../../lib/utils";
 
 export const prerender = false;
@@ -646,150 +646,74 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 role="tabpanel"
                 aria-labelledby="analytics-tab"
             >
-                <div class="admin-panel admin-panel--stack">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                        <AnalyticsCard
-                            title="Pengguna Aktif (30m)"
-                            value="-"
-                            icon="fa-users"
-                            loading={true}
-                            id="metric-active-users"
-                            class="border-l-4 border-l-green-500"
-                        />
-                        <AnalyticsCard
-                            title="Tayangan Halaman (30m)"
-                            value="-"
-                            icon="fa-eye"
-                            loading={true}
-                            id="metric-realtime-views"
-                        />
-                        <AnalyticsCard
-                            title="Total Sesi (28h)"
-                            value="-"
-                            icon="fa-chart-line"
-                            loading={true}
-                            id="metric-sessions"
-                        />
-                        <AnalyticsCard
-                            title="Durasi Sesi (Rata-rata)"
-                            value="-"
-                            icon="fa-clock"
-                            loading={true}
-                            id="metric-duration"
-                        />
-                    </div>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="lg:col-span-2">
-                            <TopPagesList loading={true} id="top-pages-list" />
-                        </div>
-                        
-                        <div class="admin-card">
-                            <div class="admin-card__header">
-                                <div>
-                                    <p class="admin-eyebrow">RINGKASAN</p>
-                                    <h2>Metrik Utama (28 Hari)</h2>
-                                </div>
-                            </div>
-                            <div class="p-5 pt-0 space-y-6">
-                                <div>
-                                    <div class="flex justify-between mb-2">
-                                        <span class="text-sm text-muted-foreground">Total Pengguna</span>
-                                        <span class="font-bold" id="metric-total-users">-</span>
-                                    </div>
-                                    <div class="h-2 bg-muted/10 rounded-full overflow-hidden">
-                                        <div class="h-full bg-blue-500 rounded-full w-full"></div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="flex justify-between mb-2">
-                                        <span class="text-sm text-muted-foreground">Total Tayangan</span>
-                                        <span class="font-bold" id="metric-total-views">-</span>
-                                    </div>
-                                    <div class="h-2 bg-muted/10 rounded-full overflow-hidden">
-                                        <div class="h-full bg-indigo-500 rounded-full w-full"></div>
-                                    </div>
-                                </div>
-                                <div class="pt-4 border-t border-border/50">
-                                    <p class="text-xs text-muted-foreground text-center">
-                                        Data diperbarui secara otomatis setiap 60 detik untuk metrik real-time.
-                                    </p>
-                                </div>
-                            </div>
+                <EnhancedAnalytics />
+                
+                <!-- Content Performance Section -->
+                <div class="admin-card">
+                    <div class="admin-card__header">
+                        <div>
+                            <p class="admin-eyebrow">Analitik</p>
+                            <h2>Performa konten</h2>
                         </div>
                     </div>
-
-                    <div class="admin-card">
-                        <div class="admin-card__header">
-                            <div>
-                                <p class="admin-eyebrow">Analitik</p>
-                                <h2>Performa konten</h2>
-                            </div>
+                    <div class="admin-metrics">
+                        <div class="admin-metric">
+                            <p>Total artikel</p>
+                            <strong>{stats.totalArticles}</strong>
                         </div>
-                        <div class="admin-metrics">
-                            <div class="admin-metric">
-                                <p>Total artikel</p>
-                                <strong>{stats.totalArticles}</strong>
-                            </div>
-                            <div class="admin-metric">
-                                <p>Total kata</p>
-                                <strong
-                                    >{stats.totalWords.toLocaleString()}</strong
-                                >
-                            </div>
-                            <div class="admin-metric">
-                                <p>Rata-rata kata / artikel</p>
-                                <strong>{stats.averageWordsPerArticle}</strong>
-                            </div>
-                            <div class="admin-metric">
-                                <p>Total waktu baca</p>
-                                <strong>{stats.totalReadingTime} menit</strong>
-                            </div>
+                        <div class="admin-metric">
+                            <p>Total kata</p>
+                            <strong>{stats.totalWords.toLocaleString()}</strong>
+                        </div>
+                        <div class="admin-metric">
+                            <p>Rata-rata kata / artikel</p>
+                            <strong>{stats.averageWordsPerArticle}</strong>
+                        </div>
+                        <div class="admin-metric">
+                            <p>Total waktu baca</p>
+                            <strong>{stats.totalReadingTime} menit</strong>
                         </div>
                     </div>
+                </div>
 
-                    <div class="admin-card">
-                        <div class="admin-card__header">
-                            <div>
-                                <p class="admin-eyebrow">Insight</p>
-                                <h2>Korelasi produk</h2>
-                            </div>
+                <!-- Affiliate Correlation Section -->
+                <div class="admin-card">
+                    <div class="admin-card__header">
+                        <div>
+                            <p class="admin-eyebrow">Insight</p>
+                            <h2>Korelasi produk</h2>
                         </div>
-                        <div class="admin-progress">
-                            <div class="admin-progress__item">
-                                <div class="admin-progress__label">
-                                    <span>Artikel dengan produk</span>
-                                    <strong
-                                        >{articlesWithAffiliates.length}</strong
-                                    >
-                                </div>
-                                <div class="admin-progress__track">
-                                    <span
-                                        class="admin-progress__value"
-                                        style={`width: ${affiliateCoverage}%`}
-                                    ></span>
-                                </div>
-                                <p class="admin-progress__meta">
-                                    {affiliateCoverage}% dari konten sudah
-                                    memiliki tautan afiliasi.
-                                </p>
+                    </div>
+                    <div class="admin-progress">
+                        <div class="admin-progress__item">
+                            <div class="admin-progress__label">
+                                <span>Artikel dengan produk</span>
+                                <strong>{articlesWithAffiliates.length}</strong>
                             </div>
-                            <div class="admin-progress__item">
-                                <div class="admin-progress__label">
-                                    <span>Produk rata-rata / artikel</span>
-                                    <strong>{averageProductsPerArticle}</strong>
-                                </div>
-                                <div class="admin-progress__track">
-                                    <span
-                                        class="admin-progress__value"
-                                        style={`width: ${Math.min(averageProductsPerArticle * 25, 100)}%`}
-                                    ></span>
-                                </div>
-                                <p class="admin-progress__meta">
-                                    Targetkan 2 produk / artikel untuk performa
-                                    maksimal.
-                                </p>
+                            <div class="admin-progress__track">
+                                <span
+                                    class="admin-progress__value"
+                                    style={`width: ${affiliateCoverage}%`}
+                                ></span>
                             </div>
+                            <p class="admin-progress__meta">
+                                {affiliateCoverage}% dari konten sudah memiliki tautan afiliasi.
+                            </p>
+                        </div>
+                        <div class="admin-progress__item">
+                            <div class="admin-progress__label">
+                                <span>Produk rata-rata / artikel</span>
+                                <strong>{averageProductsPerArticle}</strong>
+                            </div>
+                            <div class="admin-progress__track">
+                                <span
+                                    class="admin-progress__value"
+                                    style={`width: ${Math.min(averageProductsPerArticle * 25, 100)}%`}
+                                ></span>
+                            </div>
+                            <p class="admin-progress__meta">
+                                Targetkan 2 produk / artikel untuk performa maksimal.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -971,7 +895,13 @@ const previewProducts = affiliateProducts.slice(0, 3);
         };
 
         const startRealtimePolling = () => {
-            return;
+            // Analytics auto-refresh is handled in the separate analytics script block
+            console.log("Analytics auto-refresh enabled");
+        };
+
+        const stopRealtimePolling = () => {
+            // Analytics auto-refresh cleanup is handled in the separate analytics script block
+            console.log("Analytics auto-refresh disabled");
         };
 
 

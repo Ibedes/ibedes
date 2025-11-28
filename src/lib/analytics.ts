@@ -9,6 +9,66 @@ export interface AnalyticsEvent {
     [key: string]: any;
 }
 
+const ANALYTICS_ENDPOINT = '/api/analytics/collect';
+const VISITOR_STORAGE_KEY = 'ibedes:analytics:visitor';
+const SESSION_STORAGE_KEY = 'ibedes:analytics:session';
+
+const generateId = () => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+};
+
+const getVisitorId = () => {
+    if (typeof window === 'undefined') return undefined;
+    try {
+        const existing = window.localStorage.getItem(VISITOR_STORAGE_KEY);
+        if (existing) return existing;
+        const fresh = generateId();
+        window.localStorage.setItem(VISITOR_STORAGE_KEY, fresh);
+        return fresh;
+    } catch {
+        return undefined;
+    }
+};
+
+const getSessionId = () => {
+    if (typeof window === 'undefined') return undefined;
+    try {
+        const existing = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+        if (existing) return existing;
+        const fresh = generateId();
+        window.sessionStorage.setItem(SESSION_STORAGE_KEY, fresh);
+        return fresh;
+    } catch {
+        return undefined;
+    }
+};
+
+const buildClientContext = () => {
+    if (typeof window === 'undefined') return {};
+    const visitorId = getVisitorId();
+    const sessionId = getSessionId() || visitorId;
+
+    const locale = typeof navigator !== 'undefined' ? navigator.language : undefined;
+    const timezone = typeof Intl !== 'undefined'
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : undefined;
+    const screenSize = typeof window.screen !== 'undefined'
+        ? `${window.screen.width}x${window.screen.height}`
+        : undefined;
+
+    return {
+        session_id: sessionId,
+        visitor_id: visitorId,
+        locale,
+        timezone,
+        screen: screenSize,
+        source: 'web',
+    };
+};
+
 /**
  * Track affiliate link clicks
  */
@@ -185,19 +245,43 @@ export function trackError(
  * Send event to custom analytics endpoint
  */
 function sendToAnalytics(event: AnalyticsEvent) {
-    // You can implement your own analytics endpoint here
-    // For example, sending to a custom backend or third-party service
+    if (typeof window === 'undefined') return;
+    if (!event || typeof event.event !== 'string') return;
+
+    const context = buildClientContext();
+    const payload = {
+        ...event,
+        ...context,
+        page_path: event.page_path ?? window.location.pathname,
+        page_title: event.page_title ?? document.title,
+        referrer: typeof document !== 'undefined' ? document.referrer || undefined : undefined,
+        url: window.location.href,
+        timestamp: Date.now(),
+    };
 
     if (process.env.NODE_ENV === 'development') {
-        console.log('[Analytics]', event);
+        console.log('[Analytics]', payload);
     }
 
-    // Example: Send to custom endpoint
-    // fetch('/api/analytics', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(event),
-    // }).catch(console.error);
+    const body = JSON.stringify(payload);
+    const canBeacon = typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function';
+
+    if (canBeacon) {
+        const blob = new Blob([body], { type: 'application/json' });
+        const queued = navigator.sendBeacon(ANALYTICS_ENDPOINT, blob);
+        if (queued) return;
+    }
+
+    fetch(ANALYTICS_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body,
+        keepalive: true,
+    }).catch((error) => {
+        if (process.env.NODE_ENV === 'development') {
+            console.error('[Analytics] Failed to send event', error);
+        }
+    });
 }
 
 /**

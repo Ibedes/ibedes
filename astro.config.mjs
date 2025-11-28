@@ -6,7 +6,7 @@ import react from "@astrojs/react";
 
 import sitemap from "@astrojs/sitemap";
 
-import netlify from "@astrojs/netlify";
+import cloudflare from "@astrojs/cloudflare";
 
 // Use Netlify adapter only in production build
 const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('dev');
@@ -15,7 +15,7 @@ const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('d
 export default defineConfig({
   site: "https://ibedes.xyz",
   output: "server",
-  adapter: isDev ? undefined : netlify({
+  adapter: cloudflare({
     edgeMiddleware: false,
     imageCDN: false,
     cacheOnDemandPages: false,

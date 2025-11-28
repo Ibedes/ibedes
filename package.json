@@ -9,6 +9,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.6.12",
     "@astrojs/netlify": "^6.6.2",
     "@astrojs/react": "^4.4.2",
     "@astrojs/sitemap": "^3.6.0",
@@ -17,11 +18,13 @@
     "@react-three/fiber": "^9.4.0",
     "@react-three/postprocessing": "^3.0.4",
     "@resvg/resvg-js": "^2.6.2",
+    "@supabase/supabase-js": "^2.86.0",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.0.12",
     "@types/react": "^19.2.6",
     "@types/react-dom": "^19.2.3",
     "astro": "^5.16.0",
+    "chart.js": "^4.5.1",
     "fuse.js": "^7.1.0",
     "gray-matter": "^4.0.3",
     "gsap": "^3.13.0",
