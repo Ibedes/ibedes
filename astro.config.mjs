@@ -15,11 +15,7 @@ const isDev = process.env.NODE_ENV === 'development' || process.argv.includes('d
 export default defineConfig({
   site: "https://ibedes.xyz",
   output: "server",
-  adapter: cloudflare({
-    edgeMiddleware: false,
-    imageCDN: false,
-    cacheOnDemandPages: false,
-  }),
+  adapter: cloudflare(),
   image: {
     remotePatterns: [
       { protocol: "https", hostname: "**.susercontent.com" },

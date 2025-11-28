@@ -1,0 +1,14 @@
+name = "ibedes"
+main = "./dist/_worker.js"
+compatibility_date = "2024-11-28"
+
+# Optional but recommended if you have the value handy
+# account_id = "replace-with-your-account-id"
+
+[site]
+bucket = "./dist"
+
+[[kv_namespaces]]
+binding = "SESSION"
+id = "0d7fbf12b1b2446a97cd52291dd73e77"
+# preview_id = "replace-with-preview-kv-id"
