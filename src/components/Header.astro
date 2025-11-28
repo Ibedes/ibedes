@@ -25,17 +25,6 @@ import ThemeToggle from "./ThemeToggle.astro";
       }
     </div>
     <div class="flex gap-4 justify-between px-4 sm:px-0">
-      {
-        GLOBAL.githubProfile && (
-          <Anchor
-            url={GLOBAL.githubProfile}
-            aria-label="Zaggonaut GitHub Repository"
-            class="!no-underline"
-          >
-            <i class="fa-brands fa-github text-3xl zag-text zag-transition" />
-          </Anchor>
-        )
-      }
       <ThemeToggle />
     </div>
   </nav>

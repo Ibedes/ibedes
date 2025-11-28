@@ -10,10 +10,13 @@ import AffiliateProducts from "../components/AffiliateProducts.astro";
 import { loadAffiliateProducts } from "../lib/affiliates";
 
 const allAffiliateProducts = await loadAffiliateProducts();
-const verifiedAffiliateProducts = allAffiliateProducts.filter((product) => product.verified);
-const homepageAffiliateProducts = (verifiedAffiliateProducts.length
-  ? verifiedAffiliateProducts
-  : allAffiliateProducts
+const verifiedAffiliateProducts = allAffiliateProducts.filter(
+  (product) => product.verified,
+);
+const homepageAffiliateProducts = (
+  verifiedAffiliateProducts.length
+    ? verifiedAffiliateProducts
+    : allAffiliateProducts
 ).slice(0, 6);
 const homepageFeaturedArticles = featuredArticles.slice(0, 6);
 ---
@@ -24,6 +27,11 @@ const homepageFeaturedArticles = featuredArticles.slice(0, 6);
   image={`${GLOBAL.rootUrl}/zaggonaut.png`}
 >
   <Hero />
+
+  <Section>
+    <FeaturedArticles featuredArticles={homepageFeaturedArticles} />
+    <div class="mt-12"></div>
+  </Section>
   <Section>
     <AffiliateProducts
       products={homepageAffiliateProducts}
@@ -31,10 +39,5 @@ const homepageFeaturedArticles = featuredArticles.slice(0, 6);
       context="Pilihan produk terkurasi yang sering kupakai. Klik untuk dukung konten lewat tautan resmi."
     />
   </Section>
-  <Section>
-    <FeaturedArticles featuredArticles={homepageFeaturedArticles} />
-    <div class="mt-12">
-      <SubscribeCard />
-    </div>
-  </Section>
+  <SubscribeCard />
 </Layout>

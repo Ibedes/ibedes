@@ -1,0 +1,64 @@
+---
+interface Props {
+    title: string;
+    value?: string | number;
+    trend?: number;
+    icon?: string;
+    loading?: boolean;
+    class?: string;
+}
+
+const {
+    title,
+    value = "-",
+    trend,
+    icon,
+    loading = false,
+    class: className,
+} = Astro.props;
+---
+
+<div class:list={["admin-card p-5 flex flex-col gap-3", className]}>
+    <div class="flex justify-between items-start">
+        <p class="text-sm font-medium text-muted-foreground">{title}</p>
+        {
+            icon && (
+                <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                    <i class:list={["fa-solid", icon]} />
+                </div>
+            )
+        }
+    </div>
+
+    <div class="flex items-end gap-2">
+        {
+            loading ? (
+                <div class="h-8 w-24 bg-muted/20 animate-pulse rounded" />
+            ) : (
+                <h3 class="text-2xl font-bold tracking-tight">{value}</h3>
+            )
+        }
+
+        {
+            trend !== undefined && !loading && (
+                <span
+                    class:list={[
+                        "text-xs font-medium px-1.5 py-0.5 rounded flex items-center gap-1 mb-1",
+                        trend >= 0
+                            ? "text-green-600 bg-green-500/10"
+                            : "text-red-600 bg-red-500/10",
+                    ]}
+                >
+                    <i
+                        class:list={[
+                            "fa-solid",
+                            trend >= 0 ? "fa-arrow-up" : "fa-arrow-down",
+                            "text-[10px]",
+                        ]}
+                    />
+                    {Math.abs(trend)}%
+                </span>
+            )
+        }
+    </div>
+</div>

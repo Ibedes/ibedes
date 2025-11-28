@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getRealtimeMetrics, getTopPages } from "../../../lib/ga4";
+import { getOverviewMetrics } from "../../../lib/ga4";
 
 // Simple in-memory cache
 let cache: {
@@ -7,7 +7,7 @@ let cache: {
     timestamp: number;
 } | null = null;
 
-const CACHE_TTL = 60 * 1000; // 1 minute cache for realtime data
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache for historical data
 
 export const GET: APIRoute = async () => {
     const now = Date.now();
@@ -23,15 +23,13 @@ export const GET: APIRoute = async () => {
     }
 
     try {
-        const [metrics, topPages] = await Promise.all([
-            getRealtimeMetrics(),
-            getTopPages(5) // Get top 5 pages from last 7 days as context
-        ]);
+        const metrics = await getOverviewMetrics();
 
         const data = {
-            activeUsers: metrics?.activeUsers || 0,
+            sessions: metrics?.sessions || 0,
+            users: metrics?.totalUsers || 0,
             pageViews: metrics?.screenPageViews || 0,
-            topPages: topPages || [],
+            avgDuration: metrics?.averageSessionDuration || 0,
             timestamp: now
         };
 

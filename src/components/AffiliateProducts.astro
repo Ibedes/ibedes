@@ -6,6 +6,7 @@ import { generateProductSchema } from "../lib/seo";
 import { GLOBAL } from "../lib/variables";
 import { formatRupiah } from "../lib/utils";
 import SkeletonLoader from "./common/SkeletonLoader.astro";
+import Anchor from "./common/Anchor.astro";
 
 export interface Props {
   products: AffiliateProduct[];
@@ -35,6 +36,10 @@ const productSchemas = products.map(product =>
   }, GLOBAL.rootUrl)
 );
 ---
+<div class="flex justify-between items-center w-full">
+  <h3 class="font-display text-lg sm:text-xl leading-loose">{title}</h3>
+  <Anchor url="/affiliate" class="text-base">{GLOBAL.viewAll}</Anchor>
+</div>
 
 {showSkeleton ? (
   <div class="my-8 border-t border-b border-gray-200 dark:border-gray-800 py-6">

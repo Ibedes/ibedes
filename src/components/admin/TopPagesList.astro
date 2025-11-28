@@ -1,0 +1,77 @@
+---
+interface Page {
+    path: string;
+    title: string;
+    views: number;
+}
+
+interface Props {
+    pages?: Page[];
+    loading?: boolean;
+}
+
+const { pages = [], loading = false } = Astro.props;
+const maxViews = pages.length > 0 ? Math.max(...pages.map((p) => p.views)) : 0;
+---
+
+<div class="admin-card">
+    <div class="admin-card__header">
+        <div>
+            <p class="admin-eyebrow">KONTEN POPULER</p>
+            <h2>Halaman Teratas (7 Hari)</h2>
+        </div>
+    </div>
+
+    <div class="p-4 pt-0">
+        {
+            loading ? (
+                <div class="space-y-4">
+                    {[1, 2, 3, 4, 5].map(() => (
+                        <div class="flex flex-col gap-2">
+                            <div class="flex justify-between">
+                                <div class="h-4 w-48 bg-muted/20 animate-pulse rounded" />
+                                <div class="h-4 w-12 bg-muted/20 animate-pulse rounded" />
+                            </div>
+                            <div class="h-2 w-full bg-muted/10 animate-pulse rounded-full" />
+                        </div>
+                    ))}
+                </div>
+            ) : pages.length === 0 ? (
+                <div class="text-center py-8 text-muted-foreground">
+                    <p>Belum ada data tersedia.</p>
+                </div>
+            ) : (
+                <div class="space-y-4">
+                    {pages.map((page) => (
+                        <div class="group">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <div class="flex flex-col min-w-0 pr-4">
+                                    <span
+                                        class="text-sm font-medium truncate"
+                                        title={page.title}
+                                    >
+                                        {page.title === "(not set)"
+                                            ? page.path
+                                            : page.title}
+                                    </span>
+                                    <span class="text-xs text-muted-foreground truncate font-mono">
+                                        {page.path}
+                                    </span>
+                                </div>
+                                <span class="text-sm font-bold tabular-nums whitespace-nowrap">
+                                    {page.views.toLocaleString()}
+                                </span>
+                            </div>
+                            <div class="h-2 w-full bg-muted/10 rounded-full overflow-hidden">
+                                <div
+                                    class="h-full bg-primary/80 rounded-full transition-all duration-500 ease-out group-hover:bg-primary"
+                                    style={`width: ${(page.views / maxViews) * 100}%`}
+                                />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            )
+        }
+    </div>
+</div>
