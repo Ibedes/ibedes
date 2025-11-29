@@ -6,15 +6,13 @@ import react from "@astrojs/react";
 
 import sitemap from "@astrojs/sitemap";
 
-import node from "@astrojs/node";
-
-import cloudflare from "@astrojs/cloudflare";
+import netlify from "@astrojs/netlify";
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://ibedes.xyz",
   output: "server",
-
+ adapter: netlify(),
   image: {
     remotePatterns: [
       { protocol: "https", hostname: "**.susercontent.com" },
@@ -27,5 +25,5 @@ export default defineConfig({
   },
 
   integrations: [react(), sitemap()],
-  adapter: cloudflare(),
+ 
 });
