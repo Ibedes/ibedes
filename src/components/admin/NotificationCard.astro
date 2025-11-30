@@ -1,0 +1,77 @@
+---
+interface Props {
+  type?: "like" | "comment" | "message" | "system";
+  title: string;
+  message: string;
+  time: string;
+  status?: "read" | "unread";
+  icon: string;
+  action?: {
+    label: string;
+    href: string;
+  };
+}
+
+const {
+  type = "system",
+  title,
+  message,
+  time,
+  status = "unread",
+  icon,
+  action,
+} = Astro.props;
+
+const getTypeName = (t: string) => {
+  const names: Record<string, string> = {
+    like: "Love",
+    comment: "Komentar",
+    message: "Pesan",
+    system: "Sistem",
+  };
+  return names[t] || t;
+};
+---
+
+<article
+  class="admin-notification-card-new"
+  data-type={type}
+  data-status={status}
+>
+  <header class="admin-notification-card-new__header">
+    <div class="admin-notification-card-new__icon-box">
+      <i class={icon}></i>
+    </div>
+    <div class="admin-notification-card-new__top">
+      <span class="admin-notification-card-new__badge">
+        <i class="fa-solid fa-circle-dot"></i>
+        {getTypeName(type)}
+      </span>
+      <h3 class="admin-notification-card-new__title">{title}</h3>
+      <time class="admin-notification-card-new__time">{time}</time>
+    </div>
+  </header>
+
+  <div class="admin-notification-card-new__body">
+    <p class="admin-notification-card-new__message">{message}</p>
+  </div>
+
+  {
+    action && (
+      <footer class="admin-notification-card-new__footer">
+        <div class="admin-notification-card-new__meta">
+          <span class="admin-notification-card-new__meta-dot"></span>
+          <span>Baru</span>
+        </div>
+        <a href={action.href} class="admin-notification-card-new__action">
+          {action.label}
+          <i class="fa-solid fa-arrow-right"></i>
+        </a>
+      </footer>
+    )
+  }
+</article>
+
+<style>
+  /* Notifikasi Card styling - handled in dashboard.astro */
+</style>

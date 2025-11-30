@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Notification Design Preview - IBEDES</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Open Sans', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ff6b9a, #4f46e5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #a0a0a0;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #4f46e5;
+        }
+
+        .notifications-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.25rem;
+        }
+
+        /* Notification Card */
+        .notification-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding: 1.5rem;
+            border-radius: 14px;
+            border: 1.5px solid;
+            background: #0f1419;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: slideUp 400ms ease-out backwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .notification-card:nth-child(1) { animation-delay: 50ms; }
+        .notification-card:nth-child(2) { animation-delay: 100ms; }
+        .notification-card:nth-child(3) { animation-delay: 150ms; }
+
+        .notification-card:hover {
+            border-color: #4f46e5;
+            box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .notification-card[data-type="like"] {
+            border-color: #ff6b9a;
+            background: linear-gradient(135deg, rgba(255, 107, 154, 0.03), rgba(255, 107, 154, 0.01));
+        }
+
+        .notification-card[data-type="comment"] {
+            border-color: #4f46e5;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.03), rgba(79, 70, 229, 0.01));
+        }
+
+        .notification-card[data-type="message"] {
+            border-color: #10b981;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.03), rgba(16, 185, 129, 0.01));
+        }
+
+        .notification-card[data-status="unread"]::before {
+            content: "";
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background: #ff6b9a;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.2); }
+        }
+
+        /* Card Header */
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .icon-box {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .icon-box.like {
+            background: linear-gradient(135deg, #ff6b9a, #ff8fab);
+            box-shadow: 0 4px 15px rgba(255, 107, 154, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .icon-box.comment {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .icon-box.message {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .card-top {
+            flex: 1;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.875rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+
+        .badge.like { background: #ff6b9a; }
+        .badge.comment { background: #4f46e5; }
+        .badge.message { background: #10b981; }
+        .badge i { font-size: 0.625rem; }
+
+        .title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .time {
+            font-size: 0.8125rem;
+            color: #7a7a7a;
+            font-weight: 500;
+        }
+
+        /* Card Body */
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            gap: 0.625rem;
+        }
+
+        .message {
+            font-size: 0.9375rem;
+            line-height: 1.6;
+            color: #b0b0b0;
+            margin: 0;
+        }
+
+        /* Card Footer */
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8125rem;
+            color: #7a7a7a;
+            font-weight: 500;
+        }
+
+        .meta-dot {
+            width: 0.375rem;
+            height: 0.375rem;
+            border-radius: 50%;
+            background: #5a5a5a;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 8px;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid;
+            color: white;
+            transition: all 200ms ease;
+        }
+
+        .action-btn.like {
+            background: #ff6b9a;
+            border-color: #ff6b9a;
+            box-shadow: 0 2px 8px rgba(255, 107, 154, 0.3);
+        }
+
+        .action-btn.comment {
+            background: #4f46e5;
+            border-color: #4f46e5;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.3);
+        }
+
+        .action-btn.message {
+            background: #10b981;
+            border-color: #10b981;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .action-btn i { font-size: 0.75rem; transition: transform 200ms ease; }
+        .action-btn:hover i { transform: translateX(2px); }
+
+        /* Empty State */
+        .empty-state {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3.5rem 2rem;
+            text-align: center;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.05), rgba(0, 0, 0, 0.3));
+            border: 2px dashed rgba(79, 70, 229, 0.15);
+        }
+
+        .empty-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: rgba(79, 70, 229, 0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem 0;
+            color: #fff;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+            margin: 0;
+            color: #9a9a9a;
+            line-height: 1.6;
+        }
+
+        /* Feature List */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature {
+            padding: 1.5rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: #4f46e5;
+        }
+
+        .feature h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+
+        .feature p {
+            font-size: 0.875rem;
+            color: #a0a0a0;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 768px) {
+            .notifications-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .notification-card {
+                padding: 1.25rem;
+            }
+
+            .card-footer {
+                flex-direction: column;
+                align-items: flex-start;
+                border: none;
+                padding-top: 0;
+            }
+
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>✨ New Notification Design</h1>
+            <p>Modern, Colorful & Fun Redesign untuk Admin Dashboard</p>
+        </div>
+
+        <!-- Example Notifications -->
+        <div class="section">
+            <h2 class="section-title">Contoh Notifikasi</h2>
+            <div class="notifications-grid">
+                <!-- Like Notification -->
+                <article class="notification-card" data-type="like" data-status="unread">
+                    <header class="card-header">
+                        <div class="icon-box like">
+                            <i class="fa-solid fa-heart"></i>
+                        </div>
+                        <div class="card-top">
+                            <span class="badge like">
+                                <i class="fa-solid fa-circle-dot"></i>
+                                Love
+                            </span>
+                            <h3 class="title">Artikel Kamu Dicintai!</h3>
+                            <time class="time">2 menit lalu</time>
+                        </div>
+                    </header>
+                    <div class="card-body">
+                        <p class="message">Seseorang memberikan love pada artikel "10 Tips Productivity yang Terbukti Efektif"</p>
+                    </div>
+                    <footer class="card-footer">
+                        <div class="meta">
+                            <span class="meta-dot"></span>
+                            <span>Baru</span>
+                        </div>
+                        <a href="#" class="action-btn like">
+                            Lihat
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </footer>
+                </article>
+
+                <!-- Comment Notification -->
+                <article class="notification-card" data-type="comment" data-status="unread">
+                    <header class="card-header">
+                        <div class="icon-box comment">
+                            <i class="fa-solid fa-comment"></i>
+                        </div>
+                        <div class="card-top">
+                            <span class="badge comment">
+                                <i class="fa-solid fa-circle-dot"></i>
+                                Komentar
+                            </span>
+                            <h3 class="title">Komentar Baru dari Pembaca</h3>
+                            <time class="time">5 menit lalu</time>
+                        </div>
+                    </header>
+                    <div class="card-body">
+                        <p class="message">"Artikel ini sangat membantu! Bisa diadakan update untuk topik X?" - Budi Santoso</p>
+                    </div>
+                    <footer class="card-footer">
+                        <div class="meta">
+                            <span class="meta-dot"></span>
+                            <span>Baru</span>
+                        </div>
+                        <a href="#" class="action-btn comment">
+                            Balas
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </footer>
+                </article>
+
+                <!-- Message Notification -->
+                <article class="notification-card" data-type="message" data-status="unread">
+                    <header class="card-header">
+                        <div class="icon-box message">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div class="card-top">
+                            <span class="badge message">
+                                <i class="fa-solid fa-circle-dot"></i>
+                                Pesan
+                            </span>
+                            <h3 class="title">Pesan Masuk dari Afiliasi</h3>
+                            <time class="time">15 menit lalu</time>
+                        </div>
+                    </header>
+                    <div class="card-body">
+                        <p class="message">Sudah ada 5 pembelian baru melalui link afiliasi Anda. Komisi siap diklaim!</p>
+                    </div>
+                    <footer class="card-footer">
+                        <div class="meta">
+                            <span class="meta-dot"></span>
+                            <span>Baru</span>
+                        </div>
+                        <a href="#" class="action-btn message">
+                            Cek
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    </footer>
+                </article>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="section">
+            <h2 class="section-title">✨ Fitur Baru</h2>
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-palette"></i>
+                    </div>
+                    <h3>Color-coded Types</h3>
+                    <p>Setiap tipe notifikasi memiliki warna unik: Love (Pink), Komentar (Ungu), Pesan (Hijau)</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-objects-column"></i>
+                    </div>
+                    <h3>Responsive Grid</h3>
+                    <p>Layout grid yang responsif dan menyesuaikan dengan ukuran layar desktop & mobile</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <h3>Smooth Animations</h3>
+                    <p>Animasi halus saat card muncul, hover effects yang menyenangkan & dot pulsing indicator</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <h3>Gradient Icons</h3>
+                    <p>Icon box dengan gradient background yang membuat notifikasi lebih eye-catching</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-mobile"></i>
+                    </div>
+                    <h3>Mobile Friendly</h3>
+                    <p>Desain fully responsive dengan layout yang dioptimasi untuk perangkat mobile</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <h3>Unread Status</h3>
+                    <p>Visual indicator untuk notifikasi yang belum dibaca dengan animated pulse dot</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State Example -->
+        <div class="section">
+            <h2 class="section-title">Empty State</h2>
+            <div class="notifications-grid">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fa-solid fa-bell-slash"></i>
+                    </div>
+                    <h3>Belum ada notifikasi</h3>
+                    <p>Interaksi baru dari pembaca akan muncul di sini. Tunggu komentar, love, atau pesan masuk! 💬</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
