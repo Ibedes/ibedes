@@ -235,11 +235,7 @@ const tagUsage = tags.map((tag) => ({
                 const result = await response.json();
 
                 if (response.ok) {
-                    if (typeof window.showToast === "function") {
-                        window.showToast(`${type} ${action}d successfully!`, {
-                            type: "success",
-                        });
-                    }
+                    alert(`${type} ${action}d successfully!`);
                     setTimeout(() => window.location.reload(), 1000);
                 } else {
                     alert(`Error: ${result.error}`);

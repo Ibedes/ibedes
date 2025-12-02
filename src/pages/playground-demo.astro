@@ -1,0 +1,498 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CodePlayground from "../components/CodePlayground.astro";
+import Prose from "../components/Prose.astro";
+---
+
+<Layout
+    title="Code Playground Demo - Interactive Coding Examples"
+    description="Demo halaman dengan interactive code playground untuk artikel koding"
+>
+    <main class="demo-page">
+        <div class="demo-header">
+            <h1>Interactive Code Playground</h1>
+            <p>Coba langsung kode di browser tanpa setup apapun!</p>
+        </div>
+
+        <Prose>
+            <section class="demo-section">
+                <h2>1. HTML Basics - Membuat Card</h2>
+                <p>Mari buat sebuah card sederhana dengan HTML dan CSS:</p>
+
+                <CodePlayground
+                    title="Simple Card Component"
+                    html={`<div class="card">
+  <div class="card-header">
+    <h3>Judul Card</h3>
+  </div>
+  <div class="card-body">
+    <p>Ini adalah contoh card sederhana yang dibuat dengan HTML dan CSS.</p>
+    <button class="btn">Click Me!</button>
+  </div>
+</div>`}
+                    css={`body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  max-width: 400px;
+  width: 100%;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  padding: 1.5rem;
+  color: white;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-body p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.btn {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
+}`}
+                    js={`const btn = document.querySelector('.btn');
+btn.addEventListener('click', () => {
+  alert('Button clicked! 🎉');
+});`}
+                    height="600px"
+                />
+            </section>
+
+            <section class="demo-section">
+                <h2>2. JavaScript Interaktif - Counter App</h2>
+                <p>
+                    Aplikasi counter sederhana dengan increment dan decrement:
+                </p>
+
+                <CodePlayground
+                    title="Interactive Counter"
+                    html={`<div class="counter-app">
+  <h2>Counter App</h2>
+  <div class="counter-display">
+    <span id="count">0</span>
+  </div>
+  <div class="counter-controls">
+    <button id="decrease" class="control-btn">-</button>
+    <button id="reset" class="control-btn reset">Reset</button>
+    <button id="increase" class="control-btn">+</button>
+  </div>
+</div>`}
+                    css={`body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+}
+
+.counter-app {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.counter-app h2 {
+  color: white;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.counter-display {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+#count {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #4ecdc4;
+  text-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+}
+
+.counter-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.control-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+  border: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.control-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(255, 107, 107, 0.5);
+}
+
+.control-btn:active {
+  transform: translateY(-2px);
+}
+
+.control-btn.reset {
+  background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+}`}
+                    js={`let count = 0;
+
+const countDisplay = document.getElementById('count');
+const decreaseBtn = document.getElementById('decrease');
+const resetBtn = document.getElementById('reset');
+const increaseBtn = document.getElementById('increase');
+
+function updateDisplay() {
+  countDisplay.textContent = count;
+  
+  // Change color based on value
+  if (count > 0) {
+    countDisplay.style.color = '#4ecdc4';
+  } else if (count < 0) {
+    countDisplay.style.color = '#ff6b6b';
+  } else {
+    countDisplay.style.color = '#95a5a6';
+  }
+}
+
+decreaseBtn.addEventListener('click', () => {
+  count--;
+  updateDisplay();
+});
+
+increaseBtn.addEventListener('click', () => {
+  count++;
+  updateDisplay();
+});
+
+resetBtn.addEventListener('click', () => {
+  count = 0;
+  updateDisplay();
+});`}
+                    height="650px"
+                />
+            </section>
+
+            <section class="demo-section">
+                <h2>3. CSS Animation - Loading Spinner</h2>
+                <p>Membuat loading spinner dengan pure CSS:</p>
+
+                <CodePlayground
+                    title="CSS Loading Spinner"
+                    html={`<div class="spinner-container">
+  <div class="spinner"></div>
+  <p>Loading...</p>
+</div>`}
+                    css={`body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #1a1a2e;
+}
+
+.spinner-container {
+  text-align: center;
+}
+
+.spinner {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 2rem;
+  border: 8px solid rgba(255, 255, 255, 0.1);
+  border-top: 8px solid #ff6b6b;
+  border-right: 8px solid #4ecdc4;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+p {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}`}
+                    defaultTab="css"
+                    height="500px"
+                />
+            </section>
+
+            <section class="demo-section">
+                <h2>4. Form Validation</h2>
+                <p>Form dengan validasi JavaScript real-time:</p>
+
+                <CodePlayground
+                    title="Form Validation"
+                    html={`<div class="form-container">
+  <h2>Sign Up Form</h2>
+  <form id="signupForm">
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="your@email.com" required>
+      <span class="error" id="emailError"></span>
+    </div>
+    
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Min. 8 characters" required>
+      <span class="error" id="passwordError"></span>
+    </div>
+    
+    <button type="submit" class="submit-btn">Sign Up</button>
+  </form>
+  <div id="success" class="success-msg" style="display: none;">
+    ✓ Registration successful!
+  </div>
+</div>`}
+                    css={`body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.form-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 100%;
+}
+
+.form-container h2 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #555;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input:focus {
+  outline: none;
+  border-color: #4ecdc4;
+  box-shadow: 0 0 0 3px rgba(78, 205, 196, 0.1);
+}
+
+input.invalid {
+  border-color: #ff6b6b;
+}
+
+.error {
+  display: block;
+  color: #ff6b6b;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  min-height: 1.25rem;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
+}
+
+.success-msg {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #d4edda;
+  color: #155724;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+}`}
+                    js={`const form = document.getElementById('signupForm');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const emailError = document.getElementById('emailError');
+const passwordError = document.getElementById('passwordError');
+const successMsg = document.getElementById('success');
+
+function validateEmail(email) {
+  const re = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+  return re.test(email);
+}
+
+emailInput.addEventListener('blur', () => {
+  if (!validateEmail(emailInput.value)) {
+    emailInput.classList.add('invalid');
+    emailError.textContent = 'Please enter a valid email';
+  } else {
+    emailInput.classList.remove('invalid');
+    emailError.textContent = '';
+  }
+});
+
+passwordInput.addEventListener('blur', () => {
+  if (passwordInput.value.length < 8) {
+    passwordInput.classList.add('invalid');
+    passwordError.textContent = 'Password must be at least 8 characters';
+  } else {
+    passwordInput.classList.remove('invalid');
+    passwordError.textContent = '';
+  }
+});
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  
+  if (validateEmail(emailInput.value) && passwordInput.value.length >= 8) {
+    form.style.display = 'none';
+    successMsg.style.display = 'block';
+  }
+});`}
+                    height="700px"
+                />
+            </section>
+        </Prose>
+    </main>
+</Layout>
+
+<style>
+    .demo-page {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .demo-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        padding: 3rem 1rem;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 107, 107, 0.1),
+            rgba(78, 205, 196, 0.1)
+        );
+        border-radius: 16px;
+        border: 1px solid rgba(255, 107, 107, 0.2);
+    }
+
+    .demo-header h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .demo-header p {
+        font-size: 1.25rem;
+        color: var(--color-text-muted);
+    }
+
+    .demo-section {
+        margin-bottom: 4rem;
+    }
+
+    .demo-section h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--color-text);
+    }
+
+    .demo-section p {
+        color: var(--color-text-muted);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+        .demo-header h1 {
+            font-size: 2rem;
+        }
+
+        .demo-header p {
+            font-size: 1rem;
+        }
+
+        .demo-section h2 {
+            font-size: 1.5rem;
+        }
+    }
+</style>

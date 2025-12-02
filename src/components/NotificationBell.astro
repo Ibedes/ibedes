@@ -1,0 +1,1329 @@
+---
+/**
+ * NotificationBell Component
+ * Komponen icon notifikasi yang terintegrasi di header
+ * Menampilkan badge jumlah notifikasi dan dropdown panel
+ * Hanya muncul di halaman admin
+ */
+
+interface Props {
+    isAdmin?: boolean;
+}
+
+const { isAdmin = false } = Astro.props;
+
+// Jika bukan admin, jangan render apa-apa
+if (!isAdmin) {
+    return null;
+}
+---
+
+<div class="notification-bell-container">
+    <button
+        type="button"
+        class="notification-bell-trigger"
+        aria-label="Notifikasi"
+        data-notification-trigger
+    >
+        <i class="fa-solid fa-bell"></i>
+        <span class="notification-badge" data-notification-badge>0</span>
+    </button>
+
+    <div class="notification-panel" data-notification-panel>
+        <div class="notification-panel-header">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-bell text-lg"></i>
+                <h3 class="notification-panel-title">Notifikasi</h3>
+            </div>
+            <div class="notification-panel-actions">
+                <button
+                    type="button"
+                    class="notification-icon-btn"
+                    data-mark-all-read
+                    title="Tandai semua sudah dibaca"
+                >
+                    <i class="fa-solid fa-check-double"></i>
+                </button>
+                <button
+                    type="button"
+                    class="notification-icon-btn"
+                    data-clear-all
+                    title="Hapus semua"
+                >
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="notification-filters">
+            <button class="filter-chip active" data-filter="all">
+                <i class="fa-solid fa-list"></i>
+                <span>Semua</span>
+            </button>
+            <button class="filter-chip" data-filter="newsletter">
+                <i class="fa-solid fa-envelope"></i>
+                <span>Newsletter</span>
+            </button>
+            <button class="filter-chip" data-filter="like">
+                <i class="fa-solid fa-heart"></i>
+                <span>Like</span>
+            </button>
+            <button class="filter-chip" data-filter="comment">
+                <i class="fa-solid fa-comment"></i>
+                <span>Komentar</span>
+            </button>
+        </div>
+
+        <div class="notification-list" data-notification-list>
+            <p class="notification-empty">Belum ada notifikasi.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    import {
+        loadNotifications,
+        markAsRead,
+        markAllAsRead,
+        deleteNotification,
+        clearAllNotifications,
+        type Notification,
+        type NotificationType,
+    } from "../lib/notifications";
+
+    class NotificationBell {
+        private trigger: HTMLElement | null;
+        private panel: HTMLElement | null;
+        private badge: HTMLElement | null;
+        private listElement: HTMLElement | null;
+        private filterButtons: NodeListOf<HTMLElement>;
+        private currentFilter: NotificationType | "all" = "all";
+        private checkInterval: number | null = null;
+        private isOpen = false;
+        private currentNotifications: Notification[] = []; // Store current notifications
+
+        constructor() {
+            this.trigger = document.querySelector(
+                "[data-notification-trigger]",
+            );
+            this.panel = document.querySelector("[data-notification-panel]");
+            this.badge = document.querySelector("[data-notification-badge]");
+            this.listElement = document.querySelector(
+                "[data-notification-list]",
+            );
+            this.filterButtons = document.querySelectorAll("[data-filter]");
+
+            this.init();
+        }
+
+        async init() {
+            if (!this.trigger || !this.panel) return;
+
+            this.setupEventListeners();
+            this.setupPolling();
+            this.setupStorageListener();
+            await this.loadAndDisplay();
+        }
+
+        setupEventListeners() {
+            // Toggle panel
+            this.trigger?.addEventListener("click", (e) => {
+                e.stopPropagation();
+                this.togglePanel();
+            });
+
+            // Close when clicking outside
+            document.addEventListener("click", (e) => {
+                const target = e.target as HTMLElement;
+                if (
+                    this.isOpen &&
+                    !this.panel?.contains(target) &&
+                    !this.trigger?.contains(target)
+                ) {
+                    this.closePanel();
+                }
+            });
+
+            // Filter buttons
+            this.filterButtons.forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    const filter = btn.getAttribute("data-filter") as
+                        | NotificationType
+                        | "all";
+                    this.setFilter(filter);
+                });
+            });
+
+            // Mark all as read
+            document
+                .querySelector("[data-mark-all-read]")
+                ?.addEventListener("click", async () => {
+                    await markAllAsRead();
+                    await this.loadAndDisplay();
+                    this.showToast("Semua notifikasi ditandai sudah dibaca");
+                });
+
+            // Clear all
+            document
+                .querySelector("[data-clear-all]")
+                ?.addEventListener("click", async () => {
+                    if (confirm("Hapus semua notifikasi?")) {
+                        await clearAllNotifications();
+                        await this.loadAndDisplay();
+                        this.showToast("Semua notifikasi dihapus");
+                    }
+                });
+
+            // Close on Escape
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && this.isOpen) {
+                    this.closePanel();
+                }
+            });
+        }
+
+        setupPolling() {
+            // Poll for new notifications every 10 seconds
+            this.checkInterval = window.setInterval(async () => {
+                await this.loadAndDisplay();
+            }, 10000);
+        }
+
+        setupStorageListener() {
+            // Listen for storage changes from other tabs
+            window.addEventListener("storage", async (e) => {
+                if (e.key === "ibedes:admin:notifications") {
+                    await this.loadAndDisplay();
+                }
+            });
+
+            // Listen for custom notification events
+            window.addEventListener("notification:new", ((e: CustomEvent) => {
+                this.loadAndDisplay();
+                this.showNewNotificationToast(e.detail);
+            }) as EventListener);
+        }
+
+        async togglePanel() {
+            this.isOpen = !this.isOpen;
+            this.panel?.classList.toggle("open", this.isOpen);
+            this.trigger?.classList.toggle("active", this.isOpen);
+
+            if (this.isOpen) {
+                await this.loadAndDisplay();
+            }
+        }
+
+        closePanel() {
+            this.isOpen = false;
+            this.panel?.classList.remove("open");
+            this.trigger?.classList.remove("active");
+        }
+
+        setFilter(filter: NotificationType | "all") {
+            this.currentFilter = filter;
+
+            // Update active filter button
+            this.filterButtons.forEach((btn) => {
+                const btnFilter = btn.getAttribute("data-filter");
+                btn.classList.toggle("active", btnFilter === filter);
+            });
+
+            this.loadAndDisplay();
+        }
+
+        async loadAndDisplay() {
+            const store = await loadNotifications();
+            let notifications = store.notifications;
+
+            // Apply filter
+            if (this.currentFilter !== "all") {
+                notifications = notifications.filter(
+                    (n) => n.type === this.currentFilter,
+                );
+            }
+
+            this.updateBadge(store.unreadCount);
+            this.renderNotifications(notifications);
+        }
+
+        updateBadge(count: number) {
+            if (this.badge) {
+                this.badge.textContent = count > 99 ? "99+" : count.toString();
+                this.badge.classList.toggle("visible", count > 0);
+            }
+        }
+
+        renderNotifications(notifications: Notification[]) {
+            if (!this.listElement) return;
+
+            // Store notifications for event listeners
+            this.currentNotifications = notifications;
+
+            if (notifications.length === 0) {
+                this.listElement.innerHTML =
+                    '<p class="notification-empty">Belum ada notifikasi.</p>';
+                return;
+            }
+
+            this.listElement.innerHTML = notifications
+                .slice(0, 20)
+                .map((notification) =>
+                    this.renderNotificationItem(notification),
+                )
+                .join("");
+
+            // Add event listeners
+            this.listElement
+                .querySelectorAll("[data-notification-id]")
+                .forEach((item) => {
+                    const id = item.getAttribute("data-notification-id");
+                    if (!id) return;
+
+                    // Find the notification object by ID from stored notifications
+                    const getNotification = () =>
+                        this.currentNotifications.find((n) => n.id === id);
+
+                    // Mark as read on click and show popover
+                    item.addEventListener("click", async (e) => {
+                        const target = e.target as HTMLElement;
+                        // Don't trigger if clicking delete button
+                        if (target.closest("[data-delete-notification]")) {
+                            return;
+                        }
+
+                        const notification = getNotification();
+
+                        if (!notification) {
+                            console.error("Notification not found for ID:", id);
+                            return;
+                        }
+
+                        // Mark as read
+                        if (!notification.read) {
+                            await markAsRead(id);
+                            await this.loadAndDisplay();
+                        }
+
+                        // Show popover
+                        console.log("Calling showNotificationPopover...");
+                        this.showNotificationPopover(
+                            notification,
+                            item as HTMLElement,
+                        );
+                    });
+
+                    // Also mark as read on hover (after 1 second)
+                    let hoverTimeout: number | null = null;
+                    item.addEventListener("mouseenter", async () => {
+                        const notif = getNotification();
+                        if (notif && !notif.read) {
+                            hoverTimeout = window.setTimeout(async () => {
+                                await markAsRead(id);
+                                await this.loadAndDisplay();
+                            }, 1000); // Mark as read after 1 second hover
+                        }
+                    });
+
+                    item.addEventListener("mouseleave", () => {
+                        if (hoverTimeout) {
+                            clearTimeout(hoverTimeout);
+                            hoverTimeout = null;
+                        }
+                    });
+
+                    // Delete button
+                    const deleteBtn = item.querySelector(
+                        "[data-delete-notification]",
+                    );
+                    deleteBtn?.addEventListener("click", async (e) => {
+                        e.stopPropagation();
+                        await deleteNotification(id);
+                        await this.loadAndDisplay();
+                        this.hideNotificationPopover();
+                    });
+                });
+        }
+
+        renderNotificationItem(notification: Notification): string {
+            const icon = this.getNotificationIcon(notification.type);
+            const iconColor = this.getNotificationColor(notification.type);
+            const timeAgo = this.formatTimeAgo(notification.timestamp);
+
+            return `
+        <div 
+          class="notification-item ${notification.read ? "read" : "unread"}" 
+          data-notification-id="${notification.id}"
+          data-type="${notification.type}"
+        >
+          <div class="notification-icon" style="background: ${iconColor}15; color: ${iconColor}">
+            <i class="${icon}"></i>
+          </div>
+          <div class="notification-content">
+            <p class="notification-title">${notification.title}</p>
+            <p class="notification-message">${this.escapeHtml(notification.message)}</p>
+            <p class="notification-time">${timeAgo}</p>
+          </div>
+          <div class="notification-actions">
+            ${!notification.read ? '<span class="unread-dot"></span>' : ""}
+            <button 
+              type="button" 
+              class="notification-delete-btn" 
+              data-delete-notification
+              title="Hapus"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      `;
+        }
+
+        getNotificationIcon(type: NotificationType): string {
+            const icons = {
+                newsletter: "fa-solid fa-envelope",
+                like: "fa-solid fa-heart",
+                comment: "fa-solid fa-comment",
+                bookmark: "fa-solid fa-bookmark",
+            };
+            return icons[type] || "fa-solid fa-bell";
+        }
+
+        getNotificationColor(type: NotificationType): string {
+            const colors = {
+                newsletter: "#10b981",
+                like: "#ef4444",
+                comment: "#3b82f6",
+                bookmark: "#f59e0b",
+            };
+            return colors[type] || "#6b7280";
+        }
+
+        formatTimeAgo(timestamp: string): string {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now.getTime() - date.getTime();
+
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return "Baru saja";
+            if (minutes < 60) return `${minutes} menit lalu`;
+            if (hours < 24) return `${hours} jam lalu`;
+            if (days < 7) return `${days} hari lalu`;
+
+            return date.toLocaleDateString("id-ID", {
+                day: "numeric",
+                month: "short",
+                year:
+                    date.getFullYear() !== now.getFullYear()
+                        ? "numeric"
+                        : undefined,
+            });
+        }
+
+        escapeHtml(text: string): string {
+            const div = document.createElement("div");
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        showNotificationPopover(
+            notification: Notification,
+            anchorElement: HTMLElement,
+        ) {
+            // Remove existing popover
+            this.hideNotificationPopover();
+
+            const popover = document.createElement("div");
+            popover.className = "notification-popover";
+            popover.setAttribute("data-notification-popover", "");
+
+            const icon = this.getNotificationIcon(notification.type);
+            const iconColor = this.getNotificationColor(notification.type);
+            const fullDate = new Date(notification.timestamp).toLocaleString(
+                "id-ID",
+                {
+                    dateStyle: "full",
+                    timeStyle: "medium",
+                },
+            );
+
+            // Build metadata display
+            let metadataHtml = "";
+            if (notification.metadata) {
+                if (notification.metadata.articleSlug) {
+                    metadataHtml += `
+                        <div class="popover-meta-item">
+                            <i class="fa-solid fa-link"></i>
+                            <span>Artikel: <strong>${this.escapeHtml(notification.metadata.articleTitle || notification.metadata.articleSlug)}</strong></span>
+                        </div>
+                    `;
+                }
+                if (notification.metadata.email) {
+                    metadataHtml += `
+                        <div class="popover-meta-item">
+                            <i class="fa-solid fa-envelope"></i>
+                            <span>Email: <strong>${this.escapeHtml(notification.metadata.email)}</strong></span>
+                        </div>
+                    `;
+                }
+                if (notification.metadata.commentText) {
+                    metadataHtml += `
+                        <div class="popover-meta-item">
+                            <i class="fa-solid fa-comment-dots"></i>
+                            <span>Komentar: "${this.escapeHtml(notification.metadata.commentText)}"</span>
+                        </div>
+                    `;
+                }
+                if (notification.metadata.userHash) {
+                    metadataHtml += `
+                        <div class="popover-meta-item">
+                            <i class="fa-solid fa-user"></i>
+                            <span>User: <code>${this.escapeHtml(notification.metadata.userHash.substring(0, 12))}...</code></span>
+                        </div>
+                    `;
+                }
+            }
+
+            popover.innerHTML = `
+                <div class="popover-header">
+                    <div class="popover-icon" style="background: ${iconColor}15; color: ${iconColor}">
+                        <i class="${icon}"></i>
+                    </div>
+                    <div class="popover-header-text">
+                        <h4 class="popover-title">${notification.title}</h4>
+                        <p class="popover-date">${fullDate}</p>
+                    </div>
+                    <button type="button" class="popover-close" data-popover-close>
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="popover-body">
+                    <p class="popover-message">${this.escapeHtml(notification.message)}</p>
+                    ${metadataHtml ? `<div class="popover-metadata">${metadataHtml}</div>` : ""}
+                </div>
+                <div class="popover-footer">
+                    <span class="popover-status ${notification.read ? "read" : "unread"}">
+                        <i class="fa-solid fa-circle"></i>
+                        ${notification.read ? "Sudah dibaca" : "Belum dibaca"}
+                    </span>
+                    <button type="button" class="popover-action-btn" data-popover-delete>
+                        <i class="fa-solid fa-trash"></i>
+                        Hapus
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(popover);
+
+            // Position popover
+            const rect = anchorElement.getBoundingClientRect();
+            const popoverRect = popover.getBoundingClientRect();
+
+            // Calculate position (try to show on right, fallback to left)
+            let left = rect.right + 10;
+            let top = rect.top;
+
+            // If popover goes off screen on right, show on left
+            if (left + popoverRect.width > window.innerWidth - 20) {
+                left = rect.left - popoverRect.width - 10;
+            }
+
+            // If popover goes off screen on left, center it
+            if (left < 20) {
+                left = (window.innerWidth - popoverRect.width) / 2;
+            }
+
+            // Adjust vertical position if needed
+            if (top + popoverRect.height > window.innerHeight - 20) {
+                top = window.innerHeight - popoverRect.height - 20;
+            }
+            if (top < 20) {
+                top = 20;
+            }
+
+            popover.style.left = `${left}px`;
+            popover.style.top = `${top}px`;
+
+            // Animate in
+            setTimeout(() => {
+                popover.classList.add("visible");
+            }, 10);
+
+            // Event listeners
+            popover
+                .querySelector("[data-popover-close]")
+                ?.addEventListener("click", () => {
+                    this.hideNotificationPopover();
+                });
+
+            popover
+                .querySelector("[data-popover-delete]")
+                ?.addEventListener("click", async () => {
+                    await deleteNotification(notification.id);
+                    await this.loadAndDisplay();
+                    this.hideNotificationPopover();
+                    this.showToast("Notifikasi dihapus");
+                });
+
+            // Close on click outside
+            const closeOnClickOutside = (e: MouseEvent) => {
+                const target = e.target as HTMLElement;
+                if (
+                    !popover.contains(target) &&
+                    !anchorElement.contains(target)
+                ) {
+                    this.hideNotificationPopover();
+                    document.removeEventListener("click", closeOnClickOutside);
+                }
+            };
+            setTimeout(() => {
+                document.addEventListener("click", closeOnClickOutside);
+            }, 100);
+
+            // Close on Escape
+            const closeOnEscape = (e: KeyboardEvent) => {
+                if (e.key === "Escape") {
+                    this.hideNotificationPopover();
+                    document.removeEventListener("keydown", closeOnEscape);
+                }
+            };
+            document.addEventListener("keydown", closeOnEscape);
+        }
+
+        hideNotificationPopover() {
+            const existing = document.querySelector(
+                "[data-notification-popover]",
+            );
+            if (existing) {
+                existing.classList.remove("visible");
+                setTimeout(() => existing.remove(), 200);
+            }
+        }
+
+        showNewNotificationToast(detail: any) {
+            // Show a brief toast for new notifications
+            this.showToast("Notifikasi baru!", "info");
+        }
+
+        showToast(
+            message: string,
+            type: "success" | "error" | "info" = "success",
+        ) {
+            const toast = document.createElement("div");
+            toast.className = "notification-toast";
+            toast.textContent = message;
+            toast.setAttribute("data-type", type);
+
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add("show"), 100);
+            setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        destroy() {
+            if (this.checkInterval) {
+                clearInterval(this.checkInterval);
+            }
+        }
+    }
+
+    // Initialize
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", async () => {
+            const bell = new NotificationBell();
+            await bell.init();
+        });
+    } else {
+        const bell = new NotificationBell();
+        await bell.init();
+    }
+</script>
+
+<style>
+    .notification-bell-container {
+        position: relative;
+    }
+
+    .notification-bell-trigger {
+        position: relative;
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: 0.5rem;
+        color: var(--color-foreground);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .notification-bell-trigger:hover {
+        background: color-mix(
+            in srgb,
+            var(--color-foreground) 10%,
+            transparent
+        );
+    }
+
+    .notification-bell-trigger.active {
+        background: color-mix(
+            in srgb,
+            var(--color-foreground) 15%,
+            transparent
+        );
+    }
+
+    .notification-bell-trigger i {
+        font-size: 1.25rem;
+    }
+
+    .notification-badge {
+        position: absolute;
+        top: 0.25rem;
+        right: 0.25rem;
+        min-width: 1.25rem;
+        height: 1.25rem;
+        padding: 0 0.375rem;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: #ef4444;
+        color: white;
+        border-radius: 999px;
+        font-size: 0.625rem;
+        font-weight: 700;
+        font-family: var(--font-mono);
+        line-height: 1;
+    }
+
+    .notification-badge.visible {
+        display: flex;
+        animation: badge-pop 0.3s ease;
+    }
+
+    @keyframes badge-pop {
+        0% {
+            transform: scale(0);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .notification-panel {
+        position: absolute;
+        top: calc(100% + 0.5rem);
+        right: 0;
+        width: 400px;
+        max-width: 90vw;
+        max-height: 600px;
+        background: var(--color-card, #fff);
+        border: 1px solid
+            color-mix(in srgb, var(--color-foreground) 15%, transparent);
+        border-radius: 1rem;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .notification-panel.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .notification-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.5rem 1rem;
+        border-bottom: 1px solid
+            color-mix(in srgb, var(--color-foreground) 12%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 98%,
+            transparent
+        );
+    }
+
+    .notification-panel-title {
+        font-family: var(--font-display);
+        font-size: 1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin: 0;
+        color: var(--color-foreground);
+    }
+
+    .notification-panel-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .notification-icon-btn {
+        width: 2.25rem;
+        height: 2.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: 0.5rem;
+        color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+    }
+
+    .notification-icon-btn:hover {
+        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+        color: var(--color-foreground);
+        transform: scale(1.05);
+    }
+
+    .notification-filters {
+        display: flex;
+        gap: 0.625rem;
+        padding: 1rem 1.5rem 0.75rem;
+        overflow-x: auto;
+        border-bottom: 1px solid
+            color-mix(in srgb, var(--color-foreground) 12%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 99%,
+            transparent
+        );
+    }
+
+    .filter-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: transparent;
+        border: 1px solid
+            color-mix(in srgb, var(--color-foreground) 20%, transparent);
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .filter-chip:hover {
+        background: color-mix(in srgb, var(--color-foreground) 6%, transparent);
+        border-color: color-mix(
+            in srgb,
+            var(--color-foreground) 30%,
+            transparent
+        );
+        transform: translateY(-1px);
+    }
+
+    .filter-chip.active {
+        background: var(--color-primary);
+        color: white;
+        border-color: var(--color-primary);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .notification-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem 0.75rem;
+        max-height: 400px;
+    }
+
+    .notification-empty {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        color: color-mix(in srgb, var(--color-foreground) 55%, transparent);
+        font-size: 0.9375rem;
+        margin: 0;
+        font-style: italic;
+        line-height: 1.5;
+    }
+
+    .notification-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.875rem;
+        padding: 1rem;
+        background: transparent;
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+        margin-bottom: 0.25rem;
+    }
+
+    .notification-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .notification-item.unread {
+        background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+        border-color: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    }
+
+    .notification-item:hover {
+        background: color-mix(in srgb, var(--color-foreground) 6%, transparent);
+        border-color: color-mix(
+            in srgb,
+            var(--color-foreground) 12%,
+            transparent
+        );
+    }
+
+    .notification-icon {
+        width: 2.75rem;
+        height: 2.75rem;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.625rem;
+        font-size: 1.125rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+
+    .notification-title {
+        font-weight: 700;
+        font-size: 0.875rem;
+        margin: 0;
+        line-height: 1.3;
+        color: var(--color-foreground);
+    }
+
+    .notification-message {
+        font-size: 0.8125rem;
+        color: color-mix(in srgb, var(--color-foreground) 75%, transparent);
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        line-height: 1.4;
+    }
+
+    .notification-time {
+        font-size: 0.75rem;
+        color: color-mix(in srgb, var(--color-foreground) 55%, transparent);
+        margin: 0;
+        font-weight: 500;
+        font-family: var(--font-mono);
+    }
+
+    .notification-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: auto;
+    }
+
+    .unread-dot {
+        width: 0.625rem;
+        height: 0.625rem;
+        background: var(--color-primary);
+        border-radius: 50%;
+        box-shadow: 0 0 0 2px var(--color-background);
+        flex-shrink: 0;
+    }
+
+    .notification-delete-btn {
+        width: 1.75rem;
+        height: 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: 0.375rem;
+        color: color-mix(in srgb, var(--color-foreground) 45%, transparent);
+        cursor: pointer;
+        opacity: 0;
+        transition: all 0.2s ease;
+        font-size: 0.75rem;
+    }
+
+    .notification-item:hover .notification-delete-btn {
+        opacity: 1;
+    }
+
+    .notification-delete-btn:hover {
+        background: #ef4444;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .notification-toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--color-foreground);
+        color: var(--color-background);
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        z-index: 9999;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .notification-toast.show {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .notification-toast[data-type="success"] {
+        background: #10b981;
+        color: white;
+    }
+
+    .notification-toast[data-type="error"] {
+        background: #ef4444;
+        color: white;
+    }
+
+    .notification-toast[data-type="info"] {
+        background: #3b82f6;
+        color: white;
+    }
+
+    @media (max-width: 640px) {
+        .notification-panel {
+            position: fixed;
+            top: auto;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 1rem 1rem 0 0;
+            transform: translateY(100%);
+        }
+
+        .notification-panel.open {
+            transform: translateY(0);
+        }
+
+        .filter-chip span {
+            display: none;
+        }
+
+        .filter-chip {
+            padding: 0.375rem;
+            width: 2rem;
+            justify-content: center;
+        }
+
+        .notification-toast {
+            bottom: 1rem;
+            right: 1rem;
+            left: 1rem;
+        }
+    }
+
+    /* Notification Popover Styles */
+    .notification-popover {
+        position: fixed;
+        width: 420px;
+        max-width: calc(100vw - 40px);
+        background: var(--color-card, #fff);
+        border: 1px solid
+            color-mix(in srgb, var(--color-foreground) 15%, transparent);
+        border-radius: 1rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        opacity: 0;
+        transform: scale(0.95) translateY(-10px);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        overflow: hidden;
+    }
+
+    .notification-popover.visible {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+        pointer-events: auto;
+    }
+
+    .popover-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.875rem;
+        padding: 1.25rem;
+        background: color-mix(
+            in srgb,
+            var(--color-background) 98%,
+            transparent
+        );
+        border-bottom: 1px solid
+            color-mix(in srgb, var(--color-foreground) 10%, transparent);
+    }
+
+    .popover-icon {
+        width: 3rem;
+        height: 3rem;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.75rem;
+        font-size: 1.375rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .popover-header-text {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .popover-title {
+        font-family: var(--font-display);
+        font-size: 1.125rem;
+        font-weight: 800;
+        margin: 0 0 0.25rem 0;
+        color: var(--color-foreground);
+        line-height: 1.3;
+    }
+
+    .popover-date {
+        font-size: 0.75rem;
+        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+        margin: 0;
+        font-family: var(--font-mono);
+        font-weight: 500;
+    }
+
+    .popover-close {
+        width: 2rem;
+        height: 2rem;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: 0.5rem;
+        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 1rem;
+    }
+
+    .popover-close:hover {
+        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+        color: var(--color-foreground);
+        transform: scale(1.1);
+    }
+
+    .popover-body {
+        padding: 1.25rem;
+    }
+
+    .popover-message {
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        color: var(--color-foreground);
+        margin: 0 0 1rem 0;
+    }
+
+    .popover-metadata {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem;
+        background: color-mix(in srgb, var(--color-foreground) 3%, transparent);
+        border-radius: 0.75rem;
+        border: 1px solid
+            color-mix(in srgb, var(--color-foreground) 8%, transparent);
+    }
+
+    .popover-meta-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.625rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .popover-meta-item i {
+        width: 1.125rem;
+        flex-shrink: 0;
+        color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
+        margin-top: 0.125rem;
+    }
+
+    .popover-meta-item span {
+        flex: 1;
+        color: color-mix(in srgb, var(--color-foreground) 85%, transparent);
+    }
+
+    .popover-meta-item strong {
+        color: var(--color-foreground);
+        font-weight: 700;
+    }
+
+    .popover-meta-item code {
+        font-family: var(--font-mono);
+        font-size: 0.8125rem;
+        padding: 0.125rem 0.375rem;
+        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+        border-radius: 0.25rem;
+        color: var(--color-foreground);
+    }
+
+    .popover-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.25rem;
+        background: color-mix(
+            in srgb,
+            var(--color-background) 99%,
+            transparent
+        );
+        border-top: 1px solid
+            color-mix(in srgb, var(--color-foreground) 10%, transparent);
+    }
+
+    .popover-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    .popover-status i {
+        font-size: 0.5rem;
+    }
+
+    .popover-status.unread {
+        color: var(--color-primary);
+    }
+
+    .popover-status.unread i {
+        color: var(--color-primary);
+        animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    .popover-status.read {
+        color: color-mix(in srgb, var(--color-foreground) 55%, transparent);
+    }
+
+    .popover-status.read i {
+        color: color-mix(in srgb, var(--color-foreground) 35%, transparent);
+    }
+
+    @keyframes pulse-dot {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.4;
+        }
+    }
+
+    .popover-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: transparent;
+        border: 1px solid
+            color-mix(in srgb, var(--color-foreground) 20%, transparent);
+        border-radius: 0.5rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: color-mix(in srgb, var(--color-foreground) 75%, transparent);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: var(--font-mono);
+    }
+
+    .popover-action-btn:hover {
+        background: #ef4444;
+        border-color: #ef4444;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .popover-action-btn i {
+        font-size: 0.75rem;
+    }
+
+    /* Dark mode adjustments */
+    :global(.dark) .notification-popover {
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Mobile responsive for popover */
+    @media (max-width: 640px) {
+        .notification-popover {
+            width: calc(100vw - 40px);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .popover-header {
+            padding: 1rem;
+        }
+
+        .popover-body {
+            padding: 1rem;
+        }
+
+        .popover-footer {
+            padding: 0.875rem 1rem;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: stretch;
+        }
+
+        .popover-action-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>

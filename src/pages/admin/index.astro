@@ -298,7 +298,9 @@ return Astro.redirect("/admin/dashboard");
                                                 <button
                                                     class="delete-product-btn text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                                                     data-product-id={product.id}
-                                                    data-product-name={product.name}
+                                                    data-product-name={
+                                                        product.name
+                                                    }
                                                     title="Delete product"
                                                 >
                                                     <i class="fa-solid fa-trash" />
@@ -346,34 +348,18 @@ return Astro.redirect("/admin/dashboard");
                     const result = await response.json();
 
                     if (response.ok) {
-                        // Show success toast
-                        if (typeof window.showToast === "function") {
-                            window.showToast("Article deleted successfully!", {
-                                type: "success",
-                            });
-                        }
+                        // Show success alert
+                        alert("Article deleted successfully!");
                         // Reload the page to show updated list
                         setTimeout(() => window.location.reload(), 1200);
                     } else {
-                        if (typeof window.showToast === "function") {
-                            window.showToast("Error: " + result.error, {
-                                type: "error",
-                            });
-                        } else {
-                            alert("Error deleting file: " + result.error);
-                        }
+                        alert("Error: " + result.error);
                         button.disabled = false;
                         button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                     }
                 } catch (error) {
                     console.error(error);
-                    if (typeof window.showToast === "function") {
-                        window.showToast("Failed to delete article", {
-                            type: "error",
-                        });
-                    } else {
-                        alert("Error deleting file");
-                    }
+                    alert("Failed to delete article");
                     button.disabled = false;
                     button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                 }
@@ -400,46 +386,27 @@ return Astro.redirect("/admin/dashboard");
                     button.innerHTML =
                         '<i class="fa-solid fa-spinner fa-spin"></i>';
 
-                    const response = await fetch(
-                        "/api/admin/delete-product",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({ id: productId }),
+                    const response = await fetch("/api/admin/delete-product", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
                         },
-                    );
+                        body: JSON.stringify({ id: productId }),
+                    });
 
                     const result = await response.json();
 
                     if (response.ok) {
-                        if (typeof window.showToast === "function") {
-                            window.showToast("Product deleted successfully!", {
-                                type: "success",
-                            });
-                        }
+                        alert("Product deleted successfully!");
                         setTimeout(() => window.location.reload(), 1200);
                     } else {
-                        if (typeof window.showToast === "function") {
-                            window.showToast(result.error || "Failed to delete product", {
-                                type: "error",
-                            });
-                        } else {
-                            alert(result.error || "Failed to delete product");
-                        }
+                        alert(result.error || "Failed to delete product");
                         button.disabled = false;
                         button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                     }
                 } catch (error) {
                     console.error(error);
-                    if (typeof window.showToast === "function") {
-                        window.showToast("Failed to delete product", {
-                            type: "error",
-                        });
-                    } else {
-                        alert("Error deleting product");
-                    }
+                    alert("Failed to delete product");
                     button.disabled = false;
                     button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                 }

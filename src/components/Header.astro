@@ -2,6 +2,11 @@
 import { GLOBAL } from "../lib/variables";
 import Anchor from "./common/Anchor.astro";
 import ThemeToggle from "./ThemeToggle.astro";
+import NotificationBell from "./NotificationBell.astro";
+
+// Cek apakah halaman saat ini adalah halaman admin
+const currentPath = Astro.url.pathname;
+const isAdminPage = currentPath.startsWith("/admin");
 ---
 
 <header class="zag-bg zag-border-b zag-transition sticky top-0 w-full z-10">
@@ -25,6 +30,7 @@ import ThemeToggle from "./ThemeToggle.astro";
       }
     </div>
     <div class="flex gap-4 justify-between px-4 sm:px-0">
+      <NotificationBell isAdmin={isAdminPage} />
       <ThemeToggle />
     </div>
   </nav>

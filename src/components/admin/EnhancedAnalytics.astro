@@ -8,30 +8,55 @@ const { class: className } = Astro.props;
 
 <div class:list={["admin-analytics-enhanced", className]}>
     <div class="admin-analytics-tabs" role="tablist">
-        <button class="admin-analytics-tab active" role="tab" aria-selected="true" data-analytics-tab="realtime">
+        <button
+            class="admin-analytics-tab active"
+            role="tab"
+            aria-selected="true"
+            data-analytics-tab="realtime"
+        >
             <i class="fa-solid fa-signal"></i>
             <span>Realtime</span>
         </button>
-        <button class="admin-analytics-tab" role="tab" data-analytics-tab="audience">
+        <button
+            class="admin-analytics-tab"
+            role="tab"
+            data-analytics-tab="audience"
+        >
             <i class="fa-solid fa-users"></i>
             <span>Audience</span>
         </button>
-        <button class="admin-analytics-tab" role="tab" data-analytics-tab="engagement">
+        <button
+            class="admin-analytics-tab"
+            role="tab"
+            data-analytics-tab="engagement"
+        >
             <i class="fa-solid fa-bolt"></i>
             <span>Engagement</span>
         </button>
-        <button class="admin-analytics-tab" role="tab" data-analytics-tab="sources">
+        <button
+            class="admin-analytics-tab"
+            role="tab"
+            data-analytics-tab="sources"
+        >
             <i class="fa-solid fa-arrow-trend-up"></i>
             <span>Sources</span>
         </button>
-        <button class="admin-analytics-tab" role="tab" data-analytics-tab="activity">
+        <button
+            class="admin-analytics-tab"
+            role="tab"
+            data-analytics-tab="activity"
+        >
             <i class="fa-solid fa-clock-rotate-left"></i>
             <span>Activity</span>
         </button>
     </div>
 
     <div class="admin-analytics-panels">
-        <section class="admin-analytics-panel active" data-tab-panel="realtime" role="tabpanel">
+        <section
+            class="admin-analytics-panel active"
+            data-tab-panel="realtime"
+            role="tabpanel"
+        >
             <div class="admin-tab-grid">
                 <div class="admin-chart-card">
                     <div class="admin-chart-card__header">
@@ -39,22 +64,38 @@ const { class: className } = Astro.props;
                             <p class="admin-eyebrow">REAL-TIME</p>
                             <h3>Active Visitors</h3>
                         </div>
-                        <div class="admin-realtime-indicator" data-realtime-status>
+                        <div
+                            class="admin-realtime-indicator"
+                            data-realtime-status
+                        >
                             <span class="admin-realtime-dot"></span>
                             <span class="admin-realtime-text">Live</span>
                         </div>
                     </div>
                     <div class="admin-chart-container">
-                        <canvas id="realtimeVisitorsChart" width="400" height="200"></canvas>
+                        <canvas
+                            id="realtimeVisitorsChart"
+                            width="400"
+                            height="200"></canvas>
                     </div>
                     <div class="admin-chart-footer">
                         <div class="admin-metric-realtime">
-                            <span class="admin-metric-realtime__value" id="currentActiveUsers">0</span>
-                            <span class="admin-metric-realtime__label">Active Users</span>
+                            <span
+                                class="admin-metric-realtime__value"
+                                id="currentActiveUsers">0</span
+                            >
+                            <span class="admin-metric-realtime__label"
+                                >Active Users</span
+                            >
                         </div>
                         <div class="admin-metric-realtime">
-                            <span class="admin-metric-realtime__value" id="currentPageViews">0</span>
-                            <span class="admin-metric-realtime__label">Page Views</span>
+                            <span
+                                class="admin-metric-realtime__value"
+                                id="currentPageViews">0</span
+                            >
+                            <span class="admin-metric-realtime__label"
+                                >Page Views</span
+                            >
                         </div>
                     </div>
                 </div>
@@ -66,23 +107,35 @@ const { class: className } = Astro.props;
                             <h3>Top Performing Pages</h3>
                         </div>
                         <div class="admin-chart-actions">
-                            <button class="admin-chip admin-chip--ghost" id="refreshTopPages">
+                            <button
+                                class="admin-chip admin-chip--ghost"
+                                id="refreshTopPages"
+                            >
                                 <i class="fa-solid fa-refresh"></i>
                                 <span>Refresh</span>
                             </button>
                         </div>
                     </div>
                     <div class="admin-top-pages-enhanced">
-                        <div class="admin-top-pages-list" id="enhancedTopPages"></div>
-                        <div class="admin-chart-container admin-chart-container--bar">
-                            <canvas id="topPagesChart" width="600" height="300"></canvas>
+                        <div class="admin-top-pages-list" id="enhancedTopPages">
+                        </div>
+                        <div
+                            class="admin-chart-container admin-chart-container--bar"
+                        >
+                            <canvas id="topPagesChart" width="600" height="300"
+                            ></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="admin-analytics-panel" data-tab-panel="audience" role="tabpanel" aria-hidden="true">
+        <section
+            class="admin-analytics-panel"
+            data-tab-panel="audience"
+            role="tabpanel"
+            aria-hidden="true"
+        >
             <div class="admin-tab-grid">
                 <div class="admin-chart-card">
                     <div class="admin-chart-card__header">
@@ -97,7 +150,8 @@ const { class: className } = Astro.props;
                         </select>
                     </div>
                     <div class="admin-chart-container">
-                        <canvas id="pageViewsChart" width="400" height="200"></canvas>
+                        <canvas id="pageViewsChart" width="400" height="200"
+                        ></canvas>
                     </div>
                 </div>
 
@@ -108,20 +162,32 @@ const { class: className } = Astro.props;
                             <h3>Device Breakdown</h3>
                         </div>
                     </div>
-                    <div class="admin-chart-container admin-chart-container--small">
-                        <canvas id="deviceChart" width="300" height="200"></canvas>
+                    <div
+                        class="admin-chart-container admin-chart-container--small"
+                    >
+                        <canvas id="deviceChart" width="300" height="200"
+                        ></canvas>
                     </div>
                     <div class="admin-chart-stats">
                         <div class="admin-chart-stat">
-                            <span class="admin-chart-stat__value" id="mobilePercent">-</span>
+                            <span
+                                class="admin-chart-stat__value"
+                                id="mobilePercent">-</span
+                            >
                             <span class="admin-chart-stat__label">Mobile</span>
                         </div>
                         <div class="admin-chart-stat">
-                            <span class="admin-chart-stat__value" id="desktopPercent">-</span>
+                            <span
+                                class="admin-chart-stat__value"
+                                id="desktopPercent">-</span
+                            >
                             <span class="admin-chart-stat__label">Desktop</span>
                         </div>
                         <div class="admin-chart-stat">
-                            <span class="admin-chart-stat__value" id="tabletPercent">-</span>
+                            <span
+                                class="admin-chart-stat__value"
+                                id="tabletPercent">-</span
+                            >
                             <span class="admin-chart-stat__label">Tablet</span>
                         </div>
                     </div>
@@ -136,19 +202,27 @@ const { class: className } = Astro.props;
                     </div>
                     <div class="admin-traffic-grid">
                         <div class="admin-traffic-metric">
-                            <span class="admin-traffic-metric__label">Sessions</span>
+                            <span class="admin-traffic-metric__label"
+                                >Sessions</span
+                            >
                             <strong id="trafficSessions">-</strong>
                         </div>
                         <div class="admin-traffic-metric">
-                            <span class="admin-traffic-metric__label">Users</span>
+                            <span class="admin-traffic-metric__label"
+                                >Users</span
+                            >
                             <strong id="trafficUsers">-</strong>
                         </div>
                         <div class="admin-traffic-metric">
-                            <span class="admin-traffic-metric__label">Page Views</span>
+                            <span class="admin-traffic-metric__label"
+                                >Page Views</span
+                            >
                             <strong id="trafficPageViews">-</strong>
                         </div>
                         <div class="admin-traffic-metric">
-                            <span class="admin-traffic-metric__label">Avg Session</span>
+                            <span class="admin-traffic-metric__label"
+                                >Avg Session</span
+                            >
                             <strong id="trafficDuration">-</strong>
                         </div>
                     </div>
@@ -156,7 +230,12 @@ const { class: className } = Astro.props;
             </div>
         </section>
 
-        <section class="admin-analytics-panel" data-tab-panel="engagement" role="tabpanel" aria-hidden="true">
+        <section
+            class="admin-analytics-panel"
+            data-tab-panel="engagement"
+            role="tabpanel"
+            aria-hidden="true"
+        >
             <div class="admin-tab-grid">
                 <div class="admin-chart-card admin-chart-card--full">
                     <div class="admin-chart-card__header">
@@ -171,8 +250,13 @@ const { class: className } = Astro.props;
                                 <i class="fa-solid fa-bolt"></i>
                             </div>
                             <div class="admin-performance-metric__content">
-                                <span class="admin-performance-metric__value" id="engagementRate">-</span>
-                                <span class="admin-performance-metric__label">Engagement Rate</span>
+                                <span
+                                    class="admin-performance-metric__value"
+                                    id="engagementRate">-</span
+                                >
+                                <span class="admin-performance-metric__label"
+                                    >Engagement Rate</span
+                                >
                             </div>
                         </div>
                         <div class="admin-performance-metric">
@@ -180,8 +264,13 @@ const { class: className } = Astro.props;
                                 <i class="fa-solid fa-chart-line"></i>
                             </div>
                             <div class="admin-performance-metric__content">
-                                <span class="admin-performance-metric__value" id="bounceRate">-</span>
-                                <span class="admin-performance-metric__label">Bounce Rate</span>
+                                <span
+                                    class="admin-performance-metric__value"
+                                    id="bounceRate">-</span
+                                >
+                                <span class="admin-performance-metric__label"
+                                    >Bounce Rate</span
+                                >
                             </div>
                         </div>
                         <div class="admin-performance-metric">
@@ -189,8 +278,13 @@ const { class: className } = Astro.props;
                                 <i class="fa-solid fa-clock"></i>
                             </div>
                             <div class="admin-performance-metric__content">
-                                <span class="admin-performance-metric__value" id="avgSessionDuration">-</span>
-                                <span class="admin-performance-metric__label">Avg Session</span>
+                                <span
+                                    class="admin-performance-metric__value"
+                                    id="avgSessionDuration">-</span
+                                >
+                                <span class="admin-performance-metric__label"
+                                    >Avg Session</span
+                                >
                             </div>
                         </div>
                         <div class="admin-performance-metric">
@@ -198,8 +292,13 @@ const { class: className } = Astro.props;
                                 <i class="fa-solid fa-percentage"></i>
                             </div>
                             <div class="admin-performance-metric__content">
-                                <span class="admin-performance-metric__value" id="conversionRate">-</span>
-                                <span class="admin-performance-metric__label">Conversion</span>
+                                <span
+                                    class="admin-performance-metric__value"
+                                    id="conversionRate">-</span
+                                >
+                                <span class="admin-performance-metric__label"
+                                    >Conversion</span
+                                >
                             </div>
                         </div>
                     </div>
@@ -229,7 +328,9 @@ const { class: className } = Astro.props;
                             <p>Error Events</p>
                             <strong id="conversionErrors">-</strong>
                         </div>
-                        <div class="admin-conversion-card admin-conversion-card--accent">
+                        <div
+                            class="admin-conversion-card admin-conversion-card--accent"
+                        >
                             <p>Conversion Rate</p>
                             <strong id="conversionRate">-</strong>
                         </div>
@@ -238,7 +339,12 @@ const { class: className } = Astro.props;
             </div>
         </section>
 
-        <section class="admin-analytics-panel" data-tab-panel="sources" role="tabpanel" aria-hidden="true">
+        <section
+            class="admin-analytics-panel"
+            data-tab-panel="sources"
+            role="tabpanel"
+            aria-hidden="true"
+        >
             <div class="admin-chart-card admin-chart-card--full">
                 <div class="admin-chart-card__header">
                     <div>
@@ -252,19 +358,35 @@ const { class: className } = Astro.props;
             </div>
         </section>
 
-        <section class="admin-analytics-panel" data-tab-panel="activity" role="tabpanel" aria-hidden="true">
+        <section
+            class="admin-analytics-panel"
+            data-tab-panel="activity"
+            role="tabpanel"
+            aria-hidden="true"
+        >
             <div class="admin-activity-tabs" role="tablist">
-                <button class="admin-activity-tab active" data-activity-tab="events" aria-selected="true">
+                <button
+                    class="admin-activity-tab active"
+                    data-activity-tab="events"
+                    aria-selected="true"
+                >
                     <i class="fa-solid fa-clock"></i>
                     <span>Recent Events</span>
                 </button>
-                <button class="admin-activity-tab" data-activity-tab="affiliate">
+                <button
+                    class="admin-activity-tab"
+                    data-activity-tab="affiliate"
+                >
                     <i class="fa-solid fa-tag"></i>
                     <span>Affiliate Clicks</span>
                 </button>
             </div>
             <div class="admin-activity-panels">
-                <div class="admin-activity-panel active" data-activity-panel="events" role="tabpanel">
+                <div
+                    class="admin-activity-panel active"
+                    data-activity-panel="events"
+                    role="tabpanel"
+                >
                     <div class="admin-chart-card admin-chart-card--full">
                         <div class="admin-chart-card__header">
                             <div>
@@ -273,11 +395,18 @@ const { class: className } = Astro.props;
                             </div>
                         </div>
                         <div class="admin-recent-events" id="recentEventsList">
-                            <p class="admin-empty">Belum ada event yang terekam.</p>
+                            <p class="admin-empty">
+                                Belum ada event yang terekam.
+                            </p>
                         </div>
                     </div>
                 </div>
-                <div class="admin-activity-panel" data-activity-panel="affiliate" role="tabpanel" aria-hidden="true">
+                <div
+                    class="admin-activity-panel"
+                    data-activity-panel="affiliate"
+                    role="tabpanel"
+                    aria-hidden="true"
+                >
                     <div class="admin-chart-card admin-chart-card--full">
                         <div class="admin-chart-card__header">
                             <div>
@@ -285,8 +414,13 @@ const { class: className } = Astro.props;
                                 <h3>Product Clicks</h3>
                             </div>
                         </div>
-                        <div class="admin-affiliate-table" id="affiliateClicksList">
-                            <p class="admin-empty">Belum ada data klik afiliasi.</p>
+                        <div
+                            class="admin-affiliate-table"
+                            id="affiliateClicksList"
+                        >
+                            <p class="admin-empty">
+                                Belum ada data klik afiliasi.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -316,7 +450,11 @@ const { class: className } = Astro.props;
         padding: 0.5rem 0.9rem;
         border-radius: 999px;
         border: var(--admin-border);
-        background: color-mix(in srgb, var(--color-background) 95%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 95%,
+            transparent
+        );
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.08em;
@@ -383,9 +521,18 @@ const { class: className } = Astro.props;
         gap: 0.5rem;
         padding: 0.35rem 0.75rem;
         border-radius: 999px;
-        background: color-mix(in srgb, var(--color-success, #10b981) 15%, transparent);
-        color: color-mix(in srgb, var(--color-success, #10b981) 80%, transparent);
-        border: 1px solid color-mix(in srgb, var(--color-success, #10b981) 30%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-success, #10b981) 15%,
+            transparent
+        );
+        color: color-mix(
+            in srgb,
+            var(--color-success, #10b981) 80%,
+            transparent
+        );
+        border: 1px solid
+            color-mix(in srgb, var(--color-success, #10b981) 30%, transparent);
         font-size: var(--admin-font-xs);
         font-weight: 600;
         text-transform: uppercase;
@@ -430,7 +577,8 @@ const { class: className } = Astro.props;
         gap: 2rem;
         justify-content: center;
         padding-top: 0.75rem;
-        border-top: 1px dashed color-mix(in srgb, var(--color-foreground) 15%, transparent);
+        border-top: 1px dashed
+            color-mix(in srgb, var(--color-foreground) 15%, transparent);
     }
 
     .admin-metric-realtime {
@@ -459,7 +607,8 @@ const { class: className } = Astro.props;
         justify-content: space-around;
         gap: 1rem;
         padding-top: 0.75rem;
-        border-top: 1px dashed color-mix(in srgb, var(--color-foreground) 15%, transparent);
+        border-top: 1px dashed
+            color-mix(in srgb, var(--color-foreground) 15%, transparent);
     }
 
     .admin-chart-stat {
@@ -513,7 +662,11 @@ const { class: className } = Astro.props;
         padding: 0.75rem;
         border-radius: 0.75rem;
         border: var(--admin-border);
-        background: color-mix(in srgb, var(--color-background) 95%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 95%,
+            transparent
+        );
         transition: all 150ms ease;
     }
 
@@ -566,7 +719,11 @@ const { class: className } = Astro.props;
         padding: 1rem;
         border-radius: 0.85rem;
         border: var(--admin-border);
-        background: color-mix(in srgb, var(--color-background) 95%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 95%,
+            transparent
+        );
         transition: all 150ms ease;
     }
 
@@ -619,7 +776,11 @@ const { class: className } = Astro.props;
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
-        background: color-mix(in srgb, var(--color-background) 96%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 96%,
+            transparent
+        );
     }
 
     .admin-traffic-metric strong {
@@ -646,7 +807,11 @@ const { class: className } = Astro.props;
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
-        background: color-mix(in srgb, var(--color-background) 96%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 96%,
+            transparent
+        );
     }
 
     .admin-conversion-card--accent {
@@ -701,7 +866,11 @@ const { class: className } = Astro.props;
         padding: 0.85rem;
         border-radius: 0.85rem;
         border: var(--admin-border);
-        background: color-mix(in srgb, var(--color-background) 96%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 96%,
+            transparent
+        );
     }
 
     @media (max-width: 640px) {
@@ -741,7 +910,11 @@ const { class: className } = Astro.props;
         font-size: var(--admin-font-xs);
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        background: color-mix(in srgb, var(--color-background) 96%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 96%,
+            transparent
+        );
         cursor: pointer;
     }
 
@@ -776,7 +949,11 @@ const { class: className } = Astro.props;
         padding: 0.75rem;
         border-radius: 0.75rem;
         border: var(--admin-border);
-        background: color-mix(in srgb, var(--color-background) 96%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 96%,
+            transparent
+        );
     }
 
     .admin-affiliate-row__product {
@@ -796,56 +973,75 @@ const { class: className } = Astro.props;
     }
 
     @keyframes pulse-dot {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.4; }
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.4;
+        }
     }
 </style>
 
 <script>
-    import { Chart, registerables } from 'chart.js';
-    
+    import { Chart, registerables } from "chart.js";
+
     Chart.register(...registerables);
-    
+
     let realtimeChart, pageViewsChart, deviceChart, topPagesChart;
     let realtimeInterval, insightInterval;
 
     class EnhancedAnalytics {
         constructor() {
-            const chartPeriod = document.getElementById('chartPeriod');
-            this.currentPeriod = chartPeriod ? parseInt(chartPeriod.value, 10) || 7 : 7;
+            const chartPeriod = document.getElementById("chartPeriod");
+            this.currentPeriod = chartPeriod
+                ? parseInt(chartPeriod.value, 10) || 7
+                : 7;
             this.overviewDays = 28;
-            this.activeTab = 'realtime';
-            this.tabButtons = Array.from(document.querySelectorAll('[data-analytics-tab]'));
-            this.tabPanels = Array.from(document.querySelectorAll('[data-tab-panel]'));
-            this.activityTabButtons = Array.from(document.querySelectorAll('[data-activity-tab]'));
-            this.activityPanels = Array.from(document.querySelectorAll('[data-activity-panel]'));
-            this.activeActivityTab = 'events';
+            this.activeTab = "realtime";
+            this.tabButtons = Array.from(
+                document.querySelectorAll("[data-analytics-tab]"),
+            );
+            this.tabPanels = Array.from(
+                document.querySelectorAll("[data-tab-panel]"),
+            );
+            this.activityTabButtons = Array.from(
+                document.querySelectorAll("[data-activity-tab]"),
+            );
+            this.activityPanels = Array.from(
+                document.querySelectorAll("[data-activity-panel]"),
+            );
+            this.activeActivityTab = "events";
             this.initializeCharts();
             this.bindEvents();
             this.startRealTimeUpdates();
             this.loadInitialData();
         }
-        
+
         initializeCharts() {
             // Real-time Visitors Chart
-            const realtimeCtx = document.getElementById('realtimeVisitorsChart')?.getContext('2d');
+            const realtimeCtx = document
+                .getElementById("realtimeVisitorsChart")
+                ?.getContext("2d");
             if (realtimeCtx) {
                 realtimeChart = new Chart(realtimeCtx, {
-                    type: 'line',
+                    type: "line",
                     data: {
                         labels: [],
-                        datasets: [{
-                            label: 'Active Users',
-                            data: [],
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            fill: true,
-                            tension: 0.4,
-                            pointBackgroundColor: '#3b82f6',
-                            pointBorderColor: '#ffffff',
-                            pointBorderWidth: 2,
-                            pointRadius: 4
-                        }]
+                        datasets: [
+                            {
+                                label: "Active Users",
+                                data: [],
+                                borderColor: "#3b82f6",
+                                backgroundColor: "rgba(59, 130, 246, 0.1)",
+                                fill: true,
+                                tension: 0.4,
+                                pointBackgroundColor: "#3b82f6",
+                                pointBorderColor: "#ffffff",
+                                pointBorderWidth: 2,
+                                pointRadius: 4,
+                            },
+                        ],
                     },
                     options: {
                         responsive: true,
@@ -853,160 +1049,170 @@ const { class: className } = Astro.props;
                         plugins: {
                             legend: { display: false },
                             tooltip: {
-                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                titleColor: '#ffffff',
-                                bodyColor: '#ffffff',
-                                cornerRadius: 8
-                            }
+                                backgroundColor: "rgba(0, 0, 0, 0.8)",
+                                titleColor: "#ffffff",
+                                bodyColor: "#ffffff",
+                                cornerRadius: 8,
+                            },
                         },
                         scales: {
                             x: {
                                 display: false,
-                                grid: { display: false }
+                                grid: { display: false },
                             },
                             y: {
                                 beginAtZero: true,
-                                grid: { color: 'rgba(156, 163, 175, 0.2)' },
-                                ticks: { color: 'rgba(156, 163, 175, 0.8)' }
-                            }
+                                grid: { color: "rgba(156, 163, 175, 0.2)" },
+                                ticks: { color: "rgba(156, 163, 175, 0.8)" },
+                            },
                         },
                         elements: {
-                            point: { hoverRadius: 6 }
-                        }
-                    }
+                            point: { hoverRadius: 6 },
+                        },
+                    },
                 });
             }
-            
+
             // Page Views Chart
-            const pageViewsCtx = document.getElementById('pageViewsChart')?.getContext('2d');
+            const pageViewsCtx = document
+                .getElementById("pageViewsChart")
+                ?.getContext("2d");
             if (pageViewsCtx) {
                 pageViewsChart = new Chart(pageViewsCtx, {
-                    type: 'bar',
+                    type: "bar",
                     data: {
                         labels: [],
-                        datasets: [{
-                            label: 'Page Views',
-                            data: [],
-                            backgroundColor: 'rgba(139, 92, 246, 0.8)',
-                            borderColor: '#8b5cf6',
-                            borderWidth: 1,
-                            borderRadius: 4
-                        }]
+                        datasets: [
+                            {
+                                label: "Page Views",
+                                data: [],
+                                backgroundColor: "rgba(139, 92, 246, 0.8)",
+                                borderColor: "#8b5cf6",
+                                borderWidth: 1,
+                                borderRadius: 4,
+                            },
+                        ],
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
                         },
                         scales: {
                             x: {
                                 grid: { display: false },
-                                ticks: { 
-                                    color: 'rgba(156, 163, 175, 0.8)',
-                                    maxRotation: 0
-                                }
+                                ticks: {
+                                    color: "rgba(156, 163, 175, 0.8)",
+                                    maxRotation: 0,
+                                },
                             },
                             y: {
                                 beginAtZero: true,
-                                grid: { color: 'rgba(156, 163, 175, 0.2)' },
-                                ticks: { color: 'rgba(156, 163, 175, 0.8)' }
-                            }
-                        }
-                    }
+                                grid: { color: "rgba(156, 163, 175, 0.2)" },
+                                ticks: { color: "rgba(156, 163, 175, 0.8)" },
+                            },
+                        },
+                    },
                 });
             }
-            
+
             // Device Chart
-            const deviceCtx = document.getElementById('deviceChart')?.getContext('2d');
+            const deviceCtx = document
+                .getElementById("deviceChart")
+                ?.getContext("2d");
             if (deviceCtx) {
                 deviceChart = new Chart(deviceCtx, {
-                    type: 'doughnut',
+                    type: "doughnut",
                     data: {
-                        labels: ['Mobile', 'Desktop', 'Tablet'],
-                        datasets: [{
-                            data: [65, 30, 5],
-                            backgroundColor: [
-                                'rgba(34, 197, 94, 0.8)',
-                                'rgba(59, 130, 246, 0.8)',
-                                'rgba(249, 115, 22, 0.8)'
-                            ],
-                            borderColor: [
-                                'rgba(34, 197, 94, 1)',
-                                'rgba(59, 130, 246, 1)',
-                                'rgba(249, 115, 22, 1)'
-                            ],
-                            borderWidth: 2
-                        }]
+                        labels: ["Mobile", "Desktop", "Tablet"],
+                        datasets: [
+                            {
+                                data: [65, 30, 5],
+                                backgroundColor: [
+                                    "rgba(34, 197, 94, 0.8)",
+                                    "rgba(59, 130, 246, 0.8)",
+                                    "rgba(249, 115, 22, 0.8)",
+                                ],
+                                borderColor: [
+                                    "rgba(34, 197, 94, 1)",
+                                    "rgba(59, 130, 246, 1)",
+                                    "rgba(249, 115, 22, 1)",
+                                ],
+                                borderWidth: 2,
+                            },
+                        ],
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
                         },
-                        cutout: '60%'
-                    }
+                        cutout: "60%",
+                    },
                 });
             }
-            
+
             // Top Pages Chart
-            const topPagesCtx = document.getElementById('topPagesChart')?.getContext('2d');
+            const topPagesCtx = document
+                .getElementById("topPagesChart")
+                ?.getContext("2d");
             if (topPagesCtx) {
                 topPagesChart = new Chart(topPagesCtx, {
-                    type: 'bar',
+                    type: "bar",
                     data: {
                         labels: [],
-                        datasets: [{
-                            label: 'Page Views',
-                            data: [],
-                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                            borderColor: 'rgba(16, 185, 129, 1)',
-                            borderWidth: 1,
-                            borderRadius: 4
-                        }]
+                        datasets: [
+                            {
+                                label: "Page Views",
+                                data: [],
+                                backgroundColor: "rgba(16, 185, 129, 0.8)",
+                                borderColor: "rgba(16, 185, 129, 1)",
+                                borderWidth: 1,
+                                borderRadius: 4,
+                            },
+                        ],
                     },
                     options: {
-                        indexAxis: 'y',
+                        indexAxis: "y",
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: { display: false }
+                            legend: { display: false },
                         },
                         scales: {
                             x: {
                                 beginAtZero: true,
-                                grid: { color: 'rgba(156, 163, 175, 0.2)' },
-                                ticks: { color: 'rgba(156, 163, 175, 0.8)' }
+                                grid: { color: "rgba(156, 163, 175, 0.2)" },
+                                ticks: { color: "rgba(156, 163, 175, 0.8)" },
                             },
                             y: {
                                 grid: { display: false },
-                                ticks: { 
-                                    color: 'rgba(156, 163, 175, 0.8)',
-                                    maxRotation: 0
-                                }
-                            }
-                        }
-                    }
+                                ticks: {
+                                    color: "rgba(156, 163, 175, 0.8)",
+                                    maxRotation: 0,
+                                },
+                            },
+                        },
+                    },
                 });
             }
         }
-        
-        bindEvents() {
-            const chartPeriod = document.getElementById('chartPeriod');
-            const refreshTopPages = document.getElementById('refreshTopPages');
 
-            chartPeriod?.addEventListener('change', () => {
+        bindEvents() {
+            const chartPeriod = document.getElementById("chartPeriod");
+            const refreshTopPages = document.getElementById("refreshTopPages");
+
+            chartPeriod?.addEventListener("change", () => {
                 const selectedDays = parseInt(chartPeriod.value, 10) || 7;
                 this.currentPeriod = selectedDays;
                 this.loadInsightData(selectedDays);
             });
 
-            refreshTopPages?.addEventListener('click', () => {
+            refreshTopPages?.addEventListener("click", () => {
                 this.loadTopPagesData();
-                if (typeof window.showToast === 'function') {
-                    window.showToast('Top pages refreshed', { type: 'success' });
-                }
+                alert("Top pages refreshed");
             });
 
             this.initTabs();
@@ -1016,8 +1222,8 @@ const { class: className } = Astro.props;
 
         initTabs() {
             this.tabButtons.forEach((button) => {
-                button.addEventListener('click', () => {
-                    const target = button.getAttribute('data-analytics-tab');
+                button.addEventListener("click", () => {
+                    const target = button.getAttribute("data-analytics-tab");
                     if (target) {
                         this.showTab(target);
                     }
@@ -1028,25 +1234,29 @@ const { class: className } = Astro.props;
         showTab(tabId) {
             this.activeTab = tabId;
             this.tabButtons.forEach((button) => {
-                const isActive = button.getAttribute('data-analytics-tab') === tabId;
-                button.classList.toggle('active', isActive);
-                button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                const isActive =
+                    button.getAttribute("data-analytics-tab") === tabId;
+                button.classList.toggle("active", isActive);
+                button.setAttribute(
+                    "aria-selected",
+                    isActive ? "true" : "false",
+                );
             });
             this.tabPanels.forEach((panel) => {
-                const isMatch = panel.getAttribute('data-tab-panel') === tabId;
-                panel.classList.toggle('active', isMatch);
+                const isMatch = panel.getAttribute("data-tab-panel") === tabId;
+                panel.classList.toggle("active", isMatch);
                 if (isMatch) {
-                    panel.removeAttribute('aria-hidden');
+                    panel.removeAttribute("aria-hidden");
                 } else {
-                    panel.setAttribute('aria-hidden', 'true');
+                    panel.setAttribute("aria-hidden", "true");
                 }
             });
         }
 
         initActivityTabs() {
             this.activityTabButtons.forEach((button) => {
-                button.addEventListener('click', () => {
-                    const target = button.getAttribute('data-activity-tab');
+                button.addEventListener("click", () => {
+                    const target = button.getAttribute("data-activity-tab");
                     if (target) {
                         this.showActivityTab(target);
                     }
@@ -1057,65 +1267,81 @@ const { class: className } = Astro.props;
         showActivityTab(tabId) {
             this.activeActivityTab = tabId;
             this.activityTabButtons.forEach((button) => {
-                const isActive = button.getAttribute('data-activity-tab') === tabId;
-                button.classList.toggle('active', isActive);
-                button.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                const isActive =
+                    button.getAttribute("data-activity-tab") === tabId;
+                button.classList.toggle("active", isActive);
+                button.setAttribute(
+                    "aria-selected",
+                    isActive ? "true" : "false",
+                );
             });
             this.activityPanels.forEach((panel) => {
-                const isMatch = panel.getAttribute('data-activity-panel') === tabId;
-                panel.classList.toggle('active', isMatch);
+                const isMatch =
+                    panel.getAttribute("data-activity-panel") === tabId;
+                panel.classList.toggle("active", isMatch);
                 if (isMatch) {
-                    panel.removeAttribute('aria-hidden');
+                    panel.removeAttribute("aria-hidden");
                 } else {
-                    panel.setAttribute('aria-hidden', 'true');
+                    panel.setAttribute("aria-hidden", "true");
                 }
             });
         }
-        
+
         async loadInitialData() {
             await Promise.all([
                 this.loadRealtimeData(),
                 this.loadInsightData(this.currentPeriod),
                 this.loadTopPagesData(),
-                this.loadOverviewSummary(this.overviewDays)
+                this.loadOverviewSummary(this.overviewDays),
             ]);
         }
 
         async loadOverviewSummary(days) {
             try {
-                const response = await fetch(`/api/analytics/overview?days=${days}`);
-                if (!response.ok) throw new Error('Failed to fetch overview data');
+                const response = await fetch(
+                    `/api/analytics/overview?days=${days}`,
+                );
+                if (!response.ok)
+                    throw new Error("Failed to fetch overview data");
                 const data = await response.json();
                 this.updateTrafficSummary(data);
             } catch (error) {
-                console.error('Error loading overview data:', error);
+                console.error("Error loading overview data:", error);
             }
         }
-        
+
         async loadRealtimeData() {
             try {
-                const response = await fetch('/api/analytics/realtime');
-                if (!response.ok) throw new Error('Failed to fetch realtime data');
+                const response = await fetch("/api/analytics/realtime");
+                if (!response.ok)
+                    throw new Error("Failed to fetch realtime data");
                 const data = await response.json();
-                
+
                 this.updateRealtimeChart(data);
                 this.updateRealtimeMetrics(data);
             } catch (error) {
-                console.error('Error loading realtime data:', error);
+                console.error("Error loading realtime data:", error);
             }
         }
-        
+
         async loadInsightData(days) {
-            const resolvedDays = Number.isFinite(days) ? days : this.currentPeriod || 7;
+            const resolvedDays = Number.isFinite(days)
+                ? days
+                : this.currentPeriod || 7;
             const sanitizedDays = Math.min(Math.max(resolvedDays, 1), 30);
             this.currentPeriod = sanitizedDays;
 
             try {
-                const response = await fetch(`/api/analytics/insights?days=${sanitizedDays}`);
-                if (!response.ok) throw new Error('Failed to fetch insight data');
+                const response = await fetch(
+                    `/api/analytics/insights?days=${sanitizedDays}`,
+                );
+                if (!response.ok)
+                    throw new Error("Failed to fetch insight data");
                 const data = await response.json();
 
-                this.updatePageViewsChart(Array.isArray(data.trend) ? data.trend : []);
+                this.updatePageViewsChart(
+                    Array.isArray(data.trend) ? data.trend : [],
+                );
 
                 if (data.device?.breakdown) {
                     this.updateDeviceChart(data.device.breakdown);
@@ -1142,66 +1368,73 @@ const { class: className } = Astro.props;
                     this.updateAffiliateClicks(data.affiliateClicks);
                 }
 
-                if (data.setup_needed && typeof window.showToast === 'function') {
-                    window.showToast(data.message || 'GA4 configuration incomplete', { type: 'warning' });
+                if (data.setup_needed) {
+                    console.warn(
+                        data.message || "GA4 configuration incomplete",
+                    );
                 }
             } catch (error) {
-                console.error('Error loading insights:', error);
+                console.error("Error loading insights:", error);
             }
         }
 
         async loadTopPagesData() {
             try {
-                const response = await fetch('/api/analytics/realtime');
-                if (!response.ok) throw new Error('Failed to fetch top pages data');
+                const response = await fetch("/api/analytics/realtime");
+                if (!response.ok)
+                    throw new Error("Failed to fetch top pages data");
                 const data = await response.json();
-                
+
                 this.updateTopPages(data.topPages || []);
             } catch (error) {
-                console.error('Error loading top pages data:', error);
+                console.error("Error loading top pages data:", error);
                 // Fallback to mock data
                 this.updateTopPages([
-                    { title: 'Home', path: '/', views: 1250 },
-                    { title: 'Blog Post 1', path: '/blog/post-1', views: 890 },
-                    { title: 'About', path: '/about', views: 560 }
+                    { title: "Home", path: "/", views: 1250 },
+                    { title: "Blog Post 1", path: "/blog/post-1", views: 890 },
+                    { title: "About", path: "/about", views: 560 },
                 ]);
             }
         }
-        
+
         updateRealtimeChart(data) {
             if (!realtimeChart) return;
-            
+
             const now = new Date();
-            const timeLabel = now.toLocaleTimeString('en-US', { 
-                hour12: false, 
-                hour: '2-digit', 
-                minute: '2-digit' 
+            const timeLabel = now.toLocaleTimeString("en-US", {
+                hour12: false,
+                hour: "2-digit",
+                minute: "2-digit",
             });
-            
+
             // Keep only last 20 data points
             realtimeChart.data.labels.push(timeLabel);
             realtimeChart.data.datasets[0].data.push(data.activeUsers || 0);
-            
+
             if (realtimeChart.data.labels.length > 20) {
                 realtimeChart.data.labels.shift();
                 realtimeChart.data.datasets[0].data.shift();
             }
-            
-            realtimeChart.update('none');
+
+            realtimeChart.update("none");
         }
-        
+
         updateRealtimeMetrics(data) {
-            const activeUsersEl = document.getElementById('currentActiveUsers');
-            const pageViewsEl = document.getElementById('currentPageViews');
-            
+            const activeUsersEl = document.getElementById("currentActiveUsers");
+            const pageViewsEl = document.getElementById("currentPageViews");
+
             if (activeUsersEl) {
-                activeUsersEl.textContent = (data.activeUsers || 0).toLocaleString();
+                activeUsersEl.textContent = (
+                    data.activeUsers || 0
+                ).toLocaleString();
             }
             if (pageViewsEl) {
-                pageViewsEl.textContent = (data.pageViews || 0).toLocaleString();
+                pageViewsEl.textContent = (
+                    data.pageViews || 0
+                ).toLocaleString();
             }
         }
-        
+
         updatePageViewsChart(trend) {
             if (!pageViewsChart) return;
 
@@ -1212,11 +1445,15 @@ const { class: className } = Astro.props;
                 return;
             }
 
-            pageViewsChart.data.labels = trend.map((point) => point.label || this.formatDateLabel(point.date));
-            pageViewsChart.data.datasets[0].data = trend.map((point) => point.pageViews || 0);
+            pageViewsChart.data.labels = trend.map(
+                (point) => point.label || this.formatDateLabel(point.date),
+            );
+            pageViewsChart.data.datasets[0].data = trend.map(
+                (point) => point.pageViews || 0,
+            );
             pageViewsChart.update();
         }
-        
+
         updateDeviceChart(breakdown) {
             if (!deviceChart) return;
 
@@ -1224,32 +1461,40 @@ const { class: className } = Astro.props;
             const desktop = breakdown?.desktop?.count ?? 0;
             const tablet = breakdown?.tablet?.count ?? 0;
 
-            deviceChart.data.datasets[0].data = [
-                mobile,
-                desktop,
-                tablet
-            ];
+            deviceChart.data.datasets[0].data = [mobile, desktop, tablet];
             deviceChart.update();
         }
-        
+
         updateDeviceStats(breakdown) {
-            const mobilePercent = document.getElementById('mobilePercent');
-            const desktopPercent = document.getElementById('desktopPercent');
-            const tabletPercent = document.getElementById('tabletPercent');
-            
-            if (mobilePercent) mobilePercent.textContent = this.formatPercent(breakdown?.mobile?.percent);
-            if (desktopPercent) desktopPercent.textContent = this.formatPercent(breakdown?.desktop?.percent);
-            if (tabletPercent) tabletPercent.textContent = this.formatPercent(breakdown?.tablet?.percent);
+            const mobilePercent = document.getElementById("mobilePercent");
+            const desktopPercent = document.getElementById("desktopPercent");
+            const tabletPercent = document.getElementById("tabletPercent");
+
+            if (mobilePercent)
+                mobilePercent.textContent = this.formatPercent(
+                    breakdown?.mobile?.percent,
+                );
+            if (desktopPercent)
+                desktopPercent.textContent = this.formatPercent(
+                    breakdown?.desktop?.percent,
+                );
+            if (tabletPercent)
+                tabletPercent.textContent = this.formatPercent(
+                    breakdown?.tablet?.percent,
+                );
         }
-        
+
         updateTopPages(topPages) {
-            const container = document.getElementById('enhancedTopPages');
-            const chartCanvas = document.getElementById('topPagesChart');
-            
+            const container = document.getElementById("enhancedTopPages");
+            const chartCanvas = document.getElementById("topPagesChart");
+
             if (!container) return;
-            
+
             // Update list view
-            container.innerHTML = topPages.slice(0, 5).map(page => `
+            container.innerHTML = topPages
+                .slice(0, 5)
+                .map(
+                    (page) => `
                 <div class="admin-top-page-item">
                     <div class="admin-top-page-item__info">
                         <div class="admin-top-page-item__title">${page.title || page.path}</div>
@@ -1257,24 +1502,35 @@ const { class: className } = Astro.props;
                     </div>
                     <div class="admin-top-page-item__views">${Number(page.views || 0).toLocaleString()}</div>
                 </div>
-            `).join('');
-            
+            `,
+                )
+                .join("");
+
             // Update chart
             if (topPagesChart && topPages.length > 0) {
-                topPagesChart.data.labels = topPages.slice(0, 8).map(page => page.title || page.path);
-                topPagesChart.data.datasets[0].data = topPages.slice(0, 8).map(page => Number(page.views || 0));
+                topPagesChart.data.labels = topPages
+                    .slice(0, 8)
+                    .map((page) => page.title || page.path);
+                topPagesChart.data.datasets[0].data = topPages
+                    .slice(0, 8)
+                    .map((page) => Number(page.views || 0));
                 topPagesChart.update();
             }
         }
-        
+
         updatePerformanceMetrics(data) {
-            const engagementRateEl = document.getElementById('engagementRate');
-            const bounceRateEl = document.getElementById('bounceRate');
-            const sessionDurationEl = document.getElementById('avgSessionDuration');
-            const conversionRateEl = document.getElementById('conversionRate');
-            
-            if (engagementRateEl) engagementRateEl.textContent = this.formatPercent(data?.engagementRate);
-            if (bounceRateEl) bounceRateEl.textContent = this.formatPercent(data?.bounceRate);
+            const engagementRateEl = document.getElementById("engagementRate");
+            const bounceRateEl = document.getElementById("bounceRate");
+            const sessionDurationEl =
+                document.getElementById("avgSessionDuration");
+            const conversionRateEl = document.getElementById("conversionRate");
+
+            if (engagementRateEl)
+                engagementRateEl.textContent = this.formatPercent(
+                    data?.engagementRate,
+                );
+            if (bounceRateEl)
+                bounceRateEl.textContent = this.formatPercent(data?.bounceRate);
             if (sessionDurationEl) {
                 const duration = Number(data?.averageSessionDuration) || 0;
                 if (duration >= 60) {
@@ -1283,129 +1539,162 @@ const { class: className } = Astro.props;
                     sessionDurationEl.textContent = `${Math.round(duration)}s`;
                 }
             }
-            if (conversionRateEl) conversionRateEl.textContent = this.formatPercent(data?.conversionRate);
+            if (conversionRateEl)
+                conversionRateEl.textContent = this.formatPercent(
+                    data?.conversionRate,
+                );
         }
 
         updateTrafficSummary(data) {
-            const sessionsEl = document.getElementById('trafficSessions');
-            const usersEl = document.getElementById('trafficUsers');
-            const viewsEl = document.getElementById('trafficPageViews');
-            const durationEl = document.getElementById('trafficDuration');
+            const sessionsEl = document.getElementById("trafficSessions");
+            const usersEl = document.getElementById("trafficUsers");
+            const viewsEl = document.getElementById("trafficPageViews");
+            const durationEl = document.getElementById("trafficDuration");
 
-            if (sessionsEl) sessionsEl.textContent = this.formatNumber(data?.sessions);
+            if (sessionsEl)
+                sessionsEl.textContent = this.formatNumber(data?.sessions);
             if (usersEl) usersEl.textContent = this.formatNumber(data?.users);
-            if (viewsEl) viewsEl.textContent = this.formatNumber(data?.pageViews);
-            if (durationEl) durationEl.textContent = this.formatDuration(data?.avgDuration);
+            if (viewsEl)
+                viewsEl.textContent = this.formatNumber(data?.pageViews);
+            if (durationEl)
+                durationEl.textContent = this.formatDuration(data?.avgDuration);
         }
 
         updateConversionSummary(data) {
-            const affiliateEl = document.getElementById('conversionAffiliate');
-            const newsletterEl = document.getElementById('conversionNewsletter');
-            const engagementEl = document.getElementById('conversionEngagement');
-            const errorsEl = document.getElementById('conversionErrors');
-            const rateEl = document.getElementById('conversionRate');
+            const affiliateEl = document.getElementById("conversionAffiliate");
+            const newsletterEl = document.getElementById(
+                "conversionNewsletter",
+            );
+            const engagementEl = document.getElementById(
+                "conversionEngagement",
+            );
+            const errorsEl = document.getElementById("conversionErrors");
+            const rateEl = document.getElementById("conversionRate");
 
-            if (affiliateEl) affiliateEl.textContent = this.formatNumber(data?.affiliateClicks);
-            if (newsletterEl) newsletterEl.textContent = this.formatNumber(data?.newsletterSubscribes);
-            if (engagementEl) engagementEl.textContent = this.formatNumber(data?.engagementEvents);
-            if (errorsEl) errorsEl.textContent = this.formatNumber(data?.errorEvents);
-            if (rateEl) rateEl.textContent = this.formatPercent(data?.conversionRate);
+            if (affiliateEl)
+                affiliateEl.textContent = this.formatNumber(
+                    data?.affiliateClicks,
+                );
+            if (newsletterEl)
+                newsletterEl.textContent = this.formatNumber(
+                    data?.newsletterSubscribes,
+                );
+            if (engagementEl)
+                engagementEl.textContent = this.formatNumber(
+                    data?.engagementEvents,
+                );
+            if (errorsEl)
+                errorsEl.textContent = this.formatNumber(data?.errorEvents);
+            if (rateEl)
+                rateEl.textContent = this.formatPercent(data?.conversionRate);
         }
 
         updateReferrerList(referrers) {
-            const container = document.getElementById('referrerList');
+            const container = document.getElementById("referrerList");
             if (!container) return;
 
             if (!Array.isArray(referrers) || referrers.length === 0) {
-                container.innerHTML = '<p class="admin-empty">Belum ada data referrer.</p>';
+                container.innerHTML =
+                    '<p class="admin-empty">Belum ada data referrer.</p>';
                 return;
             }
 
             container.innerHTML = referrers
-                .map((item) => `
+                .map(
+                    (item) => `
                     <div class="admin-referrer-item">
                         <div>
                             <div class="admin-referrer-item__source">${item.source}</div>
                         </div>
                         <div class="admin-referrer-item__value">${this.formatNumber(item.count)}</div>
                     </div>
-                `)
-                .join('');
+                `,
+                )
+                .join("");
         }
 
         updateRecentEvents(events) {
-            const container = document.getElementById('recentEventsList');
+            const container = document.getElementById("recentEventsList");
             if (!container) return;
 
             if (!Array.isArray(events) || events.length === 0) {
-                container.innerHTML = '<p class="admin-empty">Belum ada event yang terekam.</p>';
+                container.innerHTML =
+                    '<p class="admin-empty">Belum ada event yang terekam.</p>';
                 return;
             }
 
             container.innerHTML = events
-                .map((event) => `
+                .map(
+                    (event) => `
                     <div class="admin-recent-event">
                         <div>
                             <p class="admin-recent-event__meta">${this.formatTimestamp(event.created_at)}</p>
                             <p class="font-semibold">${event.event}</p>
                         </div>
                         <div>
-                            <p>${event.label || event.page_path || '-'}</p>
+                            <p>${event.label || event.page_path || "-"}</p>
                         </div>
                         <div>
-                            <p class="admin-recent-event__meta">${event.category || 'General'}</p>
-                            <p class="font-semibold text-right">${Number.isFinite(Number(event.value)) ? this.formatNumber(event.value) : ''}</p>
+                            <p class="admin-recent-event__meta">${event.category || "General"}</p>
+                            <p class="font-semibold text-right">${Number.isFinite(Number(event.value)) ? this.formatNumber(event.value) : ""}</p>
                         </div>
                     </div>
-                `)
-                .join('');
+                `,
+                )
+                .join("");
         }
 
         updateAffiliateClicks(items) {
-            const container = document.getElementById('affiliateClicksList');
+            const container = document.getElementById("affiliateClicksList");
             if (!container) return;
 
             if (!Array.isArray(items) || items.length === 0) {
-                container.innerHTML = '<p class="admin-empty">Belum ada data klik afiliasi.</p>';
+                container.innerHTML =
+                    '<p class="admin-empty">Belum ada data klik afiliasi.</p>';
                 return;
             }
 
             container.innerHTML = items
-                .map((item) => `
+                .map(
+                    (item) => `
                     <div class="admin-affiliate-row">
                         <div>
                             <div class="admin-affiliate-row__product">${item.name || item.productId}</div>
-                            <div class="admin-affiliate-row__platform">${item.platform || 'unknown'}</div>
+                            <div class="admin-affiliate-row__platform">${item.platform || "unknown"}</div>
                         </div>
-                        <div class="admin-affiliate-row__platform">${item.productId || '-'}</div>
+                        <div class="admin-affiliate-row__platform">${item.productId || "-"}</div>
                         <div class="admin-affiliate-row__clicks">${this.formatNumber(item.clicks)}</div>
                     </div>
-                `)
-                .join('');
+                `,
+                )
+                .join("");
         }
 
         formatDateLabel(value) {
-            if (!value) return '';
+            if (!value) return "";
             const date = new Date(`${value}T00:00:00`);
             if (Number.isNaN(date.getTime())) return value;
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+            });
         }
 
         formatPercent(value) {
             const numeric = Number(value);
-            if (!Number.isFinite(numeric)) return '0%';
+            if (!Number.isFinite(numeric)) return "0%";
             return `${numeric.toFixed(1)}%`;
         }
 
         formatNumber(value) {
             const numeric = Number(value);
-            if (!Number.isFinite(numeric)) return '0';
+            if (!Number.isFinite(numeric)) return "0";
             return numeric.toLocaleString();
         }
 
         formatDuration(value) {
             const numeric = Number(value);
-            if (!Number.isFinite(numeric)) return '-';
+            if (!Number.isFinite(numeric)) return "-";
             if (numeric >= 60) {
                 return `${(numeric / 60).toFixed(1)}m`;
             }
@@ -1415,9 +1704,9 @@ const { class: className } = Astro.props;
         formatTimestamp(value) {
             try {
                 const date = new Date(value);
-                return new Intl.DateTimeFormat('id-ID', {
-                    dateStyle: 'medium',
-                    timeStyle: 'short'
+                return new Intl.DateTimeFormat("id-ID", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
                 }).format(date);
             } catch (error) {
                 return value;
@@ -1429,27 +1718,27 @@ const { class: className } = Astro.props;
             realtimeInterval = setInterval(() => {
                 this.loadRealtimeData();
             }, 30000);
-            
+
             // Refresh GA4 insights every 2 minutes
             insightInterval = setInterval(() => {
                 this.loadInsightData(this.currentPeriod);
             }, 120000);
         }
-        
+
         stopRealTimeUpdates() {
             if (realtimeInterval) clearInterval(realtimeInterval);
             if (insightInterval) clearInterval(insightInterval);
         }
     }
-    
+
     // Initialize when DOM is ready
     let analytics;
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
         analytics = new EnhancedAnalytics();
     });
-    
+
     // Cleanup on page unload
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener("beforeunload", () => {
         if (analytics) {
             analytics.stopRealTimeUpdates();
         }

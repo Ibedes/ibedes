@@ -1,0 +1,886 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CodePlayground from "../components/CodePlayground.astro";
+import Prose from "../components/Prose.astro";
+---
+
+<Layout
+    title="Tutorial: Membuat Todo List dengan JavaScript"
+    description="Belajar membuat aplikasi Todo List interaktif menggunakan HTML, CSS, dan JavaScript vanilla"
+>
+    <article class="tutorial-article">
+        <header class="article-header">
+            <h1>Tutorial: Membuat Todo List dengan JavaScript</h1>
+            <div class="article-meta">
+                <span class="date">1 Desember 2025</span>
+                <span class="reading-time">15 menit</span>
+                <span class="difficulty">Beginner</span>
+            </div>
+        </header>
+
+        <Prose>
+            <section>
+                <h2>Pendahuluan</h2>
+                <p>
+                    Dalam tutorial ini, kita akan membuat aplikasi <strong
+                        >Todo List</strong
+                    > yang interaktif menggunakan HTML, CSS, dan JavaScript vanilla
+                    (tanpa framework). Aplikasi ini akan memiliki fitur menambah,
+                    menandai selesai, dan menghapus todo items.
+                </p>
+
+                <h3>Apa yang akan kamu pelajari:</h3>
+                <ul>
+                    <li>Manipulasi DOM dengan JavaScript</li>
+                    <li>Event handling (click, submit)</li>
+                    <li>Local Storage untuk menyimpan data</li>
+                    <li>CSS modern dengan gradients dan animations</li>
+                    <li>Best practices dalam struktur kode</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Step 1: Struktur HTML Dasar</h2>
+                <p>
+                    Mari kita mulai dengan membuat struktur HTML untuk aplikasi
+                    Todo List kita. Kita membutuhkan input field untuk menambah
+                    todo baru, tombol submit, dan container untuk menampilkan
+                    daftar todo.
+                </p>
+
+                <CodePlayground
+                    title="HTML Structure"
+                    html={`<div class="todo-app">
+  <h1>📝 My Todo List</h1>
+  
+  <form id="todoForm" class="todo-form">
+    <input 
+      type="text" 
+      id="todoInput" 
+      placeholder="Apa yang ingin kamu lakukan?"
+      required
+    >
+    <button type="submit">Tambah</button>
+  </form>
+  
+  <ul id="todoList" class="todo-list">
+    <!-- Todo items akan muncul di sini -->
+  </ul>
+  
+  <div class="stats">
+    <span id="totalTodos">0 todos</span>
+  </div>
+</div>`}
+                    css={`body {
+  margin: 0;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.todo-app {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+}
+
+.todo-app h1 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  text-align: center;
+}
+
+.todo-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.todo-form input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.todo-form input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.todo-form button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.stats {
+  text-align: center;
+  color: #999;
+  font-size: 0.875rem;
+}`}
+                    height="600px"
+                />
+
+                <p>
+                    <strong>Penjelasan:</strong> Struktur HTML kita terdiri dari
+                    form untuk input, list untuk menampilkan todos, dan div untuk
+                    statistik. CSS menggunakan flexbox untuk layout dan gradient
+                    untuk background yang menarik.
+                </p>
+            </section>
+
+            <section>
+                <h2>Step 2: Menambahkan Interaktivitas</h2>
+                <p>
+                    Sekarang mari kita tambahkan JavaScript untuk membuat
+                    aplikasi menjadi interaktif. Kita akan menangani form
+                    submission dan menambahkan todo items ke dalam list.
+                </p>
+
+                <CodePlayground
+                    title="Adding JavaScript Functionality"
+                    html={`<div class="todo-app">
+  <h1>📝 My Todo List</h1>
+  
+  <form id="todoForm" class="todo-form">
+    <input 
+      type="text" 
+      id="todoInput" 
+      placeholder="Apa yang ingin kamu lakukan?"
+      required
+    >
+    <button type="submit">Tambah</button>
+  </form>
+  
+  <ul id="todoList" class="todo-list">
+    <!-- Todo items akan muncul di sini -->
+  </ul>
+  
+  <div class="stats">
+    <span id="totalTodos">0 todos</span>
+  </div>
+</div>`}
+                    css={`body {
+  margin: 0;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.todo-app {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+}
+
+.todo-app h1 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  text-align: center;
+}
+
+.todo-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.todo-form input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.todo-form input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.todo-form button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.todo-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.todo-item:hover {
+  background: #e9ecef;
+  transform: translateX(4px);
+}
+
+.todo-item.completed {
+  opacity: 0.6;
+}
+
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+}
+
+.todo-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.todo-text {
+  flex: 1;
+  color: #333;
+}
+
+.delete-btn {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #ee5a6f;
+  transform: scale(1.05);
+}
+
+.stats {
+  text-align: center;
+  color: #999;
+  font-size: 0.875rem;
+  font-weight: 600;
+}`}
+                    js={`const todoForm = document.getElementById('todoForm');
+const todoInput = document.getElementById('todoInput');
+const todoList = document.getElementById('todoList');
+const totalTodos = document.getElementById('totalTodos');
+
+let todos = [];
+
+// Handle form submission
+todoForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  
+  const todoText = todoInput.value.trim();
+  if (todoText === '') return;
+  
+  // Create new todo object
+  const todo = {
+    id: Date.now(),
+    text: todoText,
+    completed: false
+  };
+  
+  todos.push(todo);
+  renderTodos();
+  
+  // Clear input
+  todoInput.value = '';
+  todoInput.focus();
+});
+
+// Render todos to the DOM
+function renderTodos() {
+  todoList.innerHTML = '';
+  
+  todos.forEach(todo => {
+    const li = document.createElement('li');
+    li.className = 'todo-item' + (todo.completed ? ' completed' : '');
+    
+    li.innerHTML = \`
+      <input 
+        type="checkbox" 
+        class="todo-checkbox" 
+        \${todo.completed ? 'checked' : ''}
+        onchange="toggleTodo(\${todo.id})"
+      >
+      <span class="todo-text">\${todo.text}</span>
+      <button class="delete-btn" onclick="deleteTodo(\${todo.id})">
+        Hapus
+      </button>
+    \`;
+    
+    todoList.appendChild(li);
+  });
+  
+  updateStats();
+}
+
+// Toggle todo completion
+function toggleTodo(id) {
+  const todo = todos.find(t => t.id === id);
+  if (todo) {
+    todo.completed = !todo.completed;
+    renderTodos();
+  }
+}
+
+// Delete todo
+function deleteTodo(id) {
+  todos = todos.filter(t => t.id !== id);
+  renderTodos();
+}
+
+// Update statistics
+function updateStats() {
+  const total = todos.length;
+  const completed = todos.filter(t => t.completed).length;
+  totalTodos.textContent = \`\${total} todos (\${completed} selesai)\`;
+}
+
+// Make functions global for inline event handlers
+window.toggleTodo = toggleTodo;
+window.deleteTodo = deleteTodo;`}
+                    defaultTab="js"
+                    height="750px"
+                />
+
+                <p>
+                    <strong>Penjelasan kode JavaScript:</strong>
+                </p>
+                <ul>
+                    <li><code>todos</code> array menyimpan semua todo items</li>
+                    <li>
+                        <code>renderTodos()</code> function menampilkan todos ke
+                        DOM
+                    </li>
+                    <li>
+                        <code>toggleTodo()</code> untuk menandai todo sebagai selesai/belum
+                    </li>
+                    <li>
+                        <code>deleteTodo()</code> untuk menghapus todo dari list
+                    </li>
+                    <li><code>updateStats()</code> untuk update statistik</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Step 3: Menambahkan Local Storage</h2>
+                <p>
+                    Agar todo list kita tidak hilang saat page di-refresh, kita
+                    perlu menyimpan data ke Local Storage browser. Mari kita
+                    tambahkan fitur ini!
+                </p>
+
+                <CodePlayground
+                    title="Complete Todo App with Local Storage"
+                    html={`<div class="todo-app">
+  <h1>📝 My Todo List</h1>
+  
+  <form id="todoForm" class="todo-form">
+    <input 
+      type="text" 
+      id="todoInput" 
+      placeholder="Apa yang ingin kamu lakukan?"
+      required
+    >
+    <button type="submit">+ Tambah</button>
+  </form>
+  
+  <ul id="todoList" class="todo-list">
+    <!-- Todo items akan muncul di sini -->
+  </ul>
+  
+  <div class="stats">
+    <span id="totalTodos">0 todos</span>
+    <button id="clearAll" class="clear-btn">Clear All</button>
+  </div>
+</div>`}
+                    css={`body {
+  margin: 0;
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.todo-app {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  max-width: 500px;
+  width: 100%;
+  animation: slideIn 0.5s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.todo-app h1 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  text-align: center;
+  font-size: 2rem;
+}
+
+.todo-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.todo-form input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.todo-form input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.todo-form button {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.todo-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.todo-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.todo-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.todo-list::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 4px;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.todo-item:hover {
+  background: #e9ecef;
+  transform: translateX(4px);
+}
+
+.todo-item.completed {
+  opacity: 0.6;
+}
+
+.todo-item.completed .todo-text {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.todo-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.todo-text {
+  flex: 1;
+  color: #333;
+  word-break: break-word;
+}
+
+.delete-btn {
+  background: #ff6b6b;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #ee5a6f;
+  transform: scale(1.05);
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 2px solid #e0e0e0;
+}
+
+#totalTodos {
+  color: #666;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.clear-btn {
+  background: transparent;
+  color: #ff6b6b;
+  border: 1px solid #ff6b6b;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.clear-btn:hover {
+  background: #ff6b6b;
+  color: white;
+}`}
+                    js={`const todoForm = document.getElementById('todoForm');
+const todoInput = document.getElementById('todoInput');
+const todoList = document.getElementById('todoList');
+const totalTodos = document.getElementById('totalTodos');
+const clearAllBtn = document.getElementById('clearAll');
+
+let todos = [];
+
+// Load todos from localStorage on page load
+function loadTodos() {
+  const savedTodos = localStorage.getItem('todos');
+  if (savedTodos) {
+    todos = JSON.parse(savedTodos);
+    renderTodos();
+  }
+}
+
+// Save todos to localStorage
+function saveTodos() {
+  localStorage.setItem('todos', JSON.stringify(todos));
+}
+
+// Handle form submission
+todoForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  
+  const todoText = todoInput.value.trim();
+  if (todoText === '') return;
+  
+  const todo = {
+    id: Date.now(),
+    text: todoText,
+    completed: false
+  };
+  
+  todos.push(todo);
+  saveTodos();
+  renderTodos();
+  
+  todoInput.value = '';
+  todoInput.focus();
+});
+
+// Render todos to the DOM
+function renderTodos() {
+  todoList.innerHTML = '';
+  
+  if (todos.length === 0) {
+    todoList.innerHTML = '<li style="text-align: center; color: #999; padding: 2rem;">Belum ada todo. Tambahkan sekarang!</li>';
+    updateStats();
+    return;
+  }
+  
+  todos.forEach(todo => {
+    const li = document.createElement('li');
+    li.className = 'todo-item' + (todo.completed ? ' completed' : '');
+    
+    li.innerHTML = \`
+      <input 
+        type="checkbox" 
+        class="todo-checkbox" 
+        \${todo.completed ? 'checked' : ''}
+        onchange="toggleTodo(\${todo.id})"
+      >
+      <span class="todo-text">\${todo.text}</span>
+      <button class="delete-btn" onclick="deleteTodo(\${todo.id})">
+        🗑️
+      </button>
+    \`;
+    
+    todoList.appendChild(li);
+  });
+  
+  updateStats();
+}
+
+// Toggle todo completion
+function toggleTodo(id) {
+  const todo = todos.find(t => t.id === id);
+  if (todo) {
+    todo.completed = !todo.completed;
+    saveTodos();
+    renderTodos();
+  }
+}
+
+// Delete todo
+function deleteTodo(id) {
+  if (confirm('Yakin ingin menghapus todo ini?')) {
+    todos = todos.filter(t => t.id !== id);
+    saveTodos();
+    renderTodos();
+  }
+}
+
+// Clear all todos
+clearAllBtn.addEventListener('click', () => {
+  if (todos.length === 0) return;
+  
+  if (confirm('Yakin ingin menghapus semua todos?')) {
+    todos = [];
+    saveTodos();
+    renderTodos();
+  }
+});
+
+// Update statistics
+function updateStats() {
+  const total = todos.length;
+  const completed = todos.filter(t => t.completed).length;
+  const pending = total - completed;
+  
+  totalTodos.textContent = \`\${total} todos • \${completed} selesai • \${pending} pending\`;
+}
+
+// Make functions global
+window.toggleTodo = toggleTodo;
+window.deleteTodo = deleteTodo;
+
+// Initialize app
+loadTodos();`}
+                    defaultTab="js"
+                    height="800px"
+                />
+
+                <p>
+                    <strong>Fitur baru yang ditambahkan:</strong>
+                </p>
+                <ul>
+                    <li>
+                        ✅ <strong>Local Storage</strong> - Data tersimpan meskipun
+                        page di-refresh
+                    </li>
+                    <li>
+                        ✅ <strong>Clear All</strong> - Hapus semua todos sekaligus
+                    </li>
+                    <li>
+                        ✅ <strong>Confirmation</strong> - Dialog konfirmasi sebelum
+                        menghapus
+                    </li>
+                    <li>
+                        ✅ <strong>Empty State</strong> - Pesan ketika belum ada
+                        todo
+                    </li>
+                    <li>
+                        ✅ <strong>Better Stats</strong> - Statistik lebih detail
+                    </li>
+                    <li>
+                        ✅ <strong>Animations</strong> - Smooth animations untuk
+                        UX yang lebih baik
+                    </li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Kesimpulan</h2>
+                <p>
+                    Selamat! 🎉 Kamu telah berhasil membuat aplikasi Todo List
+                    yang lengkap dengan fitur:
+                </p>
+                <ul>
+                    <li>Menambah todo baru</li>
+                    <li>Menandai todo sebagai selesai</li>
+                    <li>Menghapus todo</li>
+                    <li>Menyimpan data ke Local Storage</li>
+                    <li>UI yang modern dan responsive</li>
+                </ul>
+
+                <h3>Tantangan Selanjutnya</h3>
+                <p>Coba kembangkan aplikasi ini dengan menambahkan fitur:</p>
+                <ul>
+                    <li>🏷️ Categories atau tags untuk todo</li>
+                    <li>📅 Due date untuk setiap todo</li>
+                    <li>⭐ Priority levels (high, medium, low)</li>
+                    <li>🔍 Search dan filter functionality</li>
+                    <li>🎨 Dark mode toggle</li>
+                    <li>📱 Drag and drop untuk reorder todos</li>
+                </ul>
+
+                <p>
+                    Semua kode di atas bisa kamu edit langsung di playground!
+                    Coba modifikasi dan lihat hasilnya secara real-time. Happy
+                    coding! 💻
+                </p>
+            </section>
+        </Prose>
+    </article>
+</Layout>
+
+<style>
+    .tutorial-article {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    .article-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding: 3rem 1rem;
+        background: linear-gradient(
+            135deg,
+            rgba(102, 126, 234, 0.1),
+            rgba(118, 75, 162, 0.1)
+        );
+        border-radius: 16px;
+        border: 1px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .article-header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .article-meta {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+    }
+
+    .article-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .difficulty {
+        background: linear-gradient(135deg, #4ecdc4, #44a08d);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .article-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .article-meta {
+            gap: 1rem;
+        }
+    }
+</style>

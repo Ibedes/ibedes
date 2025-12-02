@@ -122,11 +122,9 @@ if (!product) {
                     <input
                         type="text"
                         id="product-original-price"
-                        value={
-                            product.originalPrice
-                                ? formatRupiah(product.originalPrice)
-                                : ""
-                        }
+                        value={product.originalPrice
+                            ? formatRupiah(product.originalPrice)
+                            : ""}
                         placeholder="Rp 0"
                         inputmode="numeric"
                         data-currency-input
@@ -304,9 +302,7 @@ if (!product) {
             value.toString().replace(/[^0-9]/g, "");
 
         const formatCurrencyDisplay = (digits = "") =>
-            digits
-                ? `Rp ${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`
-                : "";
+            digits ? `Rp ${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}` : "";
 
         function enhanceCurrencyInput(input) {
             if (!input) return;
@@ -391,13 +387,7 @@ if (!product) {
                 document.getElementById("product-verified").checked;
 
             if (!productId || !productName || !description || !image || !link) {
-                if (typeof window.showToast === "function") {
-                    window.showToast("Please fill all required fields", {
-                        type: "error",
-                    });
-                } else {
-                    alert("Please fill all required fields");
-                }
+                alert("Please fill all required fields");
                 return;
             }
 
@@ -433,36 +423,20 @@ if (!product) {
                 const result = await response.json();
 
                 if (response.ok) {
-                    if (typeof window.showToast === "function") {
-                        window.showToast("Product updated successfully!", {
-                            type: "success",
-                        });
-                    }
+                    alert("Product updated successfully!");
 
                     setTimeout(() => {
                         window.location.href = "/admin";
                     }, 1500);
                 } else {
-                    if (typeof window.showToast === "function") {
-                        window.showToast("Error: " + result.error, {
-                            type: "error",
-                        });
-                    } else {
-                        alert("Error: " + result.error);
-                    }
+                    alert("Error: " + result.error);
                     saveBtn.disabled = false;
                     saveBtn.innerHTML =
                         '<i class="fa-solid fa-save"></i> Update Product';
                 }
             } catch (error) {
                 console.error(error);
-                if (typeof window.showToast === "function") {
-                    window.showToast("Failed to update product", {
-                        type: "error",
-                    });
-                } else {
-                    alert("Failed to update product");
-                }
+                alert("Failed to update product");
                 saveBtn.disabled = false;
                 saveBtn.innerHTML =
                     '<i class="fa-solid fa-save"></i> Update Product';

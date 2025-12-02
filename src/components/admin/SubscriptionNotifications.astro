@@ -1,0 +1,379 @@
+---
+// Component to display recent newsletter subscriptions in admin dashboard
+---
+
+<div class="subscription-notifications">
+    <div class="notification-header">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-bell text-lg"></i>
+            <h3 class="font-display text-sm uppercase tracking-wider">
+                Newsletter Subscriptions
+            </h3>
+        </div>
+        <span class="notification-badge" data-subscription-count>0</span>
+    </div>
+
+    <div class="notification-list" data-subscription-list>
+        <p class="empty-state">Belum ada subscription baru.</p>
+    </div>
+</div>
+
+<script>
+    class SubscriptionNotifications {
+        constructor() {
+            this.listElement = document.querySelector(
+                "[data-subscription-list]",
+            );
+            this.countElement = document.querySelector(
+                "[data-subscription-count]",
+            );
+            this.checkInterval = null;
+            this.lastCheck = Date.now();
+            this.init();
+        }
+
+        init() {
+            this.loadRecentSubscriptions();
+            // Check for new subscriptions every 30 seconds
+            this.checkInterval = setInterval(() => {
+                this.loadRecentSubscriptions();
+            }, 30000);
+        }
+
+        async loadRecentSubscriptions() {
+            try {
+                const response = await fetch(
+                    "/api/analytics/subscriptions?since=" + this.lastCheck,
+                );
+                if (!response.ok)
+                    throw new Error("Failed to fetch subscriptions");
+
+                const data = await response.json();
+
+                if (data.subscriptions && data.subscriptions.length > 0) {
+                    this.updateList(data.subscriptions);
+                    this.updateCount(data.total || 0);
+
+                    // Show notification for new subscriptions
+                    if (data.new && data.new.length > 0) {
+                        this.showNewSubscriptionAlert(data.new.length);
+                    }
+                }
+
+                this.lastCheck = Date.now();
+            } catch (error) {
+                console.error("Error loading subscriptions:", error);
+            }
+        }
+
+        updateList(subscriptions) {
+            if (!this.listElement) return;
+
+            if (subscriptions.length === 0) {
+                this.listElement.innerHTML =
+                    '<p class="empty-state">Belum ada subscription baru.</p>';
+                return;
+            }
+
+            this.listElement.innerHTML = subscriptions
+                .slice(0, 5)
+                .map(
+                    (sub) => `
+          <div class="subscription-item">
+            <div class="subscription-icon">
+              <i class="fa-solid fa-envelope-open-text"></i>
+            </div>
+            <div class="subscription-details">
+              <p class="subscription-email">${this.maskEmail(sub.email)}</p>
+              <p class="subscription-time">${this.formatTime(sub.timestamp)}</p>
+            </div>
+            <div class="subscription-status">
+              <span class="status-badge status-success">New</span>
+            </div>
+          </div>
+        `,
+                )
+                .join("");
+        }
+
+        updateCount(count) {
+            if (this.countElement) {
+                this.countElement.textContent = count;
+                if (count > 0) {
+                    this.countElement.classList.add("has-notifications");
+                }
+            }
+        }
+
+        showNewSubscriptionAlert(count) {
+            // Create toast notification
+            const toast = document.createElement("div");
+            toast.className = "subscription-toast";
+            toast.innerHTML = `
+        <div class="toast-icon">
+          <i class="fa-solid fa-check-circle"></i>
+        </div>
+        <div class="toast-content">
+          <p class="toast-title">New Subscription!</p>
+          <p class="toast-message">${count} new subscriber${count > 1 ? "s" : ""} joined</p>
+        </div>
+      `;
+
+            document.body.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => toast.classList.add("show"), 100);
+
+            // Remove after 5 seconds
+            setTimeout(() => {
+                toast.classList.remove("show");
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        maskEmail(email) {
+            if (!email) return "unknown@email.com";
+            const [username, domain] = email.split("@");
+            if (!username || !domain) return email;
+
+            const maskedUsername =
+                username.length > 2
+                    ? username[0] +
+                      "*".repeat(username.length - 2) +
+                      username[username.length - 1]
+                    : username;
+
+            return `${maskedUsername}@${domain}`;
+        }
+
+        formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return "Just now";
+            if (minutes < 60) return `${minutes}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            return `${days}d ago`;
+        }
+
+        destroy() {
+            if (this.checkInterval) {
+                clearInterval(this.checkInterval);
+            }
+        }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+            new SubscriptionNotifications();
+        });
+    } else {
+        new SubscriptionNotifications();
+    }
+</script>
+
+<style>
+    .subscription-notifications {
+        background: var(--color-card, #fff);
+        border: 1px solid
+            color-mix(in srgb, var(--color-foreground) 10%, transparent);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        max-width: 400px;
+    }
+
+    .notification-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid
+            color-mix(in srgb, var(--color-foreground) 10%, transparent);
+    }
+
+    .notification-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.5rem;
+        height: 1.5rem;
+        padding: 0 0.5rem;
+        background: color-mix(
+            in srgb,
+            var(--color-foreground) 10%,
+            transparent
+        );
+        border-radius: 999px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        font-family: var(--font-mono);
+    }
+
+    .notification-badge.has-notifications {
+        background: #10b981;
+        color: white;
+        animation: pulse-badge 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-badge {
+        0%,
+        100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    .notification-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: color-mix(in srgb, var(--color-foreground) 50%, transparent);
+        font-size: 0.875rem;
+    }
+
+    .subscription-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: color-mix(
+            in srgb,
+            var(--color-background) 50%,
+            transparent
+        );
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .subscription-item:hover {
+        background: color-mix(in srgb, var(--color-foreground) 5%, transparent);
+        transform: translateX(4px);
+    }
+
+    .subscription-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, #10b981 15%, transparent);
+        color: #10b981;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .subscription-details {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .subscription-email {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .subscription-time {
+        font-size: 0.75rem;
+        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+        margin: 0.25rem 0 0;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.625rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-success {
+        background: color-mix(in srgb, #10b981 15%, transparent);
+        color: #10b981;
+    }
+
+    /* Toast Notification */
+    .subscription-toast {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 1rem 1.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        z-index: 9999;
+        transform: translateX(400px);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .subscription-toast.show {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    .toast-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #10b981;
+        color: white;
+        border-radius: 50%;
+        font-size: 1.25rem;
+    }
+
+    .toast-content {
+        flex: 1;
+    }
+
+    .toast-title {
+        font-weight: 700;
+        font-size: 0.875rem;
+        margin: 0 0 0.25rem;
+        color: #111827;
+    }
+
+    .toast-message {
+        font-size: 0.75rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    @media (max-width: 640px) {
+        .subscription-toast {
+            top: 1rem;
+            right: 1rem;
+            left: 1rem;
+            transform: translateY(-100px);
+        }
+
+        .subscription-toast.show {
+            transform: translateY(0);
+        }
+    }
+</style>

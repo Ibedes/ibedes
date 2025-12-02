@@ -244,16 +244,10 @@ const shareTargets = [
             // Fallback: Copy Image URL
             try {
               await navigator.clipboard.writeText(shareImageUrl);
-              if (typeof window.showToast === "function") {
-                window.showToast("URL Gambar tersalin!", { type: "success" });
-              } else {
-                showFeedback("URL Gambar tersalin!");
-              }
+              showFeedback("URL Gambar tersalin!");
               trackShare("copy_image_url");
             } catch (clipboardError) {
-              if (typeof window.showToast === "function") {
-                window.showToast("Gagal membagikan gambar", { type: "error" });
-              }
+              console.error("Gagal membagikan gambar");
             }
           }
         });

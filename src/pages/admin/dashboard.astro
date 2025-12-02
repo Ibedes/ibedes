@@ -91,74 +91,6 @@ const averageProductsPerArticle = stats.totalArticles
       )
     : 0;
 
-const formatNotificationTime = (value: string) => {
-    const target = new Date(value);
-    if (Number.isNaN(target.getTime())) return "Baru saja";
-    const diffMs = Date.now() - target.getTime();
-    const diffMinutes = Math.round(diffMs / 60000);
-    if (diffMinutes < 1) return "Baru saja";
-    if (diffMinutes < 60) return `${diffMinutes} menit lalu`;
-    const diffHours = Math.round(diffMinutes / 60);
-    if (diffHours < 24) return `${diffHours} jam lalu`;
-    const diffDays = Math.round(diffHours / 24);
-    return `${diffDays} hari lalu`;
-};
-
-const formatNotificationType = (value: string) => {
-    if (value === "comment") return "Komentar";
-    if (value === "like") return "Love";
-    if (value === "message") return "Pesan";
-    return "Sistem";
-};
-
-// Sample notifications untuk testing
-const notifications: any[] = [
-    {
-        id: "notif-1",
-        type: "like",
-        title: "❤️ Artikel Dicintai",
-        message: "Pembaca memberikan love pada artikel 'Ramah di Luar Marah di Rumah'",
-        time: new Date(Date.now() - 2 * 60000).toISOString(),
-        status: "unread",
-        href: "/blog/article-1"
-    },
-    {
-        id: "notif-2",
-        type: "comment",
-        title: "💬 Komentar Baru",
-        message: "Budi Santoso mengomentari artikel Anda: 'Artikel ini sangat membantu, bisa diadakan update untuk topik X?'",
-        time: new Date(Date.now() - 5 * 60000).toISOString(),
-        status: "unread",
-        href: "/blog/article-2#comments"
-    },
-    {
-        id: "notif-3",
-        type: "message",
-        title: "📊 Update Komisi Afiliasi",
-        message: "Sudah ada 5 pembelian baru melalui link afiliasi Anda. Total komisi siap diklaim: Rp250.000",
-        time: new Date(Date.now() - 30 * 60000).toISOString(),
-        status: "read",
-        href: "/admin/analytics?tab=affiliate"
-    },
-    {
-        id: "notif-4",
-        type: "like",
-        title: "❤️ Artikel Dicintai",
-        message: "Pembaca lain memberikan love pada artikel 'Redesain Notifikasi'",
-        time: new Date(Date.now() - 1 * 3600000).toISOString(),
-        status: "read",
-        href: "/blog/article-3"
-    }
-];
-
-const unreadNotifications = notifications.filter(n => n.status === "unread").length;
-
-const latestNotificationTime = new Date().toISOString();
-
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL ?? "";
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY ?? "";
-const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
-
 const mobileQuickActions = [
     {
         icon: "fa-plus",
@@ -252,22 +184,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 </p>
             </div>
             <div class="admin-header__actions">
-                <a
-                    href="#notifications"
-                    class="icon-button admin-notification-button"
-                    data-notification-trigger
-                    aria-label={`Lihat notifikasi (${unreadNotifications} baru)`}
-                >
-                    <i class="fa-solid fa-bell" aria-hidden="true" />
-                    <span
-                        class="admin-notification-badge"
-                        data-unread-badge
-                        hidden={unreadNotifications === 0}
-                        aria-hidden="true"
-                    >
-                        {unreadNotifications}
-                    </span>
-                </a>
                 <div class="admin-quick-actions" aria-label="Quick actions">
                     {
                         mobileQuickActions.map((action) => (
@@ -463,46 +379,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
                         </div>
                     </div>
                 </div>
-
-                <div class="admin-card" id="notifications">
-                    <div class="admin-card__header">
-                        <div>
-                            <p class="admin-eyebrow">✨ NOTIFIKASI TERBARU</p>
-                            <h2>Aktivitas & Interaksi</h2>
-                        </div>
-                        <button
-                            type="button"
-                            class="admin-chip admin-chip--primary"
-                            data-reset-feed
-                            title="Perbarui notifikasi"
-                        >
-                            <i class="fa-solid fa-rotate"></i>
-                            <span>Segarkan</span>
-                        </button>
-                    </div>
-                    <div
-                        class="admin-notifications-grid-new"
-                        data-admin-notifications
-                        data-supabase-ready={supabaseEnabled ? "true" : "false"}
-                        data-supabase-url={supabaseEnabled ? supabaseUrl : undefined}
-                        data-supabase-key={
-                            supabaseEnabled ? supabaseAnonKey : undefined
-                        }
-                    >
-                        <div class="admin-empty-state-new">
-                            <div class="admin-empty-state-new__icon">
-                                <i class="fa-solid fa-bell-slash"></i>
-                            </div>
-                            <h3>Belum ada notifikasi</h3>
-                            <p>
-                                Interaksi baru dari pembaca akan muncul di sini. Tunggu komentar, love, atau pesan masuk! 💬
-                            </p>
-                        </div>
-                    </div>
-                    <script type="application/json" id="admin-notifications-data">
-                        {JSON.stringify(notifications)}
-                    </script>
-                </div>
             </section>
 
             <section
@@ -689,7 +565,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 aria-labelledby="analytics-tab"
             >
                 <EnhancedAnalytics />
-                
+
                 <!-- Content Performance Section -->
                 <div class="admin-card">
                     <div class="admin-card__header">
@@ -739,7 +615,8 @@ const previewProducts = affiliateProducts.slice(0, 3);
                                 ></span>
                             </div>
                             <p class="admin-progress__meta">
-                                {affiliateCoverage}% dari konten sudah memiliki tautan afiliasi.
+                                {affiliateCoverage}% dari konten sudah memiliki
+                                tautan afiliasi.
                             </p>
                         </div>
                         <div class="admin-progress__item">
@@ -754,7 +631,8 @@ const previewProducts = affiliateProducts.slice(0, 3);
                                 ></span>
                             </div>
                             <p class="admin-progress__meta">
-                                Targetkan 2 produk / artikel untuk performa maksimal.
+                                Targetkan 2 produk / artikel untuk performa
+                                maksimal.
                             </p>
                         </div>
                     </div>
@@ -868,50 +746,11 @@ const previewProducts = affiliateProducts.slice(0, 3);
         </div>
     </div>
 
-    <ResponsiveAdminNav 
-        tabs={adminTabs} 
-        activeTab="overview"
-    />
+    <ResponsiveAdminNav tabs={adminTabs} activeTab="overview" />
 
     <script>
-        // Extend Window interface for TypeScript
-        declare global {
-            interface Window {
-                showToast?: (
-                    message: string,
-                    options?: { type: "success" | "error" | "info" },
-                ) => void;
-            }
-        }
-
         const TAB_TRIGGER_SELECTOR = "[data-tab-trigger]";
         const TAB_PANE_SELECTOR = ".tab-pane";
-
-        const notificationContainer = document.querySelector(
-            "[data-admin-notifications]",
-        );
-        const bellUnreadBadge = document.querySelector(
-            "[data-unread-badge]",
-        );
-        const notificationTrigger = document.querySelector(
-            "[data-notification-trigger]",
-        );
-        const resetFeedButton = document.querySelector(
-            "[data-reset-feed]",
-        );
-        let realtimeIntervalId = null;
-        const notificationsData = document.getElementById(
-            "admin-notifications-data",
-        );
-
-        const parseJSON = (value) => {
-            try {
-                return value ? JSON.parse(value) : [];
-            } catch (error) {
-                console.warn("[Admin] Failed to parse notifications", error);
-                return [];
-            }
-        };
 
         const startRealtimePolling = () => {
             // Analytics auto-refresh is handled in the separate analytics script block
@@ -922,545 +761,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
             // Analytics auto-refresh cleanup is handled in the separate analytics script block
             console.log("Analytics auto-refresh disabled");
         };
-
-
-
-        const parsedNotifications = parseJSON(
-            notificationsData?.textContent ?? "[]",
-        );
-
-        const STORAGE_KEY = "admin-notifications-state";
-
-        const loadStoredNotifications = () => {
-            return null;
-        };
-
-        const baseNotifications = Array.isArray(
-            parsedNotifications,
-        )
-            ? parsedNotifications
-            : [];
-
-        const storedNotifications = loadStoredNotifications();
-
-        const initialNotifications = Array.isArray(
-            storedNotifications,
-        )
-            ? storedNotifications
-            : baseNotifications;
-
-        const supabaseReady =
-            notificationContainer?.dataset.supabaseReady === "true";
-        const supabaseUrl =
-            notificationContainer?.dataset.supabaseUrl?.replace(/\/+$/, "") ?? "";
-        const supabaseKey = notificationContainer?.dataset.supabaseKey ?? "";
-
-        let notificationState = initialNotifications;
-        const defaultNotifications = [...baseNotifications];
-        let filteredNotifications = initialNotifications;
-        const selectedNotificationIds = new Set();
-        let supabaseClientPromise = null;
-        let notificationChannel = null;
-
-        const persistNotificationState = (
-            items,
-        ) => {};
-
-        const filters = {
-            status: "all",
-            type: "all",
-            priority: "all",
-            query: "",
-            onlyUnread: false,
-        };
-
-        const supabaseHeaders = () => ({
-            apikey: supabaseKey,
-            Authorization: `Bearer ${supabaseKey}`,
-        });
-
-        const formatPriorityLabel = (value) => {
-            if (value === "high") return "Prioritas tinggi";
-            if (value === "low") return "Prioritas rendah";
-            return "Prioritas sedang";
-        };
-
-        const buildFilterSummary = () => {
-            return "semua";
-        };
-
-        const formatRelativeTime = (value) => {
-            const target = new Date(value);
-            if (Number.isNaN(target.getTime())) return "Baru saja";
-            const diffMs = Date.now() - target.getTime();
-            const diffMinutes = Math.round(diffMs / 60000);
-            if (diffMinutes < 1) return "Baru saja";
-            if (diffMinutes < 60) return `${diffMinutes} menit lalu`;
-            const diffHours = Math.round(diffMinutes / 60);
-            if (diffHours < 24) return `${diffHours} jam lalu`;
-            const diffDays = Math.round(diffHours / 24);
-            return `${diffDays} hari lalu`;
-        };
-
-        const formatNotificationTypeLabel = (value) => {
-            if (value === "comment") return "Komentar";
-            if (value === "like") return "Love";
-            if (value === "message") return "Pesan";
-            return "Sistem";
-        };
-
-        const getNotificationIcon = (type) => {
-            if (type === "like") return "fa-heart";
-            if (type === "comment") return "fa-comment";
-            if (type === "message") return "fa-envelope";
-            return "fa-bell";
-        };
-
-        const updateUnreadIndicators = (unreadCount) => {
-            const summaryLabel =
-                unreadCount === 0
-                    ? "Tidak ada notif baru"
-                    : `${unreadCount} notif`;
-
-            if (bellUnreadBadge) {
-                bellUnreadBadge.textContent = String(unreadCount);
-                if (unreadCount === 0) {
-                    bellUnreadBadge.setAttribute("hidden", "true");
-                } else {
-                    bellUnreadBadge.removeAttribute("hidden");
-                }
-            }
-
-            if (notificationTrigger) {
-                notificationTrigger.setAttribute(
-                    "data-has-unread",
-                    unreadCount > 0 ? "true" : "false",
-                );
-                notificationTrigger.setAttribute(
-                    "aria-label",
-                    `Lihat notifikasi (${summaryLabel})`,
-                );
-            }
-        };
-
-        const updateTotalCount = (total) => {};
-
-        const updatePriorityCount = (items) => {};
-
-        const updateMetaSummary = (
-            allItems,
-            visibleItems,
-        ) => {};
-
-        const applyFilters = (items) => {
-            return items;
-        };
-
-        const allItemsAreRead = () =>
-            notificationState.every(
-                (item) => (item.status ?? "unread") === "read",
-            );
-
-        const syncBulkControls = () => {};
-
-        const refreshNotifications = (override) => {
-            const base = override ?? notificationState;
-            filteredNotifications = applyFilters(base);
-            renderNotifications(filteredNotifications);
-            const unreadCount = base.filter(
-                (item) => (item.status ?? "unread") === "unread",
-            ).length;
-            updateUnreadIndicators(unreadCount);
-            updateTotalCount(base.length);
-            updatePriorityCount(base);
-            updateMetaSummary(base, filteredNotifications);
-            syncBulkControls();
-        };
-
-        const setNotificationState = (
-            nextState,
-        ) => {
-            notificationState = nextState;
-            persistNotificationState(notificationState);
-            refreshNotifications();
-        };
-
-        const attachSwipeGestures = (
-            article,
-            main,
-            actions,
-        ) => {
-            let startX = 0;
-            let currentX = 0;
-            let isDragging = false;
-            let isOpen = false;
-
-            const actionWidth = () =>
-                Math.min(
-                    Math.max(actions.offsetWidth || 160, 140),
-                    240,
-                );
-
-            const resetTransition = () => {
-                main.style.transition = "transform 180ms ease";
-            };
-
-            const clearTransition = () => {
-                main.style.transition = "none";
-            };
-
-            const closePanel = () => {
-                resetTransition();
-                main.style.transform = "translateX(0)";
-                isOpen = false;
-            };
-
-            const openPanel = () => {
-                resetTransition();
-                main.style.transform = `translateX(-${actionWidth()}px)`;
-                isOpen = true;
-            };
-
-            const handlePointerDown = (event: PointerEvent) => {
-                isDragging = true;
-                startX = event.clientX;
-                currentX = 0;
-                clearTransition();
-                main.setPointerCapture(event.pointerId);
-            };
-
-            const handlePointerMove = (event: PointerEvent) => {
-                if (!isDragging) return;
-                currentX = event.clientX - startX;
-                const limit = actionWidth();
-                const offset = Math.max(-limit, Math.min(0, currentX));
-                main.style.transform = `translateX(${offset}px)`;
-                if (Math.abs(currentX) > 4) {
-                    event.preventDefault();
-                }
-            };
-
-            const handlePointerUp = (event) => {
-                if (!isDragging) return;
-                isDragging = false;
-                main.releasePointerCapture(event.pointerId);
-                const limit = actionWidth();
-                const shouldOpen = currentX < -limit * 0.35;
-                const shouldClose = currentX > -10;
-                if (shouldClose) {
-                    closePanel();
-                    return;
-                }
-                if (shouldOpen || isOpen) {
-                    openPanel();
-                } else {
-                    closePanel();
-                }
-            };
-
-            main.addEventListener("pointerdown", handlePointerDown);
-            main.addEventListener("pointermove", handlePointerMove);
-            main.addEventListener("pointerup", handlePointerUp);
-            main.addEventListener("pointercancel", handlePointerUp);
-            article.addEventListener("mouseleave", () => {
-                if (!isDragging && isOpen) closePanel();
-            });
-            main.addEventListener("click", () => {
-                if (isOpen) {
-                    closePanel();
-                }
-            });
-        };
-
-        const renderNotifications = (items) => {
-            console.log("[Admin Dashboard] renderNotifications called with:", items);
-            if (!notificationContainer) {
-                console.warn("[Admin Dashboard] notificationContainer NOT FOUND!");
-                return;
-            }
-            console.log("[Admin Dashboard] Clearing container and rendering", items.length, "items");
-            notificationContainer.innerHTML = "";
-
-            if (!items.length) {
-                notificationContainer.innerHTML = `
-                    <div class="admin-empty-state-new">
-                        <div class="admin-empty-state-new__icon">
-                            <i class="fa-solid fa-bell-slash"></i>
-                        </div>
-                        <h3>Belum ada notifikasi</h3>
-                        <p>Interaksi baru dari pembaca akan muncul di sini. Tunggu komentar, love, atau pesan masuk! 💬</p>
-                    </div>
-                `;
-                return;
-            }
-
-            items.forEach((item) => {
-                const article = document.createElement("article");
-                article.className = "admin-notification-card-new";
-                article.dataset.status = item.status ?? "unread";
-                article.dataset.type = item.type;
-                
-                // Header with icon and type badge
-                const header = document.createElement("div");
-                header.className = "admin-notification-card-new__header";
-                
-                const iconBox = document.createElement("div");
-                iconBox.className = "admin-notification-card-new__icon-box";
-                iconBox.dataset.type = item.type;
-                
-                const iconClass = getNotificationIcon(item.type);
-                iconBox.innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
-                
-                const headerTop = document.createElement("div");
-                headerTop.className = "admin-notification-card-new__top";
-                
-                const typeBadge = document.createElement("span");
-                typeBadge.className = "admin-notification-card-new__badge";
-                typeBadge.dataset.type = item.type;
-                typeBadge.innerHTML = `<i class="fa-solid fa-circle-dot"></i> ${formatNotificationTypeLabel(item.type)}`;
-                
-                const title = document.createElement("h3");
-                title.className = "admin-notification-card-new__title";
-                title.textContent = item.title;
-                
-                const time = document.createElement("time");
-                time.className = "admin-notification-card-new__time";
-                time.textContent = formatRelativeTime(item.time);
-                
-                headerTop.appendChild(typeBadge);
-                headerTop.appendChild(title);
-                headerTop.appendChild(time);
-                
-                header.appendChild(iconBox);
-                header.appendChild(headerTop);
-                
-                // Body with message
-                const body = document.createElement("div");
-                body.className = "admin-notification-card-new__body";
-                
-                const message = document.createElement("p");
-                message.className = "admin-notification-card-new__message";
-                message.textContent = item.message;
-                
-                body.appendChild(message);
-                
-                // Footer with status and action
-                const footer = document.createElement("div");
-                footer.className = "admin-notification-card-new__footer";
-                
-                const meta = document.createElement("div");
-                meta.className = "admin-notification-card-new__meta";
-                
-                const metaDot = document.createElement("span");
-                metaDot.className = "admin-notification-card-new__meta-dot";
-                
-                const metaText = document.createElement("span");
-                metaText.textContent = (item.status ?? "unread") === "unread" ? "Baru" : "Dibaca";
-                
-                meta.appendChild(metaDot);
-                meta.appendChild(metaText);
-                footer.appendChild(meta);
-                
-                if (item.href) {
-                    const link = document.createElement("a");
-                    link.className = "admin-notification-card-new__action";
-                    link.href = item.href;
-                    link.innerHTML = 'Lihat <i class="fa-solid fa-arrow-right"></i>';
-                    footer.appendChild(link);
-                }
-                
-                // Assemble card
-                article.appendChild(header);
-                article.appendChild(body);
-                article.appendChild(footer);
-                
-                notificationContainer.appendChild(article);
-            });
-        };
-
-        const resetFeed = () => {
-            setNotificationState([...defaultNotifications]);
-        };
-
-        const normalizeCommentNotification = (record) => {
-            if (!record) return null;
-            const slug = String(record.slug ?? "").replace(/^\/+|\/+$/g, "");
-            return {
-                id: `comment-${record.id ?? record.created_at}`,
-                type: "comment",
-                title: "Komentar baru",
-                message: `${record.name || "Anonim"} mengomentari ${
-                    slug || "artikel"
-                }.`,
-                time: record.created_at ?? new Date().toISOString(),
-                status: "unread",
-                href: slug ? `/blog/${slug}` : undefined,
-                priority: "high",
-                category: "Engagement",
-                source: "supabase",
-                tags: ["komentar", slug || "artikel"],
-            };
-        };
-
-        const normalizeLikeNotification = (record) => {
-            if (!record) return null;
-            const slug = String(record.slug ?? "").replace(/^\/+|\/+$/g, "");
-            return {
-                id: `like-${record.id ?? record.created_at}`,
-                type: "like",
-                title: "Love baru",
-                message: `Artikel ${slug || "ini"} menerima love baru.`,
-                time: record.created_at ?? new Date().toISOString(),
-                status: "unread",
-                href: slug ? `/blog/${slug}` : undefined,
-                priority: "medium",
-                category: "Engagement",
-                source: "supabase",
-                tags: ["love", slug || "artikel"],
-            };
-        };
-
-        const fetchRecentNotifications = async () => {
-            if (!supabaseReady || !supabaseUrl || !supabaseKey) return [];
-            const params = new URLSearchParams({
-                select: "id,name,message,slug,created_at", // comments
-                order: "created_at.desc",
-                limit: "5",
-            });
-            const likeParams = new URLSearchParams({
-                select: "id,slug,created_at",
-                order: "created_at.desc",
-                limit: "5",
-            });
-
-            const [commentsRes, likesRes] = await Promise.all([
-                fetch(
-                    `${supabaseUrl}/rest/v1/article_comments?${params.toString()}`,
-                    { headers: supabaseHeaders() },
-                ),
-                fetch(
-                    `${supabaseUrl}/rest/v1/article_likes?${likeParams.toString()}`,
-                    { headers: supabaseHeaders() },
-                ),
-            ]);
-
-            if (!commentsRes.ok || !likesRes.ok) {
-                throw new Error("Gagal memuat data notifikasi Supabase");
-            }
-
-            const [comments, likes] = await Promise.all([
-                commentsRes.json(),
-                likesRes.json(),
-            ]);
-
-            const items = [];
-            if (Array.isArray(comments)) {
-                comments
-                    .map((item) => normalizeCommentNotification(item))
-                    .filter(Boolean)
-                    .forEach((item) => items.push(item));
-            }
-            if (Array.isArray(likes)) {
-                likes
-                    .map((item) => normalizeLikeNotification(item))
-                    .filter(Boolean)
-                    .forEach((item) => items.push(item));
-            }
-
-            return items.sort((a, b) =>
-                new Date(b.time).getTime() - new Date(a.time).getTime(),
-            );
-        };
-
-        const loadSupabaseClient = async () => {
-            if (!supabaseReady || !supabaseUrl || !supabaseKey) return null;
-            if (!supabaseClientPromise) {
-                supabaseClientPromise = import(
-                    "https://esm.sh/@supabase/supabase-js@2.45.2"
-                ).then(({ createClient }) =>
-                    createClient(supabaseUrl, supabaseKey, {
-                        auth: { persistSession: false },
-                    }),
-                );
-            }
-            return supabaseClientPromise;
-        };
-
-        const subscribeRealtimeNotifications = async () => {
-            if (!supabaseReady || notificationChannel) return;
-            const client = await loadSupabaseClient();
-            if (!client) return;
-
-            notificationChannel = client.channel("admin-notifications");
-
-            notificationChannel.on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "article_comments",
-                },
-                (payload: any) => {
-                    const normalized = normalizeCommentNotification(payload.new);
-                    if (!normalized) return;
-                    const exists = notificationState.some(
-                        (item) => item.id === normalized.id,
-                    );
-                    if (!exists) {
-                        setNotificationState(
-                            [normalized, ...notificationState].slice(0, 15),
-                        );
-                    }
-                },
-            );
-
-            notificationChannel.on(
-                "postgres_changes",
-                {
-                    event: "INSERT",
-                    schema: "public",
-                    table: "article_likes",
-                },
-                (payload: any) => {
-                    const normalized = normalizeLikeNotification(payload.new);
-                    if (!normalized) return;
-                    const exists = notificationState.some(
-                        (item) => item.id === normalized.id,
-                    );
-                    if (!exists) {
-                        setNotificationState(
-                            [normalized, ...notificationState].slice(0, 15),
-                        );
-                    }
-                },
-            );
-
-            notificationChannel.subscribe();
-        };
-
-        const bootstrapNotifications = async () => {
-            console.log("[Admin Dashboard] bootstrapNotifications called!");
-            if (!notificationContainer) {
-                console.warn("[Admin Dashboard] bootstrapNotifications - container not found");
-                return;
-            }
-            console.log("[Admin Dashboard] Calling refreshNotifications");
-            refreshNotifications();
-            if (!supabaseReady) return;
-            try {
-                const items = await fetchRecentNotifications();
-                if (items.length) {
-                    setNotificationState(items.slice(0, 15));
-                }
-            } catch (error) {
-                console.warn("[Admin] Notifikasi Supabase gagal dimuat", error);
-            }
-            subscribeRealtimeNotifications();
-        };
-
-        resetFeedButton?.addEventListener("click", () => {
-            resetFeed();
-        });
 
         function setActiveTab(tabName: string): void {
             document.querySelectorAll(TAB_PANE_SELECTOR).forEach((pane) => {
@@ -1528,7 +828,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
         function initializeTabs(): void {
             console.log("[Admin Dashboard] initializeTabs called!");
             setActiveTab("overview");
-            bootstrapNotifications();
             startRealtimePolling();
         }
 
@@ -1576,11 +875,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
             ) {
                 // Implement export functionality
                 console.log("Exporting data...");
-                if (typeof window.showToast === "function") {
-                    window.showToast("Data export initiated!", {
-                        type: "success",
-                    });
-                }
+                alert("Data export initiated!");
             }
         }
 
@@ -1591,11 +886,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 )
             ) {
                 // Implement cache clearing
-                if (typeof window.showToast === "function") {
-                    window.showToast("Cache cleared successfully!", {
-                        type: "success",
-                    });
-                }
+                alert("Cache cleared successfully!");
                 setTimeout(() => window.location.reload(), 500);
             }
         }
@@ -1631,32 +922,16 @@ const previewProducts = affiliateProducts.slice(0, 3);
                     const result = await response.json();
 
                     if (response.ok) {
-                        if (typeof window.showToast === "function") {
-                            window.showToast("Article deleted successfully!", {
-                                type: "success",
-                            });
-                        }
+                        alert("Article deleted successfully!");
                         setTimeout(() => window.location.reload(), 1200);
                     } else {
-                        if (typeof window.showToast === "function") {
-                            window.showToast("Error: " + result.error, {
-                                type: "error",
-                            });
-                        } else {
-                            alert("Error deleting file: " + result.error);
-                        }
+                        alert("Error: " + result.error);
                         button.disabled = false;
                         button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                     }
                 } catch (error) {
                     console.error(error);
-                    if (typeof window.showToast === "function") {
-                        window.showToast("Failed to delete article", {
-                            type: "error",
-                        });
-                    } else {
-                        alert("Error deleting file");
-                    }
+                    alert("Failed to delete article");
                     button.disabled = false;
                     button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                 }
@@ -1694,35 +969,16 @@ const previewProducts = affiliateProducts.slice(0, 3);
                     const result = await response.json();
 
                     if (response.ok) {
-                        if (typeof window.showToast === "function") {
-                            window.showToast("Produk berhasil dihapus", {
-                                type: "success",
-                            });
-                        }
+                        alert("Produk berhasil dihapus");
                         setTimeout(() => window.location.reload(), 1200);
                     } else {
-                        if (typeof window.showToast === "function") {
-                            window.showToast(
-                                result.error || "Gagal menghapus",
-                                {
-                                    type: "error",
-                                },
-                            );
-                        } else {
-                            alert(result.error || "Gagal menghapus produk");
-                        }
+                        alert(result.error || "Gagal menghapus produk");
                         button.disabled = false;
                         button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                     }
                 } catch (error) {
                     console.error(error);
-                    if (typeof window.showToast === "function") {
-                        window.showToast("Terjadi kesalahan saat hapus", {
-                            type: "error",
-                        });
-                    } else {
-                        alert("Error deleting product");
-                    }
+                    alert("Terjadi kesalahan saat hapus");
                     button.disabled = false;
                     button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                 }
@@ -1804,49 +1060,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
         gap: 0.6rem;
         justify-content: flex-end;
         flex-wrap: wrap;
-    }
-
-    .admin-notification-button {
-        position: relative;
-        color: inherit;
-    }
-
-    .admin-notification-button:hover,
-    .admin-notification-button:focus-visible {
-        color: var(--color-primary);
-    }
-
-    .admin-notification-button[data-has-unread="true"] .fa-bell {
-        animation: bell-ring 1.4s ease-in-out infinite;
-        transform-origin: top center;
-    }
-
-    .admin-notification-badge {
-        position: absolute;
-        top: -0.4rem;
-        right: -0.35rem;
-        min-width: 1.25rem;
-        height: 1.25rem;
-        padding: 0 0.25rem;
-        border-radius: 999px;
-        background: var(--color-primary);
-        color: var(--color-background);
-        font-size: var(--admin-font-xs);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid
-            color-mix(in srgb, var(--color-background) 75%, transparent);
-    }
-
-    .admin-notification-button[data-has-unread="true"] .admin-notification-badge::after {
-        content: "";
-        position: absolute;
-        inset: -0.25rem;
-        border-radius: 999px;
-        border: 2px solid color-mix(in srgb, var(--color-primary) 60%, transparent);
-        animation: pulse-ring 1.9s ease-out infinite;
-        opacity: 0.8;
     }
 
     .admin-chip {
@@ -1931,8 +1144,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
         box-shadow: 0 3px 8px
             color-mix(in srgb, var(--color-foreground) 12%, transparent);
     }
-
-
 
     .sr-only {
         position: absolute;
@@ -2138,591 +1349,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
         margin: 0;
     }
 
-    .admin-notifications__summary {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 0.65rem;
-        width: 100%;
-    }
-
-    .admin-notifications__controls {
-        margin-top: 0.75rem;
-        display: flex;
-        justify-content: space-between;
-        gap: 0.75rem;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    .admin-checkbox {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-weight: 700;
-        color: color-mix(in srgb, var(--color-foreground) 75%, transparent);
-        font-size: var(--admin-font-sm);
-    }
-
-    .admin-checkbox input[type="checkbox"] {
-        width: 1.05rem;
-        height: 1.05rem;
-        accent-color: var(--color-primary);
-        border-radius: 0.35rem;
-    }
-
-    .admin-notifications__control-actions {
-        display: flex;
-        gap: 0.4rem;
-        flex-wrap: wrap;
-    }
-
-    .admin-notifications__pill {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 0.65rem;
-        align-items: center;
-        padding: 0.65rem 0.75rem;
-        border-radius: calc(var(--admin-radius) - 0.35rem);
-        border: var(--admin-border);
-        background: color-mix(in srgb, var(--color-background) 96%, transparent);
-    }
-
-    .admin-notifications__pill--accent {
-        border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
-        background: color-mix(
-            in srgb,
-            var(--color-primary) 8%,
-            color-mix(in srgb, var(--color-card) 92%, transparent)
-        );
-    }
-
-    .admin-notifications__pill-icon {
-        width: 2.4rem;
-        height: 2.4rem;
-        border-radius: 0.85rem;
-        display: grid;
-        place-items: center;
-        background: color-mix(in srgb, var(--color-foreground) 12%, transparent);
-        color: color-mix(in srgb, var(--color-foreground) 80%, transparent);
-    }
-
-    .admin-notifications__pill-icon--success {
-        background: color-mix(in srgb, var(--color-success, #3fcf8e) 18%, transparent);
-        color: color-mix(in srgb, var(--color-success, #3fcf8e) 85%, transparent);
-    }
-
-    .admin-notifications__pill-body {
-        display: flex;
-        flex-direction: column;
-        gap: 0.2rem;
-    }
-
-    .admin-notifications__pill-label {
-        margin: 0;
-        font-size: var(--admin-font-xs);
-        text-transform: uppercase;
-        letter-spacing: 0.14em;
-        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
-    }
-
-    .admin-notifications__pill-value {
-        margin: 0;
-        font-weight: 700;
-        font-size: var(--admin-font-base);
-    }
-
-    .admin-notifications__pill-icon--warning {
-        background: color-mix(in srgb, #f6a609 20%, transparent);
-        color: color-mix(in srgb, #f6a609 90%, transparent);
-    }
-
-    .admin-notifications__controls {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .admin-notifications__toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .admin-notifications__search {
-        flex: 1;
-        min-width: 220px;
-        display: grid;
-        grid-template-columns: auto 1fr;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.6rem 0.75rem;
-        border-radius: calc(var(--admin-radius) - 0.35rem);
-        border: var(--admin-border);
-        background: color-mix(in srgb, var(--color-background) 96%, transparent);
-    }
-
-    .admin-notifications__search input {
-        border: none;
-        background: transparent;
-        font-size: var(--admin-font-sm);
-        outline: none;
-        color: inherit;
-    }
-
-    .admin-notifications__control-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-        justify-content: flex-end;
-    }
-
-    .admin-notifications__control-actions--simple {
-        justify-content: flex-start;
-    }
-
-    .admin-filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 0.65rem;
-        align-items: start;
-    }
-
-    .admin-filter {
-        border: var(--admin-border);
-        border-radius: calc(var(--admin-radius) - 0.45rem);
-        padding: 0.6rem 0.75rem;
-        background: color-mix(in srgb, var(--color-card) 90%, transparent);
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-    }
-
-    .admin-filter__label {
-        margin: 0;
-        font-size: var(--admin-font-xs);
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
-    }
-
-    .admin-filter__chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-    }
-
-    .admin-filter-chip {
-        border: 1px dashed color-mix(in srgb, var(--color-foreground) 25%, transparent);
-        border-radius: 999px;
-        padding: 0.35rem 0.75rem;
-        background: color-mix(in srgb, var(--color-background) 92%, transparent);
-        font-size: var(--admin-font-sm);
-        cursor: pointer;
-        transition: all 150ms ease;
-    }
-
-    .admin-filter-chip:hover,
-    .admin-filter-chip:focus-visible {
-        transform: translateY(-1px);
-        outline: none;
-        border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-        box-shadow: 0 8px 18px -12px color-mix(in srgb, var(--color-primary) 30%, transparent);
-    }
-
-    .admin-filter-chip.is-active {
-        background: color-mix(in srgb, var(--color-primary) 14%, transparent);
-        color: var(--color-primary);
-        border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
-    }
-
-    .admin-filter__toggles {
-        display: flex;
-        flex-direction: column;
-        gap: 0.35rem;
-    }
-
-    .admin-toggle {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        align-items: center;
-        gap: 0.45rem;
-    }
-
-    .admin-toggle input {
-        accent-color: var(--color-primary);
-    }
-
-    .admin-toggle__label {
-        font-size: var(--admin-font-sm);
-        color: color-mix(in srgb, var(--color-foreground) 80%, transparent);
-    }
-
-    .admin-notifications__meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem 0.75rem;
-        color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
-        font-size: var(--admin-font-sm);
-    }
-
-    .admin-notifications__meta-item {
-        margin: 0;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-    }
-
-    .admin-notifications,
-    .admin-notifications-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1rem;
-    }
-
-    @media (max-width: 768px) {
-        .admin-notifications-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .admin-notification {
-        position: relative;
-        border: 1px solid color-mix(in srgb, var(--color-foreground) 8%, transparent);
-        border-radius: 12px;
-        background: var(--color-card, var(--color-background));
-        overflow: hidden;
-        min-height: 100%;
-        box-shadow: 
-            0 1px 3px color-mix(in srgb, var(--color-foreground) 5%, transparent),
-            0 1px 2px color-mix(in srgb, var(--color-foreground) 3%, transparent);
-        transition: all 200ms ease;
-    }
-
-    .admin-notification:hover {
-        border-color: color-mix(in srgb, var(--color-foreground) 12%, transparent);
-        box-shadow: 
-            0 4px 6px -1px color-mix(in srgb, var(--color-foreground) 8%, transparent),
-            0 2px 4px -1px color-mix(in srgb, var(--color-foreground) 4%, transparent);
-        transform: translateY(-1px);
-    }
-
-    .admin-notification.is-new {
-        border-left: 3px solid var(--color-primary);
-    }
-
-    .admin-notification__swipe {
-        position: relative;
-    }
-
-    .admin-notification__main {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 0.75rem;
-        align-items: start;
-        padding: 1rem;
-        transition: transform 180ms ease;
-        touch-action: pan-y;
-    }
-
-    .admin-notification__swipe-actions {
-        position: absolute;
-        inset: 0;
-        width: min(14rem, 58%);
-        margin-left: auto;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.5rem 0.6rem;
-        background: color-mix(in srgb, var(--color-card, var(--color-background)) 88%, transparent);
-    }
-
-    .admin-notification__swipe-button {
-        border: none;
-        border-radius: 0.75rem;
-        padding: 0.65rem 0.9rem;
-        font-weight: 700;
-        font-size: var(--admin-font-sm);
-        color: var(--color-foreground);
-        background: color-mix(in srgb, var(--color-primary) 16%, transparent);
-        border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
-        cursor: pointer;
-        transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
-    }
-
-    .admin-notification__swipe-button:hover,
-    .admin-notification__swipe-button:focus-visible {
-        transform: translateY(-1px);
-        box-shadow: 0 10px 24px -16px color-mix(in srgb, var(--color-primary) 40%, transparent);
-        outline: none;
-    }
-
-    .admin-notification__swipe-button--danger {
-        background: color-mix(in srgb, #ff6b6b 16%, transparent);
-        border-color: color-mix(in srgb, #ff6b6b 35%, transparent);
-        color: color-mix(in srgb, #ff2d55 80%, transparent);
-    }
-
-    .admin-notification__icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 10px;
-        display: grid;
-        place-items: center;
-        background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-        color: var(--color-primary);
-        font-size: 1.1rem;
-        flex-shrink: 0;
-    }
-
-    .admin-notification__icon[data-type="like"] {
-        background: color-mix(in srgb, #ff6b9a 12%, transparent);
-        color: #ff6b9a;
-    }
-
-    .admin-notification__icon[data-type="message"] {
-        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
-        color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
-    }
-
-    .admin-notification__icon[data-type="system"] {
-        background: color-mix(in srgb, var(--color-warning, #f6c744) 15%, transparent);
-        color: color-mix(in srgb, var(--color-warning, #f6c744) 80%, transparent);
-    }
-
-    .admin-notification__content {
-        display: flex;
-        flex-direction: column;
-        gap: 0.3rem;
-    }
-
-    .admin-notification__top {
-        display: flex;
-        justify-content: space-between;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-
-    .admin-notification__titles {
-        display: flex;
-        flex-direction: column;
-        gap: 0.2rem;
-    }
-
-    .admin-notification__labels {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        line-height: 1.2;
-    }
-
-    .admin-notification__title {
-        font-size: var(--admin-font-base);
-        font-weight: 700;
-        margin: 0;
-    }
-
-    .admin-notification__type {
-        font-size: var(--admin-font-xs);
-        padding: 0.2rem 0.55rem;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--color-foreground) 10%, transparent);
-        color: color-mix(in srgb, var(--color-foreground) 80%, transparent);
-        border: 1px solid
-            color-mix(in srgb, var(--color-foreground) 15%, transparent);
-    }
-
-    .admin-notification__type[data-type="comment"] {
-        background: color-mix(in srgb, var(--color-primary) 18%, transparent);
-        color: var(--color-primary);
-        border-color: color-mix(in srgb, var(--color-primary) 35%, transparent);
-    }
-
-    .admin-notification__type[data-type="like"] {
-        background: color-mix(in srgb, #ff6b9a 15%, transparent);
-        color: color-mix(in srgb, #ff6b9a 80%, transparent);
-        border-color: color-mix(in srgb, #ff6b9a 30%, transparent);
-    }
-
-    .admin-notification__type[data-type="message"] {
-        background: color-mix(in srgb, var(--color-foreground) 12%, transparent);
-        color: color-mix(in srgb, var(--color-foreground) 75%, transparent);
-    }
-
-    .admin-notification__priority {
-        font-size: var(--admin-font-xs);
-        padding: 0.2rem 0.55rem;
-        border-radius: 999px;
-        border: 1px dashed color-mix(in srgb, var(--color-foreground) 24%, transparent);
-        background: color-mix(in srgb, var(--color-background) 90%, transparent);
-    }
-
-    .admin-notification__priority[data-priority="high"] {
-        background: color-mix(in srgb, #ff6b6b 18%, transparent);
-        color: color-mix(in srgb, #ff6b6b 92%, transparent);
-        border-color: color-mix(in srgb, #ff6b6b 35%, transparent);
-    }
-
-    .admin-notification__priority[data-priority="low"] {
-        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
-        color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
-    }
-
-    .admin-notification__category {
-        font-size: var(--admin-font-xs);
-        padding: 0.2rem 0.6rem;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--color-primary) 12%, transparent);
-        color: var(--color-primary);
-        border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent);
-    }
-
-    .admin-notification__meta {
-        margin: 0;
-        font-size: var(--admin-font-xs);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: color-mix(in srgb, var(--color-foreground) 55%, transparent);
-    }
-
-    .admin-notification__text {
-        margin: 0.1rem 0 0.1rem;
-        font-size: var(--admin-font-sm);
-        color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
-        line-height: 1.5;
-    }
-
-    .admin-notification__tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.3rem;
-        margin-top: 0.35rem;
-    }
-
-    .admin-notification__tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        padding: 0.2rem 0.5rem;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
-        color: color-mix(in srgb, var(--color-foreground) 75%, transparent);
-        font-size: var(--admin-font-xs);
-    }
-
-    .admin-notification__footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 0.65rem;
-        flex-wrap: wrap;
-        padding-top: 0.35rem;
-        margin-top: 0.1rem;
-        border-top: 1px dashed
-            color-mix(in srgb, var(--color-foreground) 14%, transparent);
-    }
-
-    .admin-notification__status {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
-
-    .admin-notification__status-text {
-        font-size: var(--admin-font-xs);
-        color: color-mix(in srgb, var(--color-foreground) 68%, transparent);
-    }
-
-    .admin-notification__actions {
-        display: flex;
-        gap: 0.45rem;
-        align-items: center;
-        justify-content: flex-end;
-    }
-
-    .admin-notification__meta-bar {
-        display: flex;
-        gap: 0.45rem;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-top: 0.35rem;
-        padding: 0.45rem 0.55rem;
-        font-size: var(--admin-font-xs);
-        color: color-mix(in srgb, var(--color-foreground) 62%, transparent);
-        background: color-mix(in srgb, var(--color-foreground) 6%, transparent);
-        border-radius: 0 0 calc(var(--admin-radius) - 0.25rem)
-            calc(var(--admin-radius) - 0.25rem);
-    }
-
-    .admin-notification__meta-bar i {
-        color: color-mix(in srgb, var(--color-foreground) 58%, transparent);
-        margin-right: 0.2rem;
-    }
-
-    .admin-pill-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        padding: 0.2rem 0.55rem;
-        border-radius: 999px;
-        background: color-mix(in srgb, var(--color-background) 88%, transparent);
-        border: 1px solid color-mix(in srgb, var(--color-foreground) 16%, transparent);
-        white-space: nowrap;
-    }
-
-    .admin-pill-chip[data-priority-chip="high"] {
-        background: color-mix(in srgb, #ff6b6b 16%, transparent);
-        border-color: color-mix(in srgb, #ff6b6b 30%, transparent);
-        color: color-mix(in srgb, #ff6b6b 90%, transparent);
-    }
-
-    .admin-pill-chip[data-priority-chip="low"] {
-        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
-    }
-
-    .admin-notification[data-status="unread"] {
-        border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
-        box-shadow: 0 6px 18px -14px color-mix(
-                in srgb,
-                var(--color-primary) 35%,
-                transparent
-            );
-        background: color-mix(
-            in srgb,
-            var(--color-primary) 6%,
-            color-mix(in srgb, var(--color-card, var(--color-background)) 94%, transparent)
-        );
-    }
-
-    .admin-notification[data-priority="high"] {
-        border-color: color-mix(in srgb, #ff6b6b 35%, transparent);
-    }
-
-    .admin-notification[data-status="read"] .admin-dot {
-        background: color-mix(in srgb, var(--color-foreground) 35%, transparent);
-        box-shadow: none;
-        animation: none;
-    }
-
-    .admin-dot {
-        width: 0.65rem;
-        height: 0.65rem;
-        border-radius: 50%;
-        background: var(--color-primary);
-        display: inline-flex;
-        box-shadow: 0 0 0 4px color-mix(
-                in srgb,
-                var(--color-primary) 20%,
-                transparent
-            );
-        animation: pulse-ring 2.4s ease-in-out infinite;
-    }
-
     .admin-tag {
         display: inline-flex;
         align-items: center;
@@ -2848,7 +1474,8 @@ const previewProducts = affiliateProducts.slice(0, 3);
         color: var(--color-primary);
         border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
         animation: pulse-ring 2.2s ease-in-out infinite;
-        box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 16%, transparent);
+        box-shadow: 0 0 0 0
+            color-mix(in srgb, var(--color-primary) 16%, transparent);
     }
 
     .admin-link-button {
@@ -2874,7 +1501,11 @@ const previewProducts = affiliateProducts.slice(0, 3);
         border: var(--admin-dashed-border);
         padding: 0.85rem;
         border-radius: var(--admin-radius);
-        background: color-mix(in srgb, var(--color-background) 96%, transparent);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 96%,
+            transparent
+        );
     }
 
     .admin-empty-state__hint {
@@ -3141,511 +1772,6 @@ const previewProducts = affiliateProducts.slice(0, 3);
     .admin-row-actions .icon-button {
         flex: none;
     }
-
-    @keyframes bell-ring {
-        0% {
-            rotate: 0deg;
-        }
-        15% {
-            rotate: 12deg;
-        }
-        30% {
-            rotate: -12deg;
-        }
-        45% {
-            rotate: 8deg;
-        }
-        60% {
-            rotate: -8deg;
-        }
-        100% {
-            rotate: 0deg;
-        }
-    }
-
-    @keyframes pulse-ring {
-        0% {
-            box-shadow: 0 0 0 0 color-mix(
-                    in srgb,
-                    var(--color-primary) 35%,
-                    transparent
-                );
-        }
-        70% {
-            box-shadow: 0 0 0 14px color-mix(
-                    in srgb,
-                    var(--color-primary) 0%,
-                    transparent
-                );
-        }
-        100% {
-            box-shadow: 0 0 0 0 color-mix(
-                    in srgb,
-                    var(--color-primary) 0%,
-                    transparent
-                );
-        }
-    }
-
-    /* ============================================
-       REDESIGNED NOTIFICATION SECTION - MODERN & COLORFUL
-       ============================================ */
-
-    /* Grid Layout */
-    .admin-notifications-grid-new {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-        gap: 1.25rem;
-        animation: fadeIn 300ms ease-out;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-        }
-        to {
-            opacity: 1;
-        }
-    }
-
-    /* Empty State */
-    .admin-empty-state-new {
-        grid-column: 1 / -1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 3.5rem 2rem;
-        text-align: center;
-        border-radius: 16px;
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, var(--color-primary) 5%, transparent) 0%,
-            color-mix(in srgb, var(--color-foreground) 3%, transparent) 100%
-        );
-        border: 2px dashed color-mix(in srgb, var(--color-primary) 15%, transparent);
-    }
-
-    .admin-empty-state-new__icon {
-        font-size: 3.5rem;
-        margin-bottom: 1rem;
-        color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-        animation: float 3s ease-in-out infinite;
-    }
-
-    @keyframes float {
-        0%, 100% {
-            transform: translateY(0px);
-        }
-        50% {
-            transform: translateY(-12px);
-        }
-    }
-
-    .admin-empty-state-new h3 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin: 0 0 0.5rem 0;
-        color: var(--color-foreground);
-        font-family: var(--font-display);
-    }
-
-    .admin-empty-state-new p {
-        font-size: 0.9rem;
-        margin: 0;
-        color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
-        line-height: 1.6;
-    }
-
-    /* Notification Card - Modern Design */
-    .admin-notification-card-new {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        padding: 1.5rem;
-        border-radius: 14px;
-        border: 1.5px solid;
-        background: var(--color-card, var(--color-background));
-        box-shadow:
-            0 4px 6px color-mix(in srgb, var(--color-foreground) 5%, transparent),
-            inset 0 1px 0 color-mix(in srgb, var(--color-foreground) 3%, transparent);
-        transition: all 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
-        animation: slideUp 400ms ease-out backwards;
-    }
-
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .admin-notification-card-new:nth-child(1) {
-        animation-delay: 50ms;
-    }
-
-    .admin-notification-card-new:nth-child(2) {
-        animation-delay: 100ms;
-    }
-
-    .admin-notification-card-new:nth-child(3) {
-        animation-delay: 150ms;
-    }
-
-    /* Type-based styling */
-    .admin-notification-card-new[data-type="like"] {
-        border-color: #ff6b9a;
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, #ff6b9a 3%, var(--color-card, var(--color-background))) 0%,
-            color-mix(in srgb, #ff6b9a 1%, var(--color-card, var(--color-background))) 100%
-        );
-    }
-
-    .admin-notification-card-new[data-type="comment"] {
-        border-color: #4f46e5;
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, #4f46e5 3%, var(--color-card, var(--color-background))) 0%,
-            color-mix(in srgb, #4f46e5 1%, var(--color-card, var(--color-background))) 100%
-        );
-    }
-
-    .admin-notification-card-new[data-type="message"] {
-        border-color: #10b981;
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, #10b981 3%, var(--color-card, var(--color-background))) 0%,
-            color-mix(in srgb, #10b981 1%, var(--color-card, var(--color-background))) 100%
-        );
-    }
-
-    .admin-notification-card-new[data-type="system"] {
-        border-color: #f59e0b;
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, #f59e0b 3%, var(--color-card, var(--color-background))) 0%,
-            color-mix(in srgb, #f59e0b 1%, var(--color-card, var(--color-background))) 100%
-        );
-    }
-
-    .admin-notification-card-new:hover {
-        border-color: var(--color-primary);
-        box-shadow:
-            0 20px 25px -5px color-mix(in srgb, var(--color-foreground) 12%, transparent),
-            0 10px 10px -5px color-mix(in srgb, var(--color-foreground) 5%, transparent),
-            inset 0 1px 0 color-mix(in srgb, var(--color-foreground) 5%, transparent);
-        transform: translateY(-4px);
-    }
-
-    .admin-notification-card-new[data-status="unread"] {
-        border-width: 2px;
-        position: relative;
-    }
-
-    .admin-notification-card-new[data-status="unread"]::before {
-        content: "";
-        position: absolute;
-        top: 0.75rem;
-        right: 0.75rem;
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 50%;
-        background: var(--color-primary);
-        animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 1;
-            transform: scale(1);
-        }
-        50% {
-            opacity: 0.6;
-            transform: scale(1.2);
-        }
-    }
-
-    /* Header */
-    .admin-notification-card-new__header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 1rem;
-    }
-
-    .admin-notification-card-new__icon-box {
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 3rem;
-        height: 3rem;
-        border-radius: 12px;
-        font-size: 1.5rem;
-        background: linear-gradient(135deg, #ff6b9a, #ff8fab);
-        color: white;
-        box-shadow:
-            0 4px 15px color-mix(in srgb, #ff6b9a 40%, transparent),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
-
-    .admin-notification-card-new[data-type="comment"] .admin-notification-card-new__icon-box {
-        background: linear-gradient(135deg, #4f46e5, #7c3aed);
-        box-shadow:
-            0 4px 15px color-mix(in srgb, #4f46e5 40%, transparent),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
-
-    .admin-notification-card-new[data-type="message"] .admin-notification-card-new__icon-box {
-        background: linear-gradient(135deg, #10b981, #34d399);
-        box-shadow:
-            0 4px 15px color-mix(in srgb, #10b981 40%, transparent),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
-
-    .admin-notification-card-new[data-type="system"] .admin-notification-card-new__icon-box {
-        background: linear-gradient(135deg, #f59e0b, #fbbf24);
-        box-shadow:
-            0 4px 15px color-mix(in srgb, #f59e0b 40%, transparent),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
-
-    .admin-notification-card-new__top {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .admin-notification-card-new__badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.375rem;
-        padding: 0.375rem 0.875rem;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        margin-bottom: 0.5rem;
-        background: #ff6b9a;
-        color: white;
-    }
-
-    .admin-notification-card-new[data-type="comment"] .admin-notification-card-new__badge {
-        background: #4f46e5;
-    }
-
-    .admin-notification-card-new[data-type="message"] .admin-notification-card-new__badge {
-        background: #10b981;
-    }
-
-    .admin-notification-card-new[data-type="system"] .admin-notification-card-new__badge {
-        background: #f59e0b;
-    }
-
-    .admin-notification-card-new__badge i {
-        font-size: 0.625rem;
-    }
-
-    .admin-notification-card-new__title {
-        font-size: 1.125rem;
-        font-weight: 700;
-        margin: 0 0 0.25rem 0;
-        color: var(--color-foreground);
-        line-height: 1.3;
-        font-family: var(--font-display);
-    }
-
-    .admin-notification-card-new__time {
-        font-size: 0.8125rem;
-        color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
-        font-weight: 500;
-    }
-
-    /* Body */
-    .admin-notification-card-new__body {
-        display: flex;
-        flex-direction: column;
-        gap: 0.625rem;
-    }
-
-    .admin-notification-card-new__message {
-        font-size: 0.9375rem;
-        line-height: 1.6;
-        color: color-mix(in srgb, var(--color-foreground) 75%, transparent);
-        margin: 0;
-        word-break: break-word;
-    }
-
-    /* Footer */
-    .admin-notification-card-new__footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.75rem;
-        padding-top: 1rem;
-        border-top: 1px solid color-mix(in srgb, var(--color-foreground) 8%, transparent);
-    }
-
-    .admin-notification-card-new__meta {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.8125rem;
-        color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
-        font-weight: 500;
-    }
-
-    .admin-notification-card-new__meta-dot {
-        width: 0.375rem;
-        height: 0.375rem;
-        border-radius: 50%;
-        background: color-mix(in srgb, var(--color-foreground) 40%, transparent);
-    }
-
-    .admin-notification-card-new__action {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.375rem;
-        padding: 0.5rem 0.875rem;
-        border-radius: 8px;
-        font-size: 0.8125rem;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        border: 1px solid;
-        background: #ff6b9a;
-        color: white;
-        border-color: #ff6b9a;
-        transition: all 200ms ease;
-        box-shadow: 0 2px 8px color-mix(in srgb, #ff6b9a 30%, transparent);
-    }
-
-    .admin-notification-card-new[data-type="comment"] .admin-notification-card-new__action {
-        background: #4f46e5;
-        border-color: #4f46e5;
-        box-shadow: 0 2px 8px color-mix(in srgb, #4f46e5 30%, transparent);
-    }
-
-    .admin-notification-card-new[data-type="message"] .admin-notification-card-new__action {
-        background: #10b981;
-        border-color: #10b981;
-        box-shadow: 0 2px 8px color-mix(in srgb, #10b981 30%, transparent);
-    }
-
-    .admin-notification-card-new[data-type="system"] .admin-notification-card-new__action {
-        background: #f59e0b;
-        border-color: #f59e0b;
-        box-shadow: 0 2px 8px color-mix(in srgb, #f59e0b 30%, transparent);
-    }
-
-    .admin-notification-card-new__action:hover {
-        transform: translateY(-2px);
-        box-shadow:
-            0 6px 12px color-mix(in srgb, #ff6b9a 40%, transparent),
-            0 2px 4px color-mix(in srgb, #ff6b9a 20%, transparent);
-    }
-
-    .admin-notification-card-new[data-type="comment"] .admin-notification-card-new__action:hover {
-        box-shadow:
-            0 6px 12px color-mix(in srgb, #4f46e5 40%, transparent),
-            0 2px 4px color-mix(in srgb, #4f46e5 20%, transparent);
-    }
-
-    .admin-notification-card-new[data-type="message"] .admin-notification-card-new__action:hover {
-        box-shadow:
-            0 6px 12px color-mix(in srgb, #10b981 40%, transparent),
-            0 2px 4px color-mix(in srgb, #10b981 20%, transparent);
-    }
-
-    .admin-notification-card-new[data-type="system"] .admin-notification-card-new__action:hover {
-        box-shadow:
-            0 6px 12px color-mix(in srgb, #f59e0b 40%, transparent),
-            0 2px 4px color-mix(in srgb, #f59e0b 20%, transparent);
-    }
-
-    .admin-notification-card-new__action i {
-        font-size: 0.75rem;
-        transition: transform 200ms ease;
-    }
-
-    .admin-notification-card-new__action:hover i {
-        transform: translateX(2px);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 768px) {
-        .admin-notifications-grid-new {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        .admin-notification-card-new {
-            padding: 1.25rem;
-            gap: 0.75rem;
-        }
-
-        .admin-notification-card-new__icon-box {
-            width: 2.75rem;
-            height: 2.75rem;
-            font-size: 1.25rem;
-        }
-
-        .admin-notification-card-new__title {
-            font-size: 1rem;
-        }
-
-        .admin-notification-card-new__message {
-            font-size: 0.875rem;
-        }
-
-        .admin-notification-card-new__footer {
-            flex-direction: column;
-            align-items: flex-start;
-            border: none;
-            padding-top: 0;
-        }
-
-        .admin-notification-card-new__action {
-            width: 100%;
-            justify-content: center;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .admin-empty-state-new {
-            padding: 2.5rem 1.5rem;
-        }
-
-        .admin-empty-state-new__icon {
-            font-size: 2.75rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .admin-empty-state-new h3 {
-            font-size: 1.125rem;
-        }
-
-        .admin-empty-state-new p {
-            font-size: 0.875rem;
-        }
-
-        .admin-notification-card-new {
-            padding: 1rem;
-        }
-
-        .admin-notification-card-new__icon-box {
-            width: 2.5rem;
-            height: 2.5rem;
-            font-size: 1.125rem;
-        }
-    }
-
 </style>
 
 <script>
@@ -3654,18 +1780,18 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const fetchRealtimeData = async () => {
             try {
                 const response = await fetch("/api/analytics/realtime");
-                if (!response.ok) throw new Error("Failed to fetch realtime data");
+                if (!response.ok)
+                    throw new Error("Failed to fetch realtime data");
                 const data = await response.json();
 
                 // Update Active Users
                 updateMetric("metric-active-users", data.activeUsers);
-                
+
                 // Update Page Views
                 updateMetric("metric-realtime-views", data.pageViews);
 
                 // Update Top Pages
                 updateTopPages(data.topPages);
-
             } catch (error) {
                 console.error("Analytics Error:", error);
             }
@@ -3674,20 +1800,23 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const fetchOverviewData = async () => {
             try {
                 const response = await fetch("/api/analytics/overview");
-                if (!response.ok) throw new Error("Failed to fetch overview data");
+                if (!response.ok)
+                    throw new Error("Failed to fetch overview data");
                 const data = await response.json();
 
                 // Update Sessions
                 updateMetric("metric-sessions", data.sessions);
-                
+
                 // Update Duration
-                const duration = Math.round(data.avgDuration / 60 * 10) / 10;
+                const duration = Math.round((data.avgDuration / 60) * 10) / 10;
                 updateMetric("metric-duration", `${duration}m`);
 
                 // Update Summary
                 updateText("metric-total-users", data.users.toLocaleString());
-                updateText("metric-total-views", data.pageViews.toLocaleString());
-
+                updateText(
+                    "metric-total-views",
+                    data.pageViews.toLocaleString(),
+                );
             } catch (error) {
                 console.error("Analytics Error:", error);
             }
@@ -3696,19 +1825,22 @@ const previewProducts = affiliateProducts.slice(0, 3);
         const updateMetric = (id, value) => {
             const el = document.getElementById(id);
             if (!el) return;
-            
+
             // Remove loading state
             const loadingEl = el.querySelector(".animate-pulse");
             if (loadingEl) loadingEl.remove();
 
             // Update value
             const valueEl = el.querySelector("h3");
-            if (valueEl) valueEl.textContent = typeof value === 'number' ? value.toLocaleString() : value;
+            if (valueEl)
+                valueEl.textContent =
+                    typeof value === "number" ? value.toLocaleString() : value;
             else {
                 // Create if doesn't exist (was replaced by loading)
                 const newValueEl = document.createElement("h3");
                 newValueEl.className = "text-2xl font-bold tracking-tight";
-                newValueEl.textContent = typeof value === 'number' ? value.toLocaleString() : value;
+                newValueEl.textContent =
+                    typeof value === "number" ? value.toLocaleString() : value;
                 const container = el.querySelector(".flex.items-end");
                 if (container) container.prepend(newValueEl);
             }
@@ -3735,11 +1867,13 @@ const previewProducts = affiliateProducts.slice(0, 3);
                 return;
             }
 
-            const maxViews = Math.max(...pages.map(p => p.views));
+            const maxViews = Math.max(...pages.map((p) => p.views));
 
             const html = `
                 <div class="space-y-4">
-                    ${pages.map(page => `
+                    ${pages
+                        .map(
+                            (page) => `
                         <div class="group">
                             <div class="flex justify-between items-center mb-1.5">
                                 <div class="flex flex-col min-w-0 pr-4">
@@ -3761,7 +1895,9 @@ const previewProducts = affiliateProducts.slice(0, 3);
                                 ></div>
                             </div>
                         </div>
-                    `).join("")}
+                    `,
+                        )
+                        .join("")}
                 </div>
             `;
 

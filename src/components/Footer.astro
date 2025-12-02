@@ -6,25 +6,48 @@ import Section from "./common/Section.astro";
 const date = new Date();
 const year = date.getFullYear();
 
-const allLinks = [
-  ...Object.entries(GLOBAL.menu),
-  ...(GLOBAL.footerMenu ? Object.entries(GLOBAL.footerMenu) : []),
+const sitemapLinks = [
+  ["Home", GLOBAL.menu.home],
+  ["Blog", GLOBAL.menu.blog],
+  ["Projects", GLOBAL.footerMenu.projects],
+  ["Services", GLOBAL.menu.services],
+  ["About", GLOBAL.footerMenu.about],
+];
+
+const resourceLinks = [
+  ["Swag", GLOBAL.menu.swag],
+  ["Affiliate", GLOBAL.menu.affiliate],
+  ["Docs", GLOBAL.footerMenu.docs],
+  ["Tentang Saya", GLOBAL.footerMenu["tentang saya"]],
   ["Design System", "/design-system"],
+];
+
+const legalLinks = [
+  ["Privacy Policy", GLOBAL.footerMenu["privacy policy"]],
+  ["Disclaimer", GLOBAL.footerMenu.disclaimer],
+  ["Terms & Conditions", GLOBAL.footerMenu["terms & conditions"]],
+  ["Contact", GLOBAL.footerMenu.contact],
 ];
 ---
 
-<footer class="mt-24 mb-8">
+<footer
+  class="mt-24 mb-0 border-t-2 border-black/10 dark:border-white/10 bg-neutral-50/50 dark:bg-neutral-900/30"
+>
   <Section>
-    <div class="border-t-[3px] border-black/60 dark:border-white/70 pt-8">
-      <!-- Main Content -->
-      <div
-        class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-8"
-      >
-        <!-- Brand & Social -->
-        <div class="flex flex-col gap-4">
-          <h2 class="font-display text-lg uppercase tracking-wider">
-            {GLOBAL.username}
-          </h2>
+    <div class="py-12 md:py-16">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8">
+        <!-- Brand Column (Span 4) -->
+        <div class="md:col-span-4 flex flex-col gap-6">
+          <div>
+            <h2 class="font-display text-2xl uppercase tracking-wider mb-2">
+              {GLOBAL.username}
+            </h2>
+            <p
+              class="text-muted-foreground text-sm leading-relaxed max-w-xs"
+              set:html={GLOBAL.shortDescription}
+            />
+          </div>
+
           <div class="flex gap-4">
             {
               GLOBAL.githubProfile && (
@@ -32,10 +55,10 @@ const allLinks = [
                   href={GLOBAL.githubProfile}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-xl hover:text-primary transition-colors"
+                  class="w-10 h-10 flex items-center justify-center rounded-full border border-black/10 dark:border-white/10 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all"
                   aria-label="GitHub"
                 >
-                  <i class="fa-brands fa-github" />
+                  <i class="fa-brands fa-github text-lg" />
                 </a>
               )
             }
@@ -45,59 +68,120 @@ const allLinks = [
                   href={GLOBAL.threadsProfile}
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-xl hover:text-primary transition-colors"
+                  class="w-10 h-10 flex items-center justify-center rounded-full border border-black/10 dark:border-white/10 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all"
                   aria-label="Threads"
                 >
-                  <i class="fa-brands fa-threads" />
+                  <i class="fa-brands fa-threads text-lg" />
                 </a>
               )
             }
             <a
               href={`mailto:${GLOBAL.contactEmail}`}
-              class="text-xl hover:text-primary transition-colors"
+              class="w-10 h-10 flex items-center justify-center rounded-full border border-black/10 dark:border-white/10 hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all"
               aria-label="Email"
             >
-              <i class="fa-solid fa-envelope"></i>
+              <i class="fa-solid fa-envelope text-lg"></i>
             </a>
           </div>
         </div>
 
-        <!-- Navigation Links -->
-        <nav class="flex flex-wrap gap-x-6 gap-y-2 text-sm font-mono">
-          {
-            allLinks.map(([name, url]) => (
-              <Anchor
-                url={url}
-                class="text-muted-foreground hover:text-foreground transition-colors no-underline uppercase tracking-wide"
-              >
-                {name}
-              </Anchor>
-            ))
-          }
-        </nav>
+        <!-- Links Columns (Span 8 -> Grid 3) -->
+        <div
+          class="md:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-4"
+        >
+          <!-- Sitemap -->
+          <div class="flex flex-col gap-4">
+            <h3
+              class="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground"
+            >
+              Sitemap
+            </h3>
+            <nav class="flex flex-col gap-3">
+              {
+                sitemapLinks.map(
+                  ([name, url]) =>
+                    url && (
+                      <Anchor
+                        url={url}
+                        class="text-sm text-foreground/80 hover:text-primary transition-colors w-fit"
+                      >
+                        {name}
+                      </Anchor>
+                    ),
+                )
+              }
+            </nav>
+          </div>
+
+          <!-- Resources -->
+          <div class="flex flex-col gap-4">
+            <h3
+              class="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground"
+            >
+              Resources
+            </h3>
+            <nav class="flex flex-col gap-3">
+              {
+                resourceLinks.map(
+                  ([name, url]) =>
+                    url && (
+                      <Anchor
+                        url={url}
+                        class="text-sm text-foreground/80 hover:text-primary transition-colors w-fit"
+                      >
+                        {name}
+                      </Anchor>
+                    ),
+                )
+              }
+            </nav>
+          </div>
+
+          <!-- Legal -->
+          <div class="flex flex-col gap-4">
+            <h3
+              class="font-mono text-xs font-bold uppercase tracking-widest text-muted-foreground"
+            >
+              Legal
+            </h3>
+            <nav class="flex flex-col gap-3">
+              {
+                legalLinks.map(
+                  ([name, url]) =>
+                    url && (
+                      <Anchor
+                        url={url}
+                        class="text-sm text-foreground/80 hover:text-primary transition-colors w-fit"
+                      >
+                        {name}
+                      </Anchor>
+                    ),
+                )
+              }
+            </nav>
+          </div>
+        </div>
       </div>
 
       <!-- Bottom Bar -->
       <div
-        class="flex flex-col md:flex-row justify-between items-center gap-4 pt-6 border-t-2 border-black/20 dark:border-white/20"
+        class="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 mt-12 border-t border-black/10 dark:border-white/10"
       >
         <p
           class="text-xs text-muted-foreground font-mono uppercase tracking-wider"
         >
           &copy; {year}
-          {GLOBAL.username}
+          {GLOBAL.username}. All rights reserved.
         </p>
 
         <div
-          class="flex items-center gap-2 text-xs text-muted-foreground italic font-serif"
+          class="flex items-center gap-2 text-xs text-muted-foreground italic font-serif bg-black/5 dark:bg-white/5 px-4 py-2 rounded-full"
         >
-          <i class="fa-solid fa-quote-left opacity-50"></i>
-          <span
-            id="quote"
-            class="max-w-xs md:max-w-md text-center md:text-right"
+          <i class="fa-solid fa-quote-left opacity-50 text-[0.6rem]"></i>
+          <span id="quote" class="max-w-xs text-center"
             >Keep building, stay curious.</span
           >
-          <i class="fa-solid fa-quote-right opacity-50"></i>
+          <i class="fa-solid fa-quote-right opacity-50 text-[0.6rem]"></i>
         </div>
       </div>
     </div>

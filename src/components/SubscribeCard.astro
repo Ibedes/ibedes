@@ -6,21 +6,24 @@ export interface Props {
   description?: string;
   buttonText?: string;
   successMessage?: string;
-  toastMessage?: string;
+
   placeholder?: string;
   formAction?: string;
   class?: string;
 }
 
-const defaults = {
+const baseDefaults = {
   title: "Gabung Newsletter",
   description:
     "Dapatkan tulisan terbaru, catatan projek, dan eksperimen langsung di inbox tanpa spam.",
   buttonText: "Berlangganan",
   successMessage: "Tipis aja, cuma 1-2 email per bulan.",
-  toastMessage: "Berhasil! Cek inbox kamu untuk konfirmasi.",
   placeholder: "nama@emailkamu.com",
   formAction: undefined,
+};
+
+const defaults = {
+  ...baseDefaults,
   ...(GLOBAL.newsletter ?? {}),
 };
 
@@ -29,7 +32,7 @@ const {
   description = defaults.description,
   buttonText = defaults.buttonText,
   successMessage = defaults.successMessage,
-  toastMessage = defaults.toastMessage,
+
   placeholder = defaults.placeholder,
   formAction = defaults.formAction,
   class: className,
@@ -43,68 +46,108 @@ const iframeTarget = `buttondown-frame-${Math.random()
 <section
   data-subscribe-card
   class:list={[
-    "relative overflow-hidden rounded-3xl border-2 border-black/70 dark:border-white/70 bg-white/80 dark:bg-zinc-900/70 p-6 md:p-8 max-w-2xl mx-auto",
+    "subscribe-card relative overflow-hidden rounded-2xl border-2 border-black/10 dark:border-white/10 bg-neutral-50/50 dark:bg-neutral-900/50 p-6 md:p-8 max-w-3xl mx-auto transition-all duration-300 hover:border-black/20 dark:hover:border-white/20 hover:shadow-lg",
     className,
   ]}
 >
-  <div class="flex flex-col gap-3">
-    <h2 class="font-display text-xl sm:text-2xl">{title}</h2>
-    <p class="zag-muted leading-relaxed">{description}</p>
+  <!-- Success Notification Overlay -->
+  <div
+    data-success-notification
+    class="absolute inset-0 bg-gradient-to-br from-green-500/95 to-emerald-600/95 dark:from-green-600/95 dark:to-emerald-700/95 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-500 rounded-2xl z-10"
+  >
+    <div class="text-center text-white px-6">
+      <div
+        class="w-16 h-16 mx-auto mb-4 rounded-full bg-white/20 flex items-center justify-center animate-bounce"
+      >
+        <i class="fa-solid fa-check text-3xl"></i>
+      </div>
+      <h3 class="font-display text-2xl uppercase tracking-wide mb-2">
+        Berhasil!
+      </h3>
+      <p class="text-white/90 text-sm">
+        Terima kasih sudah berlangganan newsletter kami.
+      </p>
+    </div>
   </div>
 
-  <form
-    method="post"
-    action={formAction}
-    target={iframeTarget}
-    class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
-    data-subscribe-form
-  >
-    <input
-      type="email"
-      name="email"
-      required
-      placeholder={placeholder}
-      aria-label="Email"
-      class="w-full rounded-xl border-[3px] border-black/60 dark:border-white/70 bg-transparent px-4 py-3 font-mono focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 dark:focus-visible:outline-emerald-300"
-      autocomplete="email"
-      inputmode="email"
-    />
-    <button
-      type="submit"
-      class="w-full sm:w-auto min-h-[48px] rounded-xl -zag-bg -zag-text font-display tracking-[0.2em] px-6 py-3 uppercase flex items-center justify-center text-center"
+  <div class="grid md:grid-cols-12 gap-6 md:gap-8 items-center">
+    <!-- Content -->
+    <div
+      class="md:col-span-7 flex flex-col gap-3 md:gap-4 items-center md:items-start text-center md:text-left"
     >
-      {buttonText}
-    </button>
-  </form>
+      <div
+        data-icon-container
+        class="w-12 h-12 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-2xl mb-1 md:mb-2 transition-transform duration-300 hover:scale-110 hover:rotate-12"
+      >
+        <i class="fa-regular fa-paper-plane animate-pulse"></i>
+      </div>
+      <div>
+        <h2
+          class="font-display text-xl sm:text-2xl md:text-3xl uppercase tracking-wide mb-2"
+        >
+          {title}
+        </h2>
+        <p class="text-muted-foreground leading-relaxed text-sm md:text-base">
+          {description}
+        </p>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <div class="md:col-span-5">
+      <form
+        method="post"
+        action={formAction}
+        target={iframeTarget}
+        class="flex flex-col gap-3"
+        data-subscribe-form
+      >
+        <div class="relative group">
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder={placeholder}
+            aria-label="Email"
+            data-email-input
+            class="w-full rounded-lg border-2 border-black/10 dark:border-white/10 bg-white dark:bg-black px-4 py-3 pl-11 font-mono text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all duration-200"
+            autocomplete="email"
+            inputmode="email"
+          />
+          <i
+            class="fa-solid fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 text-sm pointer-events-none transition-all duration-200 group-focus-within:text-primary group-focus-within:scale-110"
+          ></i>
+        </div>
+
+        <button
+          type="submit"
+          data-submit-button
+          class="w-full rounded-lg bg-black dark:bg-white text-white dark:text-black font-mono font-bold uppercase tracking-widest text-xs py-4 hover:opacity-80 active:scale-95 transition-all duration-200 relative overflow-hidden"
+        >
+          <span data-button-text>{buttonText}</span>
+          <span
+            data-button-loading
+            class="absolute inset-0 flex items-center justify-center opacity-0 pointer-events-none"
+          >
+            <i class="fa-solid fa-spinner fa-spin"></i>
+          </span>
+        </button>
+
+        <p
+          class="text-[10px] text-center text-muted-foreground/70 uppercase tracking-wider font-mono"
+        >
+          {successMessage}
+        </p>
+      </form>
+    </div>
+  </div>
+
   <iframe
     name={iframeTarget}
     class="hidden"
     tabindex="-1"
     title="Buttondown subscribe"
-    aria-hidden="true"
-  ></iframe>
-
-  <p class="text-xs zag-muted mt-3 text-center sm:text-left">
-    {successMessage}
-  </p>
-
-  <div
-    data-subscribe-toast
-    class="absolute inset-0 flex items-center justify-center bg-neutral-950/85 text-white text-center px-6 transition-opacity duration-300 opacity-0 pointer-events-none rounded-[inherit] data-[visible=true]:opacity-100 data-[visible=true]:pointer-events-auto"
-    aria-live="assertive"
-    aria-atomic="true"
-  >
-    <div class="flex flex-col gap-4 items-center">
-      <p class="font-display text-lg tracking-[0.2em]">{toastMessage}</p>
-      <button
-        type="button"
-        data-dismiss-toast
-        class="px-4 py-2 rounded-lg border-2 border-white/80 font-mono text-xs uppercase tracking-[0.2em]"
-      >
-        Tutup
-      </button>
-    </div>
-  </div>
+    aria-hidden="true"></iframe>
 
   <script is:inline>
     (() => {
@@ -112,42 +155,158 @@ const iframeTarget = `buttondown-frame-${Math.random()
       const script = document.currentScript;
       const card = script?.closest?.("[data-subscribe-card]");
       if (!card) return;
+
       const form = card.querySelector("[data-subscribe-form]");
-      const toast = card.querySelector("[data-subscribe-toast]");
-      const dismissBtn = card.querySelector("[data-dismiss-toast]");
-      if (!form || !toast) return;
+      const emailInput = card.querySelector("[data-email-input]");
+      const submitButton = card.querySelector("[data-submit-button]");
+      const buttonText = card.querySelector("[data-button-text]");
+      const buttonLoading = card.querySelector("[data-button-loading]");
+      const successNotification = card.querySelector(
+        "[data-success-notification]",
+      );
+      const iconContainer = card.querySelector("[data-icon-container]");
+
+      if (!form) return;
+
       const targetName = form.getAttribute("target");
       const iframe = targetName
         ? card.querySelector(`iframe[name="${targetName}"]`)
         : null;
-      let hideTimer;
-      const hideToast = () => {
-        toast.setAttribute("data-visible", "false");
-        if (hideTimer) {
-          window.clearTimeout(hideTimer);
-          hideTimer = undefined;
+
+      // Add input animation on focus
+      emailInput?.addEventListener("focus", () => {
+        iconContainer?.classList.add("scale-110", "rotate-12");
+      });
+
+      emailInput?.addEventListener("blur", () => {
+        iconContainer?.classList.remove("scale-110", "rotate-12");
+      });
+
+      form.addEventListener("submit", async (e) => {
+        // Show loading state
+        if (submitButton && buttonText && buttonLoading) {
+          submitButton.disabled = true;
+          buttonText.style.opacity = "0";
+          buttonLoading.style.opacity = "1";
         }
-      };
-      const showToast = () => {
-        toast.setAttribute("data-visible", "true");
-        form.reset();
-        if (hideTimer) window.clearTimeout(hideTimer);
-        hideTimer = window.setTimeout(hideToast, 3500);
-      };
-      form.addEventListener("submit", () => {
+
+        // Get email value for logging
+        const email = emailInput?.value;
+
         if (!iframe) {
-          showToast();
+          form.reset();
+          showSuccess();
           return;
         }
-        const handleLoad = () => {
+
+        const handleLoad = async () => {
           iframe.removeEventListener("load", handleLoad);
-          showToast();
+
+          // Log subscription event to analytics
+          try {
+            await fetch("/api/analytics/collect", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                event: "newsletter_subscribe",
+                page_path: window.location.pathname,
+                label: email || "unknown",
+                category: "engagement",
+                value: 1,
+              }),
+            });
+          } catch (error) {
+            console.error("Failed to log subscription:", error);
+          }
+
+          // Send notification to admin
+          try {
+            await fetch("/api/newsletter/subscribe", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: email,
+                source: window.location.pathname,
+              }),
+            });
+
+            // Send notification to admin (using shared client for cross-tab sync)
+            import("../lib/admin-notifications-client").then(
+              ({ sendAdminNotification }) => {
+                sendAdminNotification({
+                  type: "newsletter",
+                  metadata: {
+                    email: email,
+                    source: window.location.pathname,
+                  },
+                });
+              },
+            );
+          } catch (error) {
+            console.error("Failed to send notification:", error);
+          }
+
+          form.reset();
+          showSuccess();
         };
+
         iframe.addEventListener("load", handleLoad);
       });
-      dismissBtn?.addEventListener("click", () => {
-        hideToast();
-      });
+
+      function showSuccess() {
+        // Reset button state
+        if (submitButton && buttonText && buttonLoading) {
+          buttonText.style.opacity = "1";
+          buttonLoading.style.opacity = "0";
+          submitButton.disabled = false;
+        }
+
+        // Show success notification
+        if (successNotification) {
+          successNotification.style.opacity = "1";
+          successNotification.style.pointerEvents = "auto";
+
+          // Hide after 3 seconds
+          setTimeout(() => {
+            successNotification.style.opacity = "0";
+            successNotification.style.pointerEvents = "none";
+          }, 3000);
+        }
+      }
     })();
   </script>
+
+  <style>
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes bounce {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .animate-bounce {
+      animation: bounce 1s ease-in-out infinite;
+    }
+
+    .subscribe-card:hover [data-icon-container] {
+      transform: scale(1.05);
+    }
+  </style>
 </section>

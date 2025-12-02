@@ -222,7 +222,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
                 if (supabaseClient) return supabaseClient;
                 if (!supabaseModulePromise) {
                     supabaseModulePromise = import(
-                        "https://esm.sh/@supabase/supabase-js@2.45.2",
+                        "https://esm.sh/@supabase/supabase-js@2.45.2"
                     );
                 }
                 const { createClient } = await supabaseModulePromise;
@@ -698,19 +698,35 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
                                 }),
                             },
                         );
-                    if (!response.ok) {
-                        throw new Error("Komentar gagal dikirim");
-                    }
-                    const data = await response.json();
-                    const saved = Array.isArray(data) ? data[0] : null;
-                    submitLocalComment(
-                        saved?.created_at ?? new Date().toISOString(),
-                        saved?.id,
-                    );
-                    setStatusMessage("Komentar terkirim!");
-                } catch (error) {
-                    console.error(error);
-                    submitLocalComment();
+                        if (!response.ok) {
+                            throw new Error("Komentar gagal dikirim");
+                        }
+                        const data = await response.json();
+                        const saved = Array.isArray(data) ? data[0] : null;
+                        submitLocalComment(
+                            saved?.created_at ?? new Date().toISOString(),
+                            saved?.id,
+                        );
+                        setStatusMessage("Komentar terkirim!");
+
+                        // Kirim notifikasi ke admin
+                        try {
+                            const articleTitle =
+                                document.querySelector("h1")?.textContent ||
+                                document.title;
+                            const { notifyComment } = await import(
+                                "../../lib/admin-notifications-client"
+                            );
+                            notifyComment(slug, articleTitle, message);
+                        } catch (error) {
+                            console.warn(
+                                "Failed to send admin notification:",
+                                error,
+                            );
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        submitLocalComment();
                         setStatusMessage(
                             "Gagal ke Supabase, komentar disimpan lokal.",
                             "error",
@@ -765,6 +781,22 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
                             ? "Terima kasih! Batas 50 tepuk sudah kamu capai."
                             : "Terima kasih sudah apresiasi!",
                     );
+
+                    // Kirim notifikasi ke admin
+                    try {
+                        const articleTitle =
+                            document.querySelector("h1")?.textContent ||
+                            document.title;
+                        const { notifyLike } = await import(
+                            "../../lib/admin-notifications-client"
+                        );
+                        notifyLike(slug, articleTitle);
+                    } catch (error) {
+                        console.warn(
+                            "Failed to send admin notification:",
+                            error,
+                        );
+                    }
                 } catch (error) {
                     console.error(error);
                     setStatusMessage("Suka gagal dikirim. Coba lagi.", "error");

@@ -62,13 +62,14 @@ const sortedProducts = [...allProducts].reverse();
                 </p>
                 <h1>{filename ? "Perbarui artikel" : "Artikel baru"}</h1>
                 <p>
-                    Kelola markdown, metadata, dan afiliasi dari satu layar yang lebih
-                    ringkas.
+                    Kelola markdown, metadata, dan afiliasi dari satu layar yang
+                    lebih ringkas.
                 </p>
             </div>
             <div class="editor-header__actions">
                 <a href="/admin" class="editor-button editor-button--ghost">
-                    <i class="fa-solid fa-arrow-left-long" aria-hidden="true"></i>
+                    <i class="fa-solid fa-arrow-left-long" aria-hidden="true"
+                    ></i>
                     <span>Kembali</span>
                 </a>
                 <a
@@ -95,17 +96,25 @@ const sortedProducts = [...allProducts].reverse();
         <div class="editor-chip-row">
             <span class="editor-chip" data-filename-chip>
                 <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
-                <span data-filename-chip-text>{filename || "Belum ada file"}</span>
+                <span data-filename-chip-text
+                    >{filename || "Belum ada file"}</span
+                >
             </span>
             <span class="editor-chip">
                 <i class="fa-regular fa-calendar" aria-hidden="true"></i>
-                {frontmatter.pubDate
-                    ? new Date(frontmatter.pubDate).toLocaleDateString("id-ID")
-                    : "Tanggal otomatis"}
+                {
+                    frontmatter.pubDate
+                        ? new Date(frontmatter.pubDate).toLocaleDateString(
+                              "id-ID",
+                          )
+                        : "Tanggal otomatis"
+                }
             </span>
             <span class="editor-chip">
                 <i class="fa-solid fa-tags" aria-hidden="true"></i>
-                <span data-product-count>{frontmatter.affiliateProducts?.length ?? 0}</span>
+                <span data-product-count
+                    >{frontmatter.affiliateProducts?.length ?? 0}</span
+                >
                 produk
             </span>
         </div>
@@ -118,14 +127,14 @@ const sortedProducts = [...allProducts].reverse();
                         <h2>Markdown editor</h2>
                     </div>
                     <span class="editor-hint">
-                        Gunakan Markdown standar · Cmd/Ctrl + S untuk simpan cepat
+                        Gunakan Markdown standar · Cmd/Ctrl + S untuk simpan
+                        cepat
                     </span>
                 </div>
                 <textarea
                     id="content-editor"
                     class="editor-textarea"
-                    placeholder="Tulis artikel di sini..."
-                    >{content}</textarea
+                    placeholder="Tulis artikel di sini...">{content}</textarea
                 >
             </section>
 
@@ -159,7 +168,9 @@ const sortedProducts = [...allProducts].reverse();
                     </div>
 
                     <div class="editor-field">
-                        <label for="title-input" class="editor-label">Judul</label>
+                        <label for="title-input" class="editor-label"
+                            >Judul</label
+                        >
                         <input
                             type="text"
                             id="title-input"
@@ -183,12 +194,16 @@ const sortedProducts = [...allProducts].reverse();
                     </div>
 
                     <div class="editor-field">
-                        <label for="date-input" class="editor-label">Tanggal</label>
+                        <label for="date-input" class="editor-label"
+                            >Tanggal</label
+                        >
                         <input
                             type="date"
                             id="date-input"
                             value={frontmatter.pubDate instanceof Date
-                                ? frontmatter.pubDate.toISOString().split("T")[0]
+                                ? frontmatter.pubDate
+                                      .toISOString()
+                                      .split("T")[0]
                                 : frontmatter.pubDate}
                             class="editor-input"
                         />
@@ -217,8 +232,13 @@ const sortedProducts = [...allProducts].reverse();
                                 class="editor-input"
                             />
                             <label class="editor-upload" title="Unggah gambar">
-                                <input type="file" id="file-upload" accept="image/*" />
-                                <i class="fa-solid fa-upload" aria-hidden="true"></i>
+                                <input
+                                    type="file"
+                                    id="file-upload"
+                                    accept="image/*"
+                                />
+                                <i class="fa-solid fa-upload" aria-hidden="true"
+                                ></i>
                             </label>
                         </div>
                     </div>
@@ -278,70 +298,83 @@ const sortedProducts = [...allProducts].reverse();
                         />
                     </div>
 
-                    {sortedProducts.length > 0 ? (
-                        <>
-                            <div class="editor-field">
-                                <label for="product-search" class="editor-label">
-                                    Cari produk
-                                </label>
-                                <input
-                                    type="search"
-                                    id="product-search"
-                                    class="editor-input"
-                                    placeholder="Cari nama, ID, kategori, atau tag"
-                                    autocomplete="off"
-                                />
-                                <p class="editor-hint">
-                                    Daftar diurut berdasarkan produk terbaru.
-                                </p>
-                            </div>
-
-                            <div
-                                class="editor-checkbox-list custom-scrollbar"
-                                data-product-picker
-                            >
-                                {sortedProducts.map((product) => (
+                    {
+                        sortedProducts.length > 0 ? (
+                            <>
+                                <div class="editor-field">
                                     <label
-                                        class="editor-checkbox-item"
-                                        data-product-option
-                                        data-product-keywords={[
-                                            product.name,
-                        product.id,
-                                            product.category ?? "",
-                                            ...(product.tags ?? []),
-                                        ]
-                                            .join(" ")
-                                            .toLowerCase()}
+                                        for="product-search"
+                                        class="editor-label"
                                     >
-                                        <input
-                                            type="checkbox"
-                                            name="affiliate-products"
-                                            value={product.id}
-                                            checked={
-                                                frontmatter.affiliateProducts &&
-                                                frontmatter.affiliateProducts.includes(
-                                                    product.id,
-                                                )
-                                            }
-                                        />
-                                        <div class="editor-checkbox-copy">
-                                            <span>{product.name}</span>
-                                            <small>
-                                                {product.platform} · {formatRupiah(product.price)}
-                                            </small>
-                                        </div>
+                                        Cari produk
                                     </label>
-                                ))}
-                            </div>
-                            <p class="editor-empty hidden" data-product-search-empty>
-                                Tidak ada produk yang cocok dengan pencarianmu.
+                                    <input
+                                        type="search"
+                                        id="product-search"
+                                        class="editor-input"
+                                        placeholder="Cari nama, ID, kategori, atau tag"
+                                        autocomplete="off"
+                                    />
+                                    <p class="editor-hint">
+                                        Daftar diurut berdasarkan produk
+                                        terbaru.
+                                    </p>
+                                </div>
+
+                                <div
+                                    class="editor-checkbox-list custom-scrollbar"
+                                    data-product-picker
+                                >
+                                    {sortedProducts.map((product) => (
+                                        <label
+                                            class="editor-checkbox-item"
+                                            data-product-option
+                                            data-product-keywords={[
+                                                product.name,
+                                                product.id,
+                                                product.category ?? "",
+                                                ...(product.tags ?? []),
+                                            ]
+                                                .join(" ")
+                                                .toLowerCase()}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                name="affiliate-products"
+                                                value={product.id}
+                                                checked={
+                                                    frontmatter.affiliateProducts &&
+                                                    frontmatter.affiliateProducts.includes(
+                                                        product.id,
+                                                    )
+                                                }
+                                            />
+                                            <div class="editor-checkbox-copy">
+                                                <span>{product.name}</span>
+                                                <small>
+                                                    {product.platform} ·{" "}
+                                                    {formatRupiah(
+                                                        product.price,
+                                                    )}
+                                                </small>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                                <p
+                                    class="editor-empty hidden"
+                                    data-product-search-empty
+                                >
+                                    Tidak ada produk yang cocok dengan
+                                    pencarianmu.
+                                </p>
+                            </>
+                        ) : (
+                            <p class="editor-empty">
+                                Belum ada produk afiliasi yang tersedia.
                             </p>
-                        </>
-                    ) : (
-                        <p class="editor-empty">
-                            Belum ada produk afiliasi yang tersedia.
-                        </p>
-                    )}
+                        )
+                    }
                 </div>
             </aside>
         </div>
@@ -411,7 +444,9 @@ const sortedProducts = [...allProducts].reverse();
                 .map((cb) => cb.value);
         }
 
-        function updateProductCountDisplay(count = getSelectedProductIds().length) {
+        function updateProductCountDisplay(
+            count = getSelectedProductIds().length,
+        ) {
             if (productCountChip) {
                 productCountChip.textContent = String(count);
             }
@@ -486,23 +521,13 @@ const sortedProducts = [...allProducts].reverse();
                 if (response.ok) {
                     urlInput.value = result.url;
                     updatePreview();
-                    if (typeof window.showToast === "function") {
-                        window.showToast("Image uploaded successfully!", {
-                            type: "success",
-                        });
-                    }
+                    alert("Image uploaded successfully!");
                 } else {
                     throw new Error(result.error);
                 }
             } catch (error) {
                 console.error("Upload error:", error);
-                if (typeof window.showToast === "function") {
-                    window.showToast(error.message || "Failed to upload image", {
-                        type: "error",
-                    });
-                } else {
-                    alert("Failed to upload image");
-                }
+                alert(error.message || "Failed to upload image");
             } finally {
                 // Restore button state
                 if (uploadBtn && originalContent) {
@@ -575,7 +600,9 @@ const sortedProducts = [...allProducts].reverse();
             for (const [key, value] of Object.entries(preservedFrontmatter)) {
                 if (Array.isArray(value)) {
                     frontmatterLines.push(`${key}:`);
-                    value.forEach((item) => frontmatterLines.push(`  - "${item}"`));
+                    value.forEach((item) =>
+                        frontmatterLines.push(`  - "${item}"`),
+                    );
                 } else if (typeof value === "object" && value !== null) {
                     frontmatterLines.push(`${key}:`);
                     for (const [k, v] of Object.entries(value)) {
@@ -647,12 +674,8 @@ const sortedProducts = [...allProducts].reverse();
                 const result = await response.json();
 
                 if (response.ok) {
-                    // Show success toast
-                    if (typeof window.showToast === "function") {
-                        window.showToast("Article saved successfully!", {
-                            type: "success",
-                        });
-                    }
+                    // Show success alert
+                    alert("Article saved successfully!");
 
                     // Show View Article button
                     const viewBtn = document.getElementById("view-article-btn");
@@ -685,12 +708,8 @@ const sortedProducts = [...allProducts].reverse();
                 }
             } catch (e) {
                 console.error(e);
-                // Show error toast
-                if (typeof window.showToast === "function") {
-                    window.showToast("Failed to save article", {
-                        type: "error",
-                    });
-                }
+                // Show error alert
+                alert("Failed to save article");
                 saveBtn.innerHTML = '<i class="fa-solid fa-save"></i> Simpan';
                 saveBtn.disabled = false;
             }
@@ -702,11 +721,8 @@ const sortedProducts = [...allProducts].reverse();
             max-width: 1100px;
             margin: 0 auto;
             padding: 1.5rem 1.25rem 4rem;
-            --editor-border: 1px solid color-mix(
-                in srgb,
-                var(--color-foreground) 14%,
-                transparent
-            );
+            --editor-border: 1px solid
+                color-mix(in srgb, var(--color-foreground) 14%, transparent);
             --editor-card-bg: color-mix(
                 in srgb,
                 var(--color-card) 92%,
@@ -772,7 +788,9 @@ const sortedProducts = [...allProducts].reverse();
             cursor: pointer;
             background: transparent;
             color: inherit;
-            transition: transform 150ms ease, border-color 150ms ease,
+            transition:
+                transform 150ms ease,
+                border-color 150ms ease,
                 background-color 150ms ease;
         }
 
@@ -785,18 +803,34 @@ const sortedProducts = [...allProducts].reverse();
         }
 
         .editor-button--soft {
-            background: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+            background: color-mix(
+                in srgb,
+                var(--color-foreground) 4%,
+                transparent
+            );
         }
 
         .editor-button--primary {
             background: var(--color-primary);
-            border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+            border-color: color-mix(
+                in srgb,
+                var(--color-primary) 60%,
+                transparent
+            );
             color: var(--color-background);
         }
 
         .editor-button.is-success {
-            background: color-mix(in srgb, var(--color-primary) 20%, var(--color-success, #0f9d58));
-            border-color: color-mix(in srgb, var(--color-primary) 50%, transparent);
+            background: color-mix(
+                in srgb,
+                var(--color-primary) 20%,
+                var(--color-success, #0f9d58)
+            );
+            border-color: color-mix(
+                in srgb,
+                var(--color-primary) 50%,
+                transparent
+            );
         }
 
         .editor-button:hover,
@@ -1018,7 +1052,11 @@ const sortedProducts = [...allProducts].reverse();
         }
 
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: color-mix(in srgb, var(--color-foreground) 25%, transparent);
+            background: color-mix(
+                in srgb,
+                var(--color-foreground) 25%,
+                transparent
+            );
             border-radius: 999px;
         }
 

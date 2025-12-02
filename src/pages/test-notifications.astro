@@ -1,0 +1,224 @@
+---
+/**
+ * Test page untuk sistem notifikasi
+ * Akses di /test-notifications
+ */
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Test Notifikasi">
+    <div class="container mx-auto px-4 py-8 max-w-2xl">
+        <h1 class="text-3xl font-bold mb-4">Test Sistem Notifikasi</h1>
+        <p class="mb-8 text-gray-600 dark:text-gray-400">
+            Gunakan tombol di bawah untuk mengirim notifikasi test. Lihat icon
+            bell di header untuk melihat notifikasi.
+        </p>
+
+        <div class="space-y-4">
+            <div
+                class="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+            >
+                <h2 class="text-xl font-semibold mb-4">
+                    📧 Newsletter Notification
+                </h2>
+                <button
+                    id="test-newsletter"
+                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                >
+                    Kirim Test Newsletter
+                </button>
+            </div>
+
+            <div
+                class="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+            >
+                <h2 class="text-xl font-semibold mb-4">❤️ Like Notification</h2>
+                <button
+                    id="test-like"
+                    class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                >
+                    Kirim Test Like
+                </button>
+            </div>
+
+            <div
+                class="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+            >
+                <h2 class="text-xl font-semibold mb-4">
+                    💬 Comment Notification
+                </h2>
+                <button
+                    id="test-comment"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                    Kirim Test Comment
+                </button>
+            </div>
+
+            <div
+                class="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+            >
+                <h2 class="text-xl font-semibold mb-4">
+                    🔖 Bookmark Notification
+                </h2>
+                <button
+                    id="test-bookmark"
+                    class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+                >
+                    Kirim Test Bookmark
+                </button>
+            </div>
+
+            <div
+                class="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+            >
+                <h2 class="text-xl font-semibold mb-4">🔄 Bulk Test</h2>
+                <button
+                    id="test-bulk"
+                    class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                >
+                    Kirim 10 Notifikasi Random
+                </button>
+            </div>
+
+            <div
+                class="p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+            >
+                <h2 class="text-xl font-semibold mb-4">🗑️ Clear</h2>
+                <button
+                    id="clear-all"
+                    class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+                >
+                    Hapus Semua Notifikasi
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <h3 class="font-semibold mb-2">ℹ️ Info</h3>
+            <ul class="text-sm space-y-1 text-gray-700 dark:text-gray-300">
+                <li>• Notifikasi disimpan di localStorage</li>
+                <li>• Badge counter akan update otomatis</li>
+                <li>• Klik icon bell di header untuk melihat notifikasi</li>
+                <li>• Auto-polling setiap 10 detik</li>
+                <li>
+                    • Like & Comment akan kirim ke Telegram (jika dikonfigurasi)
+                </li>
+            </ul>
+        </div>
+    </div>
+</Layout>
+
+<script>
+    import { sendAdminNotification } from "../lib/admin-notifications-client";
+    import { clearAllNotifications } from "../lib/notifications";
+
+    // Test Newsletter
+    document
+        .getElementById("test-newsletter")
+        ?.addEventListener("click", () => {
+            sendAdminNotification({
+                type: "newsletter",
+                metadata: {
+                    email: `test${Date.now()}@example.com`,
+                    source: "/test-notifications",
+                },
+            });
+            alert("Newsletter notification sent!");
+        });
+
+    // Test Like
+    document.getElementById("test-like")?.addEventListener("click", () => {
+        sendAdminNotification({
+            type: "like",
+            metadata: {
+                articleSlug: "test-article",
+                articleTitle: "Test Article Title",
+                userHash: `user_${Date.now()}`,
+            },
+        });
+        alert("Like notification sent!");
+    });
+
+    // Test Comment
+    document.getElementById("test-comment")?.addEventListener("click", () => {
+        sendAdminNotification({
+            type: "comment",
+            metadata: {
+                articleSlug: "test-article",
+                articleTitle: "Test Article Title",
+                commentText:
+                    "Ini adalah komentar test yang sangat panjang untuk melihat bagaimana tampilan notifikasi dengan teks yang panjang.",
+                userHash: `user_${Date.now()}`,
+            },
+        });
+        alert("Comment notification sent!");
+    });
+
+    // Test Bookmark
+    document.getElementById("test-bookmark")?.addEventListener("click", () => {
+        sendAdminNotification({
+            type: "bookmark",
+            metadata: {
+                articleSlug: "test-article",
+                articleTitle: "Test Article Title",
+                userHash: `user_${Date.now()}`,
+            },
+        });
+        alert("Bookmark notification sent!");
+    });
+
+    // Test Bulk
+    document.getElementById("test-bulk")?.addEventListener("click", () => {
+        const types: Array<"newsletter" | "like" | "comment" | "bookmark"> = [
+            "newsletter",
+            "like",
+            "comment",
+            "bookmark",
+        ];
+
+        for (let i = 0; i < 10; i++) {
+            const type = types[Math.floor(Math.random() * types.length)];
+
+            setTimeout(() => {
+                sendAdminNotification({
+                    type,
+                    metadata: {
+                        email:
+                            type === "newsletter"
+                                ? `test${Date.now()}@example.com`
+                                : undefined,
+                        articleSlug:
+                            type !== "newsletter" ? "test-article" : undefined,
+                        articleTitle:
+                            type !== "newsletter"
+                                ? `Test Article ${i + 1}`
+                                : undefined,
+                        commentText:
+                            type === "comment"
+                                ? `Test comment ${i + 1}`
+                                : undefined,
+                        userHash:
+                            type !== "newsletter"
+                                ? `user_${Date.now()}`
+                                : undefined,
+                        source:
+                            type === "newsletter"
+                                ? "/test-notifications"
+                                : undefined,
+                    },
+                });
+            }, i * 200);
+        }
+
+        alert("Sending 10 random notifications...");
+    });
+
+    // Clear All
+    document.getElementById("clear-all")?.addEventListener("click", () => {
+        if (confirm("Hapus semua notifikasi?")) {
+            clearAllNotifications();
+            alert("All notifications cleared!");
+        }
+    });
+</script>
