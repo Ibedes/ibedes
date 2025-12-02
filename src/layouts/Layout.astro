@@ -93,6 +93,9 @@ const {
     />
 
     <slot name="head" />
+    
+    <!-- Netlify Identity Widget for Decap CMS -->
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
   <body class="zag-bg zag-text zag-transition font-mono">
     <a href="#main-content" class="skip-link">Skip to content</a>
@@ -167,6 +170,19 @@ const {
         window.addEventListener("unhandledrejection", (event) => {
           if (typeof (window as any).trackError === "function") {
             (window as any).trackError(event.reason, "unhandled_rejection");
+          }
+        });
+      }
+    </script>
+    
+    <!-- Netlify Identity redirect handler -->
+    <script>
+      if (window.netlifyIdentity) {
+        window.netlifyIdentity.on("init", user => {
+          if (!user) {
+            window.netlifyIdentity.on("login", () => {
+              document.location.href = "/decap/";
+            });
           }
         });
       }

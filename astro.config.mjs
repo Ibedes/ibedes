@@ -8,11 +8,13 @@ import sitemap from "@astrojs/sitemap";
 
 import netlify from "@astrojs/netlify";
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://ibedes.xyz",
-  output: "server",
- adapter: netlify(),
+  output: isDev ? "static" : "server",
+  adapter: isDev ? undefined : netlify(),
   image: {
     remotePatterns: [
       { protocol: "https", hostname: "**.susercontent.com" },
