@@ -1,0 +1,25 @@
+backend:
+  name: git-gateway
+  branch: main
+  commit_messages:
+    create: "chore(cms): create {{collection}} \"{{slug}}\""
+    update: "chore(cms): update {{collection}} \"{{slug}}\""
+    delete: "chore(cms): delete {{collection}} \"{{slug}}\""
+media_folder: "public/uploads"
+public_folder: "/uploads"
+publish_mode: editorial_workflow
+collections:
+  - name: blog
+    label: Artikel
+    label_singular: Artikel
+    folder: "src/pages/blog"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: frontmatter
+    fields:
+      - { label: "Judul", name: "title", widget: "string" }
+      - { label: "Tanggal", name: "date", widget: "datetime" }
+      - { label: "Deskripsi", name: "description", widget: "text", required: false }
+      - { label: "Affiliate Products", name: "affiliateProducts", widget: "list", required: false, default: [] }
+      - { label: "Body", name: "body", widget: "markdown" }
