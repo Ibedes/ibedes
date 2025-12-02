@@ -185,6 +185,13 @@ const {
             });
           }
         });
+        
+        // Handle invite token in URL
+        if (window.location.hash.includes('invite_token') || 
+            window.location.hash.includes('recovery_token') ||
+            window.location.hash.includes('confirmation_token')) {
+          window.netlifyIdentity.open();
+        }
       }
     </script>
   </body>
