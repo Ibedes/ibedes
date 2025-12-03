@@ -3,12 +3,14 @@ import Layout from "../layouts/Layout.astro";
 import Section from "../components/common/Section.astro";
 import AffiliateProducts from "../components/AffiliateProducts.astro";
 import { GLOBAL } from "../lib/variables";
-import { loadAffiliateProducts } from "../lib/affiliates";
+import { loadAffiliateProductsRanked } from "../lib/affiliates";
 
-const products = await loadAffiliateProducts();
+// Ranking kombinasi: klik (30 hari), recency, dan status verified
+const products = await loadAffiliateProductsRanked({ days: 30 });
 const verifiedProducts = products.filter((product) => product.verified);
 const categories = Array.from(new Set(products.map((product) => product.category))).filter(Boolean);
 
+// Pertahankan urutan hasil scoring untuk setiap kategori
 const categoryProducts = categories.map((category) => ({
   name: category,
   items: products.filter((product) => product.category === category),

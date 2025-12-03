@@ -4,6 +4,9 @@
   functions = "netlify/functions"
   publish = "dist"
 
+[functions]
+  included_files = ["src/data/affiliate-products.json"]
+
   ## Uncomment to use this redirect for Single Page Applications like create-react-app.
   ## Not needed for static site generators.
   #[[redirects]]

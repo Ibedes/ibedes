@@ -1,12 +1,30 @@
 import type { APIRoute } from "astro";
 
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request, cookies }) => {
     try {
-        const body = await request.json();
-        const { username, password } = body;
+        let body: any = null;
+        try {
+            body = await request.json();
+        } catch {
+            return new Response(
+                JSON.stringify({ error: "Empty or invalid JSON body" }),
+                { status: 400 },
+            );
+        }
 
-        const adminUser = import.meta.env.ADMIN_USER || process.env.ADMIN_USER;
-        const adminPassword = import.meta.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
+        const { username, password } = body || {};
+
+        // Allow local dev fallback so endpoint tidak 500 ketika env belum di-set.
+        const adminUser =
+            import.meta.env.ADMIN_USER ||
+            process.env.ADMIN_USER ||
+            (import.meta.env.DEV ? "admin" : undefined);
+        const adminPassword =
+            import.meta.env.ADMIN_PASSWORD ||
+            process.env.ADMIN_PASSWORD ||
+            (import.meta.env.DEV ? "admin123" : undefined);
 
         if (!adminUser || !adminPassword) {
             return new Response(

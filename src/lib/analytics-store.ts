@@ -576,7 +576,10 @@ export const getRecentEvents = async (limit = 20) => {
         }));
 };
 
-export const getAffiliateClicksSummary = async (days = 30, limit = 20) => {
+export const getAffiliateClicksSummary = async (
+    days = 30,
+    limit = 20,
+) => {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     const events = await fetchEvents(since, 6000);
     const clicks = events.filter((event) => event.event === "affiliate_click");

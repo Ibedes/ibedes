@@ -1,8 +1,10 @@
 import type { APIRoute } from "astro";
 import fs from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import type { AffiliateProduct } from "../../../lib/affiliates";
+import {
+    getAffiliateDataPath,
+    ensureAffiliateDataDir,
+} from "../../../lib/affiliates";
 
 export const prerender = false;
 
@@ -38,13 +40,7 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
         }
 
-        const currentDir = fileURLToPath(new URL(".", import.meta.url));
-        const projectRoot = path.resolve(currentDir, "../../../../");
-        const affiliatesJsonPath = path.join(
-            projectRoot,
-            "src/data/affiliate-products.json",
-        );
-
+        const affiliatesJsonPath = getAffiliateDataPath();
         let products: AffiliateProduct[] = [];
 
         try {
@@ -94,11 +90,8 @@ export const POST: APIRoute = async ({ request }) => {
         products[productIndex] = updatedProduct;
 
         // Write back to file
-        await fs.writeFile(
-            affiliatesJsonPath,
-            JSON.stringify(products, null, 4),
-            "utf-8",
-        );
+        await ensureAffiliateDataDir(affiliatesJsonPath);
+        await fs.writeFile(affiliatesJsonPath, JSON.stringify(products, null, 4), "utf-8");
         console.log(`[Admin API] Product updated successfully`);
 
         return new Response(

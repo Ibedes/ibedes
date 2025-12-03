@@ -7,17 +7,15 @@ import Section from "../components/common/Section.astro";
 import FeaturedArticles from "../components/home/FeaturedArticles.astro";
 import SubscribeCard from "../components/SubscribeCard.astro";
 import AffiliateProducts from "../components/AffiliateProducts.astro";
-import { loadAffiliateProducts } from "../lib/affiliates";
+import { loadAffiliateProductsRanked } from "../lib/affiliates";
 
-const allAffiliateProducts = await loadAffiliateProducts();
-const verifiedAffiliateProducts = allAffiliateProducts.filter(
-  (product) => product.verified,
-);
-const homepageAffiliateProducts = (
-  verifiedAffiliateProducts.length
-    ? verifiedAffiliateProducts
-    : allAffiliateProducts
-).slice(0, 6);
+// Kombinasi klik + recency + verified untuk urutan yang paling relevan
+const rankedAffiliateProducts = await loadAffiliateProductsRanked({
+  days: 30,
+  limit: 12,
+});
+
+const homepageAffiliateProducts = rankedAffiliateProducts.slice(0, 6);
 const homepageFeaturedArticles = featuredArticles.slice(0, 6);
 ---
 

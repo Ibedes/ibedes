@@ -1,8 +1,10 @@
 import type { APIRoute } from "astro";
 import fs from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import type { AffiliateProduct } from "../../../lib/affiliates";
+import {
+    getAffiliateDataPath,
+    ensureAffiliateDataDir,
+} from "../../../lib/affiliates";
 
 export const prerender = false;
 
@@ -17,13 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
             );
         }
 
-        const currentDir = fileURLToPath(new URL(".", import.meta.url));
-        const projectRoot = path.resolve(currentDir, "../../../../");
-        const affiliatesJsonPath = path.join(
-            projectRoot,
-            "src/data/affiliate-products.json",
-        );
-
+        const affiliatesJsonPath = getAffiliateDataPath();
         let products: AffiliateProduct[] = [];
 
         try {
@@ -48,11 +44,8 @@ export const POST: APIRoute = async ({ request }) => {
             );
         }
 
-        await fs.writeFile(
-            affiliatesJsonPath,
-            JSON.stringify(filteredProducts, null, 4),
-            "utf-8",
-        );
+        await ensureAffiliateDataDir(affiliatesJsonPath);
+        await fs.writeFile(affiliatesJsonPath, JSON.stringify(filteredProducts, null, 4), "utf-8");
         console.log(`[Admin API] Deleted product ${id}`);
 
         return new Response(
