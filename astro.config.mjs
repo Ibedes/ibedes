@@ -1,11 +1,8 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
-
 import react from "@astrojs/react";
-
 import sitemap from "@astrojs/sitemap";
-
 import netlify from "@astrojs/netlify";
 
 const isDev = process.env.NODE_ENV !== 'production';
@@ -23,9 +20,9 @@ export default defineConfig({
   },
 
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [/** @type {any} */ (tailwindcss())],
   },
 
   integrations: [react(), sitemap()],
- 
+
 });
