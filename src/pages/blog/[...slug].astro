@@ -1,0 +1,54 @@
+---
+import { getEntry, render } from "astro:content";
+import BlogLayout from "../../layouts/BlogLayout.astro";
+import { getArticleFromDatabase } from "../../lib/database-helpers";
+
+export const prerender = false; // Server-side rendering is required for dynamic DB checks
+
+const { slug } = Astro.params;
+
+if (!slug) {
+    return Astro.redirect("/404");
+}
+
+// 1. Get content from local filesystem (Content Collections)
+const entry = await getEntry("blog", slug);
+
+// 2. Environment check
+const isProduction =
+    import.meta.env.PROD || process.env.NODE_ENV === "production";
+
+// 3. If in Production, Validate with Database
+if (isProduction) {
+    if (!entry) {
+        // If file doesn't exist, try to fetch from DB entirely (in case we move to full DB)
+        // For now, if no file, 404
+        return Astro.redirect("/404");
+    }
+
+    // Verify existance and status in Database
+    const dbArticle = await getArticleFromDatabase(slug);
+
+    if (!dbArticle) {
+        // Article exists as file but NOT in database (Deleted)
+        // Return 404 to simulate deletion
+        console.log(
+            `[Blog] Article ${slug} exists locally but deleted in DB. Returning 404.`,
+        );
+        return Astro.redirect("/404");
+    }
+}
+
+// 4. If not found locally (and we are here), return 404
+if (!entry) {
+    return Astro.redirect("/404");
+}
+
+// 5. Render content
+const { Content, headings } = await render(entry);
+---
+
+<BlogLayout frontmatter={entry.data} headings={headings}>
+    <Content />
+</BlogLayout>
+```

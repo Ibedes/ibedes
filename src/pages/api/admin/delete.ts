@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         const isProduction = import.meta.env.PROD || process.env.NODE_ENV === 'production';
-        const repoFilePath = `src/pages/blog/${filename}`;
+        const repoFilePath = `src/content/blog/${filename}`;
         const localFilePath = path.join(process.cwd(), repoFilePath);
 
         let deletedLocally = false;

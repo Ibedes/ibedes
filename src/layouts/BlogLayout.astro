@@ -29,7 +29,14 @@ import ImageLightbox from "../components/ImageLightbox.astro";
 import BackToTop from "../components/BackToTop.astro";
 import AuthorBio from "../components/AuthorBio.astro";
 
-type Props = MarkdownLayoutProps<ArticleFrontmatter>;
+type Props = {
+  frontmatter: ArticleFrontmatter;
+  headings: import("astro").MarkdownHeading[];
+  file?: string;
+  url?: string;
+  rawContent?: () => string;
+  compiledContent?: () => string;
+};
 
 const { frontmatter, headings } = Astro.props;
 const shortDescription = getShortDescription(frontmatter.description);

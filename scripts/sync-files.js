@@ -20,7 +20,7 @@ import { createClient } from '@supabase/supabase-js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const BLOG_DIR = path.join(__dirname, '../src/pages/blog');
+const BLOG_DIR = path.join(__dirname, '../src/content/blog');
 
 // Load environment variables from .env file
 config();
