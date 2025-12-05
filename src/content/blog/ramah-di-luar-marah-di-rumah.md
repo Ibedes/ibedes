@@ -1,4 +1,13 @@
 ---
+title: "Mengapa Seseorang Bisa Ramah di Luar, tapi Mudah Meledak di Rumah?"
+description: "Sebuah refleksi psikologis dan emosional tentang fenomena umum: seseorang terlihat ramah di luar rumah, namun mudah marah kepada keluarga. Mengapa ini terjadi, dan apa yang sebenarnya sedang terjadi di dalam dirinya?"
+pubDate: "2025-11-24T00:00:00+00:00"
+tags: []
+time: 5
+featured: false
+---
+
+---
 layout: "../../layouts/BlogLayout.astro"
 tags:
   - "Refleksi"

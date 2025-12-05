@@ -1,23 +1,12 @@
 ---
-layout: "../../layouts/BlogLayout.astro"
-tags:
-  - "Refleksi"
-  - "Kehidupan"
-  - "Filosofi"
-  - "Uang"
-time: 7
-featured: true
-timestamp: "2025-11-09"
-filename: "uang-sebagai-alat-tukar-kebahagiaan"
-url: "/blog/uang-sebagai-alat-tukar-kebahagiaan"
 title: "Uang Sebagai Alat Tukar Kebahagiaan?"
 description: "Refleksi tentang hubungan antara uang dan kebahagiaan — sejauh mana uang bisa menenangkan hidup, dan kapan ia justru menjauhkan kita dari makna bahagia itu sendiri."
-pubDate: "2025-11-24"
-affiliateProducts:
-  - "jas-hujan-sp1"
-  - "jas-hujan-sp2"
-  - "jas-hujan-sp3"
+pubDate: "2025-11-24T00:00:00+00:00"
+tags: []
+time: 5
+featured: false
 ---
+
 
 ---------------------------------------------
 

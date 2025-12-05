@@ -1,24 +1,13 @@
 ---
-layout: "../../layouts/BlogLayout.astro"
-tags:
-  - "Ekonomi"
-  - "Refleksi"
-  - "Uang"
-time: 8
-featured: true
-timestamp: "2025-11-07"
-filename: "redenominasi-menghapus-nol"
-url: "/blog/redenominasi-menghapus-nol"
 title: "Redenominasi: Menghapus Nol, Menyederhanakan Persepsi"
 description: "Sebuah refleksi tentang arti redenominasi, mengapa dilakukan, dan apa yang sebenarnya ingin dicapai oleh sebuah negara ketika menyederhanakan mata uangnya."
-pubDate: "2025-11-24"
+pubDate: "2025-11-24T00:00:00+00:00"
+tags: []
 featuredImage: "https://images.unsplash.com/photo-1593672755342-741a7f868732?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=1470"
-featuredImageAlt: "redenominasi"
-featuredImageCaption: "Foto oleh <b>Giorgio Trovato</b> di Unsplash"
-affiliateProducts:
-  - "tripod-kamera-1"
-  - "smart-watch-1"
+time: 5
+featured: false
 ---
+
 
 ## Redenominasi: Menghapus Nol, Menyederhanakan Persepsi
 

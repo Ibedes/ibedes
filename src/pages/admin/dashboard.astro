@@ -20,7 +20,7 @@ Astro.response.headers.set(
 Astro.response.headers.set("Pragma", "no-cache");
 Astro.response.headers.set("Expires", "0");
 
-const blogDir = path.join(process.cwd(), "src/pages/blog");
+const blogDir = path.join(process.cwd(), "src/content/blog");
 const affiliateProducts = await loadAffiliateProducts();
 let articles = [];
 let totalWords = 0;

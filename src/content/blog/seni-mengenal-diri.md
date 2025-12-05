@@ -1,27 +1,13 @@
 ---
-layout: "../../layouts/BlogLayout.astro"
-tags:
-  - "Tasawuf"
-  - "Filsafat Islam"
-  - "Refleksi"
-  - "Spiritual"
-  - "Jiwa"
-time: 9
-featured: true
-timestamp: "2025-11-12"
-filename: "seni-mengenal-diri"
-url: "/blog/seni-mengenal-diri"
 title: "Seni Mengenal Diri: Antara Akal, Jiwa, dan Cinta Ilahi"
 description: "Renungan tentang bagaimana manusia dapat mengenal dirinya melalui keseimbangan antara akal yang berpikir, jiwa yang merasa, dan cinta Ilahi yang menuntun keduanya kembali kepada sumbernya."
-pubDate: "2025-11-24"
+pubDate: "2025-11-24T00:00:00+00:00"
+tags: []
 featuredImage: "https://images.unsplash.com/photo-1503264116251-35a269479413?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=1470"
-featuredImageAlt: "Cahaya pagi lembut menembus kabut, simbol keseimbangan antara akal, jiwa, dan cinta Ilahi"
-featuredImageCaption: "Foto oleh <b>Tim Foster</b> di Unsplash"
-affiliateProducts:
-  - "jas-hujan-sp3"
-  - "tripod-kamera-1"
-  - "smart-watch-1"
+time: 5
+featured: false
 ---
+
 
 ## Seni Mengenal Diri: Antara Akal, Jiwa, dan Cinta Ilahi
 
