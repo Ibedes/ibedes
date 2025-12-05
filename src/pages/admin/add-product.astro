@@ -63,6 +63,58 @@ export const prerender = false;
 
         <div class="editor-grid editor-grid--products">
             <section class="editor-panel editor-panel--primary">
+                <!-- Auto-Scrape Card -->
+                <div class="editor-card editor-card--auto-scrape">
+                    <div class="editor-card__head">
+                        <div>
+                            <p class="editor-eyebrow">Auto-fill</p>
+                            <h3>🚀 Ambil data otomatis</h3>
+                        </div>
+                        <span class="editor-pill editor-pill--success"
+                            >Baru</span
+                        >
+                    </div>
+                    <div class="editor-field">
+                        <label for="auto-scrape-url" class="editor-label">
+                            Link produk marketplace
+                        </label>
+                        <div class="editor-input-group">
+                            <input
+                                type="url"
+                                id="auto-scrape-url"
+                                placeholder="https://shopee.co.id/... atau https://tokopedia.com/..."
+                                class="editor-input"
+                            />
+                            <button
+                                type="button"
+                                id="fetch-product-btn"
+                                class="editor-button editor-button--primary"
+                                title="Ambil data produk"
+                            >
+                                <i
+                                    class="fa-solid fa-download"
+                                    aria-hidden="true"></i>
+                                <span>Ambil Data</span>
+                            </button>
+                        </div>
+                        <p class="editor-hint">
+                            <strong>✅ Support:</strong> Shopee, Tokopedia, & TikTok
+                            Shop.
+                            <br />
+                            <strong>💡 Tips:</strong>
+                            <br />• Pastikan link valid (bisa dibuka di browser)
+                            <br />• Jika harga tidak sesuai, silakan koreksi
+                            manual
+                            <br />• Data diambil dari Open Graph & Metadata
+                            marketplace
+                        </p>
+                    </div>
+                    <div id="scrape-status" class="editor-status hidden">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span></span>
+                    </div>
+                </div>
+
                 <div class="editor-panel__head">
                     <div>
                         <p class="editor-eyebrow">Form produk</p>
@@ -435,13 +487,43 @@ export const prerender = false;
     </div>
 
     <script>
-        const saveBtn = document.getElementById("save-product-btn");
-        const priceInput = document.getElementById("product-price");
+        const saveBtn = document.getElementById(
+            "save-product-btn",
+        ) as HTMLButtonElement;
+        const priceInput = document.getElementById(
+            "product-price",
+        ) as HTMLInputElement;
         const originalPriceInput = document.getElementById(
             "product-original-price",
-        );
-        const discountInput = document.getElementById("product-discount");
-        const ratingInput = document.getElementById("product-rating");
+        ) as HTMLInputElement;
+        const discountInput = document.getElementById(
+            "product-discount",
+        ) as HTMLInputElement;
+        const ratingInput = document.getElementById(
+            "product-rating",
+        ) as HTMLInputElement;
+
+        // Auto-scrape elements
+        const fetchBtn = document.getElementById("fetch-product-btn");
+        const scrapeUrlInput = document.getElementById(
+            "auto-scrape-url",
+        ) as HTMLInputElement;
+        const scrapeStatus = document.getElementById("scrape-status");
+        const productNameInput = document.getElementById(
+            "product-name",
+        ) as HTMLInputElement;
+        const productDescInput = document.getElementById(
+            "product-description",
+        ) as HTMLTextAreaElement;
+        const productImageInput = document.getElementById(
+            "product-image",
+        ) as HTMLInputElement;
+        const productLinkInput = document.getElementById(
+            "product-link",
+        ) as HTMLInputElement;
+        const productPlatformSelect = document.getElementById(
+            "product-platform",
+        ) as HTMLSelectElement;
 
         const getNumericValue = (value = "") =>
             value.toString().replace(/[^0-9]/g, "");
@@ -449,7 +531,177 @@ export const prerender = false;
         const formatCurrencyDisplay = (digits = "") =>
             digits ? `Rp ${digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}` : "";
 
-        function enhanceCurrencyInput(input) {
+        // Auto-scrape functionality
+        function showScrapeStatus(
+            message: string,
+            type: "info" | "success" | "error",
+        ) {
+            if (!scrapeStatus) return;
+
+            scrapeStatus.classList.remove(
+                "hidden",
+                "editor-status--info",
+                "editor-status--success",
+                "editor-status--error",
+            );
+            scrapeStatus.classList.add(`editor-status--${type}`);
+
+            const icon = scrapeStatus.querySelector("i");
+            const span = scrapeStatus.querySelector("span");
+
+            if (icon) {
+                icon.className =
+                    type === "success"
+                        ? "fa-solid fa-circle-check"
+                        : type === "error"
+                          ? "fa-solid fa-circle-exclamation"
+                          : "fa-solid fa-circle-info";
+            }
+
+            if (span) {
+                span.textContent = message;
+            }
+        }
+
+        function hideScrapeStatus() {
+            if (scrapeStatus) {
+                scrapeStatus.classList.add("hidden");
+            }
+        }
+
+        function generateProductId(name: string): string {
+            return name
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, "")
+                .replace(/\s+/g, "-")
+                .substring(0, 50);
+        }
+
+        fetchBtn?.addEventListener("click", async () => {
+            const url = scrapeUrlInput?.value.trim();
+
+            if (!url) {
+                showScrapeStatus(
+                    "Masukkan URL produk terlebih dahulu",
+                    "error",
+                );
+                return;
+            }
+
+            try {
+                (fetchBtn as HTMLButtonElement).disabled = true;
+                fetchBtn.innerHTML =
+                    '<i class="fa-solid fa-spinner fa-spin"></i> Mengambil data...';
+                showScrapeStatus(
+                    "Sedang mengambil data dari marketplace...",
+                    "info",
+                );
+
+                const response = await fetch("/api/fetch-product-data", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ url }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    const data = result.data;
+
+                    // Check if data is empty (scraping failed)
+                    const hasData = data.title || data.image || data.price;
+
+                    if (!hasData) {
+                        showScrapeStatus(
+                            "⚠️ Auto-scrape gagal. Silakan isi form manual. Link sudah terisi di bawah.",
+                            "error",
+                        );
+                        // Still fill the link
+                        if (productLinkInput) {
+                            productLinkInput.value = url;
+                        }
+                        return;
+                    }
+
+                    // Auto-fill form fields
+                    if (data.title && productNameInput) {
+                        productNameInput.value = data.title;
+                        // Auto-generate ID from title
+                        const productIdInput = document.getElementById(
+                            "product-id",
+                        ) as HTMLInputElement;
+                        if (productIdInput && !productIdInput.value) {
+                            productIdInput.value = generateProductId(
+                                data.title,
+                            );
+                        }
+                    } else {
+                        // This else block was part of the debugging. Removing the console.log inside it.
+                    }
+
+                    if (data.description && productDescInput) {
+                        productDescInput.value = data.description;
+                    }
+
+                    if (data.image && productImageInput) {
+                        productImageInput.value = data.image;
+                    }
+
+                    if (data.price && priceInput) {
+                        priceInput.value = data.price;
+                        // Trigger currency formatting
+                        const event = new Event("blur");
+                        priceInput.dispatchEvent(event);
+                    }
+
+                    if (productLinkInput) {
+                        productLinkInput.value = url;
+                    }
+
+                    if (data.platform && productPlatformSelect) {
+                        productPlatformSelect.value = data.platform;
+                    }
+
+                    showScrapeStatus(
+                        "✅ Data berhasil diambil! Silakan cek dan lengkapi form di bawah.",
+                        "success",
+                    );
+
+                    // Clear URL input after successful fetch
+                    setTimeout(() => {
+                        if (scrapeUrlInput) scrapeUrlInput.value = "";
+                        hideScrapeStatus();
+                    }, 5000);
+                } else {
+                    showScrapeStatus(
+                        result.error || "Gagal mengambil data produk",
+                        "error",
+                    );
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                showScrapeStatus(
+                    "Terjadi kesalahan saat mengambil data. Coba lagi.",
+                    "error",
+                );
+            } finally {
+                (fetchBtn as HTMLButtonElement).disabled = false;
+                fetchBtn.innerHTML =
+                    '<i class="fa-solid fa-download"></i> <span>Ambil Data</span>';
+            }
+        });
+
+        // Allow Enter key to trigger fetch
+        scrapeUrlInput?.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                fetchBtn?.click();
+            }
+        });
+
+        function enhanceCurrencyInput(input: HTMLInputElement) {
             if (!input) return;
             const applyFormat = () => {
                 const digits = getNumericValue(input.value);
@@ -464,7 +716,9 @@ export const prerender = false;
 
         document
             .querySelectorAll("[data-currency-input]")
-            .forEach((input) => enhanceCurrencyInput(input));
+            .forEach((input) =>
+                enhanceCurrencyInput(input as HTMLInputElement),
+            );
 
         // Auto-calculate discount
         function calculateDiscount() {
@@ -490,42 +744,70 @@ export const prerender = false;
         originalPriceInput?.addEventListener("input", calculateDiscount);
 
         saveBtn?.addEventListener("click", async () => {
-            const productId = document
-                .getElementById("product-id")
-                .value.trim();
-            const productName = document
-                .getElementById("product-name")
-                .value.trim();
-            const description = document
-                .getElementById("product-description")
-                .value.trim();
-            const priceValue = getNumericValue(
-                document.getElementById("product-price").value,
-            );
+            const productIdInput = document.getElementById(
+                "product-id",
+            ) as HTMLInputElement;
+            const productNameInput = document.getElementById(
+                "product-name",
+            ) as HTMLInputElement;
+            const descriptionInput = document.getElementById(
+                "product-description",
+            ) as HTMLTextAreaElement;
+            const priceInput = document.getElementById(
+                "product-price",
+            ) as HTMLInputElement;
+            const originalPriceInput = document.getElementById(
+                "product-original-price",
+            ) as HTMLInputElement;
+            const discountInput = document.getElementById(
+                "product-discount",
+            ) as HTMLInputElement;
+            const platformInput = document.getElementById(
+                "product-platform",
+            ) as HTMLSelectElement;
+            const imageInput = document.getElementById(
+                "product-image",
+            ) as HTMLInputElement;
+            const linkInput = document.getElementById(
+                "product-link",
+            ) as HTMLInputElement;
+            const categoryInput = document.getElementById(
+                "product-category",
+            ) as HTMLInputElement;
+            const tagsInput = document.getElementById(
+                "product-tags",
+            ) as HTMLInputElement;
+            const verifiedInput = document.getElementById(
+                "product-verified",
+            ) as HTMLInputElement;
+
+            const productId = productIdInput?.value.trim();
+            const productName = productNameInput?.value.trim();
+            const description = descriptionInput?.value.trim();
+            const priceValue = getNumericValue(priceInput?.value);
             const originalPriceValue = getNumericValue(
-                document.getElementById("product-original-price").value,
+                originalPriceInput?.value,
             );
-            const discount = document
-                .getElementById("product-discount")
-                .value.trim();
-            const platform = document.getElementById("product-platform").value;
-            const image = document.getElementById("product-image").value.trim();
-            const link = document.getElementById("product-link").value.trim();
-            let categoryRaw = document
-                .getElementById("product-category")
-                .value.trim();
-            const category = categoryRaw.split(",")[0].trim() || "General";
-            const tagsRaw = document.getElementById("product-tags").value;
-            const tags = [
-                ...new Set(
-                    tagsRaw
-                        .split(",")
-                        .map((t) => t.trim())
-                        .filter((t) => t),
-                ),
-            ];
-            const verified =
-                document.getElementById("product-verified").checked;
+            const discount = discountInput?.value.trim();
+            const platform = platformInput?.value;
+            const image = imageInput?.value.trim();
+            const link = linkInput?.value.trim();
+            let categoryRaw = categoryInput?.value.trim();
+            const category = categoryRaw
+                ? categoryRaw.split(",")[0].trim()
+                : "General";
+            const tagsRaw = tagsInput?.value;
+            const tags = tagsRaw
+                ? [
+                      ...new Set(
+                          tagsRaw
+                              .split(",")
+                              .map((t) => t.trim())
+                              .filter((t) => t),
+                      ),
+                  ]
+                : [];
+            const verified = verifiedInput?.checked;
             const rating = ratingInput?.value.trim();
 
             if (!productId || !productName || !description || !image || !link) {
@@ -568,7 +850,7 @@ export const prerender = false;
                     alert("Product added successfully!");
 
                     setTimeout(() => {
-                        window.location.href = "/admin";
+                        window.location.href = "/admin?t=" + Date.now();
                     }, 1500);
                 } else {
                     alert("Error: " + result.error);
@@ -587,16 +869,18 @@ export const prerender = false;
 
         const productList = document.querySelector("[data-product-list]");
         const emptyState = document.querySelector("[data-product-empty]");
-        const productSearchInput = document.getElementById("inventory-search");
+        const productSearchInput = document.getElementById(
+            "inventory-search",
+        ) as HTMLInputElement;
         const productSearchEmpty = document.querySelector(
             "[data-product-search-empty]",
         );
 
         const getProductCards = () =>
             productList
-                ? Array.from(
+                ? (Array.from(
                       productList.querySelectorAll("[data-product-card]"),
-                  )
+                  ) as HTMLElement[])
                 : [];
 
         function refreshEmptyState() {
@@ -869,6 +1153,79 @@ export const prerender = false;
             justify-content: space-between;
             align-items: center;
             gap: 0.5rem;
+        }
+
+        .editor-card--auto-scrape {
+            background: linear-gradient(
+                135deg,
+                color-mix(in srgb, var(--color-primary) 8%, transparent),
+                color-mix(in srgb, var(--color-card) 95%, transparent)
+            );
+            border-color: color-mix(
+                in srgb,
+                var(--color-primary) 20%,
+                transparent
+            );
+        }
+
+        .editor-input-group {
+            display: flex;
+            gap: 0.5rem;
+            align-items: stretch;
+        }
+
+        .editor-input-group .editor-input {
+            flex: 1;
+        }
+
+        .editor-input-group .editor-button {
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .editor-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .editor-status--info {
+            background: color-mix(in srgb, #3b82f6 15%, transparent);
+            border: 1px solid color-mix(in srgb, #3b82f6 30%, transparent);
+            color: #3b82f6;
+        }
+
+        .editor-status--success {
+            background: color-mix(in srgb, #10b981 15%, transparent);
+            border: 1px solid color-mix(in srgb, #10b981 30%, transparent);
+            color: #10b981;
+        }
+
+        .editor-status--error {
+            background: color-mix(in srgb, #ef4444 15%, transparent);
+            border: 1px solid color-mix(in srgb, #ef4444 30%, transparent);
+            color: #ef4444;
+        }
+
+        .editor-pill--success {
+            background: color-mix(in srgb, #10b981 20%, transparent);
+            color: #10b981;
+            border-color: color-mix(in srgb, #10b981 30%, transparent);
         }
 
         .editor-card__head h3 {

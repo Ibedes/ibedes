@@ -63,6 +63,21 @@ export const POST: APIRoute = async ({ request }) => {
             await fs.unlink(localFilePath);
             deletedLocally = true;
             console.log(`[Admin API] Local file deleted at ${localFilePath}`);
+
+            // Sync with Supabase
+            const slug = filename.replace('.md', '');
+            const { supabaseAdmin } = await import('../../../lib/supabase');
+            const { error: supabaseError } = await supabaseAdmin
+                .from('articles')
+                .delete()
+                .eq('slug', slug);
+
+            if (supabaseError) {
+                console.error('[Admin API] Supabase delete error:', supabaseError);
+            } else {
+                console.log('[Admin API] Deleted from Supabase');
+            }
+
         } catch (localError: any) {
             if (localError?.code === 'ENOENT') {
                 // Nothing to delete locally

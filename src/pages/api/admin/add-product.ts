@@ -3,10 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { AffiliateProduct } from "../../../lib/affiliates";
-import {
-    getAffiliateDataPath,
-    ensureAffiliateDataDir,
-} from "../../../lib/affiliates";
+
 
 export const prerender = false;
 
@@ -43,32 +40,6 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
         }
 
-        const affiliatesJsonPath = getAffiliateDataPath();
-        let existingProducts: AffiliateProduct[] = [];
-
-        try {
-            const fileContent = await fs.readFile(affiliatesJsonPath, "utf-8");
-            existingProducts = JSON.parse(fileContent);
-        } catch (err) {
-            console.warn(
-                "[Admin API] affiliate-products.json not found, creating new one.",
-                err,
-            );
-        }
-
-        if (
-            existingProducts.some(
-                (item) => item.id.toLowerCase() === product.id.toLowerCase(),
-            )
-        ) {
-            return new Response(
-                JSON.stringify({
-                    error: `Product with id "${product.id}" already exists`,
-                }),
-                { status: 409 },
-            );
-        }
-
         const normalizedPrice = normalizePrice(product.price);
         const normalizedOriginalPrice = normalizePrice(product.originalPrice);
 
@@ -90,14 +61,10 @@ export const POST: APIRoute = async ({ request }) => {
         if (typeof product.rating === "number") newProduct.rating = product.rating;
         if (product.verified) newProduct.verified = true;
 
-        existingProducts.push(newProduct);
+        // Use the new Supabase-backed function
+        const { addAffiliateProduct } = await import("../../../lib/affiliates");
+        await addAffiliateProduct(newProduct);
 
-        await ensureAffiliateDataDir(affiliatesJsonPath);
-        await fs.writeFile(
-            affiliatesJsonPath,
-            JSON.stringify(existingProducts, null, 4),
-            "utf-8",
-        );
         console.log(`[Admin API] Product added successfully`);
 
         return new Response(JSON.stringify({ success: true, message: 'Product added successfully' }), { status: 200 });

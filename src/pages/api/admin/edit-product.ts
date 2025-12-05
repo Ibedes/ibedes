@@ -1,10 +1,5 @@
 import type { APIRoute } from "astro";
-import fs from "node:fs/promises";
 import type { AffiliateProduct } from "../../../lib/affiliates";
-import {
-    getAffiliateDataPath,
-    ensureAffiliateDataDir,
-} from "../../../lib/affiliates";
 
 export const prerender = false;
 
@@ -40,35 +35,10 @@ export const POST: APIRoute = async ({ request }) => {
             return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
         }
 
-        const affiliatesJsonPath = getAffiliateDataPath();
-        let products: AffiliateProduct[] = [];
-
-        try {
-            const fileContent = await fs.readFile(affiliatesJsonPath, "utf-8");
-            products = JSON.parse(fileContent);
-        } catch (err) {
-            console.error("[Admin API] Unable to read affiliate-products.json", err);
-            return new Response(
-                JSON.stringify({ error: "Affiliate product store not found" }),
-                { status: 500 },
-            );
-        }
-
-        const productIndex = products.findIndex(
-            (item) => item.id.toLowerCase() === String(product.id).toLowerCase(),
-        );
-
-        if (productIndex === -1) {
-            return new Response(JSON.stringify({ error: "Product not found in store" }), {
-                status: 404,
-            });
-        }
-
         const normalizedPrice = normalizePrice(product.price);
         const normalizedOriginalPrice = normalizePrice(product.originalPrice);
 
-        const updatedProduct: AffiliateProduct = {
-            id: product.id,
+        const updates: Partial<AffiliateProduct> = {
             name: product.name,
             description: product.description,
             image: product.image,
@@ -79,19 +49,18 @@ export const POST: APIRoute = async ({ request }) => {
             verified: Boolean(product.verified),
         };
 
-        if (normalizedPrice) updatedProduct.price = normalizedPrice;
+        if (normalizedPrice) updates.price = normalizedPrice;
         if (normalizedOriginalPrice)
-            updatedProduct.originalPrice = normalizedOriginalPrice;
-        if (product.discount) updatedProduct.discount = product.discount;
+            updates.originalPrice = normalizedOriginalPrice;
+        if (product.discount) updates.discount = product.discount;
         if (typeof product.rating === "number" && !Number.isNaN(product.rating)) {
-            updatedProduct.rating = product.rating;
+            updates.rating = product.rating;
         }
 
-        products[productIndex] = updatedProduct;
+        // Use the new Supabase-backed function
+        const { updateAffiliateProduct } = await import("../../../lib/affiliates");
+        await updateAffiliateProduct(product.id, updates);
 
-        // Write back to file
-        await ensureAffiliateDataDir(affiliatesJsonPath);
-        await fs.writeFile(affiliatesJsonPath, JSON.stringify(products, null, 4), "utf-8");
         console.log(`[Admin API] Product updated successfully`);
 
         return new Response(

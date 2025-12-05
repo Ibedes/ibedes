@@ -61,6 +61,34 @@ export const POST: APIRoute = async ({ request }) => {
             await fs.mkdir(path.dirname(localFilePath), { recursive: true });
             await fs.writeFile(localFilePath, content, 'utf-8');
             console.log(`[Admin API] Local copy saved at ${localFilePath}`);
+
+            // Sync with Supabase
+            const { supabaseAdmin } = await import('../../../lib/supabase');
+            const matter = await import('gray-matter');
+            const { data: frontmatter } = matter.default(content);
+
+            const articleData = {
+                slug: filename.replace('.md', ''),
+                title: frontmatter.title,
+                content: content,
+                excerpt: frontmatter.description,
+                image: frontmatter.featuredImage,
+                status: 'published',
+                published_at: frontmatter.pubDate ? new Date(frontmatter.pubDate).toISOString() : new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                affiliate_ids: frontmatter.affiliateProducts || []
+            };
+
+            const { error: supabaseError } = await supabaseAdmin
+                .from('articles')
+                .upsert(articleData, { onConflict: 'slug' });
+
+            if (supabaseError) {
+                console.error('[Admin API] Supabase sync error:', supabaseError);
+            } else {
+                console.log('[Admin API] Synced with Supabase');
+            }
+
         } catch (localError: any) {
             if (localError?.code === 'EROFS') {
                 console.warn('[Admin API] Local filesystem is read-only; skipping local save.');

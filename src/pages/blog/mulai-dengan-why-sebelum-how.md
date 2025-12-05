@@ -12,22 +12,13 @@ url: "/blog/mulai-dengan-why-sebelum-how"
 title: "Mulai dengan Why Sebelum How"
 description: "Sebelum memikirkan bahasa apa yang harus dipelajari, tentukan dulu alasan kenapa kamu mau belajar coding. Langkah ini sederhana tapi penting agar kamu tidak mudah menyerah."
 pubDate: "2025-11-24"
-affiliateProducts:
-  - "jas-hujan-sp1"
+featuredImage: "https://images.unsplash.com/photo-1604661808622-639387f6f698?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"
+featuredImageAlt: "why not"
+featuredImageCaption: " Foto oleh <b>Markus Winkler</b> di Unsplash"
 ---
 
 ## Mulai dengan Why Sebelum How
-<figure class="max-w-xl mx-auto my-8">
-  <img
-    src="https://images.unsplash.com/photo-1604661808622-639387f6f698?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"
-    alt="why not"
-    class="w-full rounded-lg shadow-md"
-    loading="lazy"
-  />
-  <figcaption class="mt-3 text-center text-sm text-zag-dark/70 dark:text-zag-light/70">
-    Foto oleh <b>Markus Winkler</b> di Unsplash
-  </figcaption>
-</figure>
+
 Banyak orang yang baru mulai belajar coding langsung bertanya,  
 "Aku harus belajar bahasa apa dulu?"  
 Padahal, pertanyaan yang seharusnya muncul lebih dulu adalah,  

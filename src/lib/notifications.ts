@@ -28,32 +28,12 @@ export interface NotificationStore {
     unreadCount: number;
 }
 
+import { supabase } from './supabase';
+
 const STORAGE_KEY = 'ibedes:admin:notifications';
 const MAX_NOTIFICATIONS = 100;
 
-// Supabase configuration
-let supabaseClient: any = null;
-let supabaseModulePromise: Promise<any> | null = null;
-
-const getSupabaseUrl = () => import.meta.env.PUBLIC_SUPABASE_URL;
-const getSupabaseKey = () => import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-const isSupabaseEnabled = () => Boolean(getSupabaseUrl() && getSupabaseKey());
-
-/**
- * Load Supabase client
- */
-const loadSupabaseClient = async () => {
-    if (!isSupabaseEnabled()) return null;
-    if (supabaseClient) return supabaseClient;
-    if (!supabaseModulePromise) {
-        supabaseModulePromise = import('https://esm.sh/@supabase/supabase-js@2.45.2');
-    }
-    const { createClient } = await supabaseModulePromise;
-    supabaseClient = createClient(getSupabaseUrl(), getSupabaseKey(), {
-        auth: { persistSession: false },
-    });
-    return supabaseClient;
-};
+const isSupabaseEnabled = () => !!supabase;
 
 /**
  * Load notifications from Supabase (primary) or localStorage (fallback)
@@ -66,19 +46,16 @@ export async function loadNotifications(): Promise<NotificationStore> {
     try {
         // Try Supabase first
         if (isSupabaseEnabled()) {
-            const client = await loadSupabaseClient();
-            if (client) {
-                const { data, error } = await client
-                    .from('notifications')
-                    .select('*')
-                    .order('timestamp', { ascending: false })
-                    .limit(MAX_NOTIFICATIONS);
+            const { data, error } = await supabase
+                .from('notifications')
+                .select('*')
+                .order('timestamp', { ascending: false })
+                .limit(MAX_NOTIFICATIONS);
 
-                if (!error && data) {
-                    const notifications = data.map(normalizeSupabaseNotification);
-                    const unreadCount = notifications.filter(n => !n.read).length;
-                    return { notifications, unreadCount };
-                }
+            if (!error && data) {
+                const notifications = data.map(normalizeSupabaseNotification);
+                const unreadCount = notifications.filter(n => !n.read).length;
+                return { notifications, unreadCount };
             }
         }
     } catch (error) {
@@ -145,25 +122,22 @@ export async function addNotification(notification: Omit<Notification, 'id' | 't
     try {
         // Try Supabase first
         if (isSupabaseEnabled()) {
-            const client = await loadSupabaseClient();
-            if (client) {
-                const { data, error } = await client
-                    .from('notifications')
-                    .insert([{
-                        id: newNotification.id,
-                        type: newNotification.type,
-                        title: newNotification.title,
-                        message: newNotification.message,
-                        metadata: newNotification.metadata || {},
-                        timestamp: newNotification.timestamp,
-                        read: newNotification.read,
-                    }])
-                    .select()
-                    .single();
+            const { data, error } = await supabase
+                .from('notifications')
+                .insert([{
+                    id: newNotification.id,
+                    type: newNotification.type,
+                    title: newNotification.title,
+                    message: newNotification.message,
+                    metadata: newNotification.metadata || {},
+                    timestamp: newNotification.timestamp,
+                    read: newNotification.read,
+                }])
+                .select()
+                .single();
 
-                if (!error && data) {
-                    return normalizeSupabaseNotification(data);
-                }
+            if (!error && data) {
+                return normalizeSupabaseNotification(data);
             }
         }
     } catch (error) {
@@ -192,15 +166,12 @@ export async function markAsRead(notificationId: string): Promise<void> {
     try {
         // Try Supabase first
         if (isSupabaseEnabled()) {
-            const client = await loadSupabaseClient();
-            if (client) {
-                const { error } = await client
-                    .from('notifications')
-                    .update({ read: true })
-                    .eq('id', notificationId);
+            const { error } = await supabase
+                .from('notifications')
+                .update({ read: true })
+                .eq('id', notificationId);
 
-                if (!error) return;
-            }
+            if (!error) return;
         }
     } catch (error) {
         console.warn('Failed to update in Supabase, falling back to localStorage:', error);
@@ -224,15 +195,12 @@ export async function markAllAsRead(): Promise<void> {
     try {
         // Try Supabase first
         if (isSupabaseEnabled()) {
-            const client = await loadSupabaseClient();
-            if (client) {
-                const { error } = await client
-                    .from('notifications')
-                    .update({ read: true })
-                    .eq('read', false);
+            const { error } = await supabase
+                .from('notifications')
+                .update({ read: true })
+                .eq('read', false);
 
-                if (!error) return;
-            }
+            if (!error) return;
         }
     } catch (error) {
         console.warn('Failed to update in Supabase, falling back to localStorage:', error);
@@ -252,15 +220,12 @@ export async function deleteNotification(notificationId: string): Promise<void> 
     try {
         // Try Supabase first
         if (isSupabaseEnabled()) {
-            const client = await loadSupabaseClient();
-            if (client) {
-                const { error } = await client
-                    .from('notifications')
-                    .delete()
-                    .eq('id', notificationId);
+            const { error } = await supabase
+                .from('notifications')
+                .delete()
+                .eq('id', notificationId);
 
-                if (!error) return;
-            }
+            if (!error) return;
         }
     } catch (error) {
         console.warn('Failed to delete from Supabase, falling back to localStorage:', error);

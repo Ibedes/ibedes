@@ -13,6 +13,13 @@ import { formatRupiah } from "../../lib/utils";
 
 export const prerender = false;
 
+Astro.response.headers.set(
+    "Cache-Control",
+    "no-cache, no-store, must-revalidate",
+);
+Astro.response.headers.set("Pragma", "no-cache");
+Astro.response.headers.set("Expires", "0");
+
 const blogDir = path.join(process.cwd(), "src/pages/blog");
 const affiliateProducts = await loadAffiliateProducts();
 let articles = [];
@@ -170,7 +177,9 @@ const overviewStats = [
     },
 ];
 
-const previewProducts = affiliateProducts.slice(0, 3);
+// Reverse products to show newest first
+const sortedProducts = [...affiliateProducts].reverse();
+const previewProducts = sortedProducts.slice(0, 3);
 ---
 
 <Layout title={`Admin Dashboard - ${GLOBAL.username}`}>
@@ -490,7 +499,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
                     </div>
                     <div class="admin-records" role="table">
                         {
-                            affiliateProducts.map((product) => (
+                            sortedProducts.map((product) => (
                                 <article
                                     class="admin-record admin-record--product"
                                     role="row"
@@ -674,7 +683,9 @@ const previewProducts = affiliateProducts.slice(0, 3);
                             >
                                 <div>
                                     <p>Decap CMS</p>
-                                    <span>Editor git-based (route terpisah).</span>
+                                    <span
+                                        >Editor git-based (route terpisah).</span
+                                    >
                                 </div>
                                 <i
                                     class="fa-solid fa-chevron-right"
@@ -1836,7 +1847,7 @@ const previewProducts = affiliateProducts.slice(0, 3);
             }
         };
 
-        const updateMetric = (id, value) => {
+        const updateMetric = (id: string, value: string | number) => {
             const el = document.getElementById(id);
             if (!el) return;
 
@@ -1848,24 +1859,30 @@ const previewProducts = affiliateProducts.slice(0, 3);
             const valueEl = el.querySelector("h3");
             if (valueEl)
                 valueEl.textContent =
-                    typeof value === "number" ? value.toLocaleString() : value;
+                    typeof value === "number"
+                        ? value.toLocaleString()
+                        : value.toString();
             else {
                 // Create if doesn't exist (was replaced by loading)
                 const newValueEl = document.createElement("h3");
                 newValueEl.className = "text-2xl font-bold tracking-tight";
                 newValueEl.textContent =
-                    typeof value === "number" ? value.toLocaleString() : value;
+                    typeof value === "number"
+                        ? value.toLocaleString()
+                        : value.toString();
                 const container = el.querySelector(".flex.items-end");
                 if (container) container.prepend(newValueEl);
             }
         };
 
-        const updateText = (id, text) => {
+        const updateText = (id: string, text: string) => {
             const el = document.getElementById(id);
             if (el) el.textContent = text;
         };
 
-        const updateTopPages = (pages) => {
+        const updateTopPages = (
+            pages: { title: string; path: string; views: number }[],
+        ) => {
             const container = document.getElementById("top-pages-list");
             if (!container) return;
 

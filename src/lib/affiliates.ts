@@ -1,7 +1,6 @@
 // Affiliate management system for ibedes.xyz
 
-import fs from "node:fs/promises";
-import path from "node:path";
+import { supabaseAdmin } from "./supabase";
 import { getAffiliateClicksSummary } from "./analytics-store";
 
 export interface AffiliateProduct {
@@ -17,89 +16,65 @@ export interface AffiliateProduct {
     category: string;
     tags: string[];
     rating?: number;
-    verified?: boolean; // produk yang sudah dicek/direkomendasikan
-    score?: number; // ranking score (clicks + recency + verified)
-    clicks?: number; // aggregated clicks from analytics
+    verified?: boolean;
+    score?: number;
+    clicks?: number;
 }
 
 export interface ArticleAffiliate {
     articleSlug: string;
     productIds: string[];
-    context?: string; // context untuk menampilkan produk (contoh: "Produk yang membantu perjalanan spiritual")
+    context?: string;
 }
 
-const PROJECT_DATA_PATH = path.join(
-    process.cwd(),
-    "src",
-    "data",
-    "affiliate-products.json",
-);
-
-export const getAffiliateDataPath = () => {
-    if (process.env.AFFILIATE_DATA_PATH) {
-        return process.env.AFFILIATE_DATA_PATH;
-    }
-    const isLambda =
-        !!process.env.NETLIFY || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
-    if (isLambda) {
-        return path.join("/tmp", "affiliate-products.json");
-    }
-    return PROJECT_DATA_PATH;
-};
-
-export async function ensureAffiliateDataDir(targetPath = getAffiliateDataPath()) {
-    await fs.mkdir(path.dirname(targetPath), { recursive: true });
-}
-
-async function readAffiliateFile(): Promise<AffiliateProduct[]> {
-    const targetPath = getAffiliateDataPath();
-    try {
-        const content = await fs.readFile(targetPath, "utf-8");
-        const parsed = JSON.parse(content);
-        if (Array.isArray(parsed)) {
-            return parsed as AffiliateProduct[];
-        }
-        console.warn(
-            "[Affiliate Store] affiliate-products.json is not an array. Returning empty list.",
-        );
-        return [];
-    } catch (error: any) {
-        // On lambda, seed /tmp from bundled project file if available
-        if (
-            (error.code === "ENOENT" || error.code === "EISDIR") &&
-            targetPath.startsWith("/tmp")
-        ) {
-            try {
-                const fallbackContent = await fs.readFile(PROJECT_DATA_PATH, "utf-8");
-                await ensureAffiliateDataDir(targetPath);
-                await fs.writeFile(targetPath, fallbackContent, "utf-8");
-                const seeded = JSON.parse(fallbackContent);
-                console.warn("[Affiliate Store] Seeded /tmp affiliate store from bundled JSON");
-                return Array.isArray(seeded) ? seeded : [];
-            } catch (seedErr) {
-                console.error("[Affiliate Store] Failed to seed affiliate store:", seedErr);
-            }
-        }
-        console.error("[Affiliate Store] Failed to read affiliate products:", error);
-        return [];
-    }
+// Helper to normalize Supabase response to AffiliateProduct
+function normalizeProduct(data: any): AffiliateProduct {
+    return {
+        id: data.id,
+        name: data.name,
+        description: data.description || "",
+        price: data.price ? String(data.price) : undefined,
+        originalPrice: data.original_price ? String(data.original_price) : undefined,
+        discount: data.discount || undefined,
+        image: data.image || "",
+        link: data.link || "",
+        platform: data.platform as any || "other",
+        category: data.category || "General",
+        tags: data.tags || [],
+        rating: data.rating || undefined,
+        verified: data.verified || false,
+    };
 }
 
 export async function loadAffiliateProducts(): Promise<AffiliateProduct[]> {
-    return readAffiliateFile();
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('affiliate_products')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error("[Affiliate Store] Error loading products:", error);
+            return [];
+        }
+
+        return (data || []).map(normalizeProduct);
+    } catch (error) {
+        console.error("[Affiliate Store] Unexpected error loading products:", error);
+        return [];
+    }
 }
 
 /**
- * Combine recency (urutan di file), click performance, dan label verified
- * untuk menyusun rekomendasi dinamis. Dipakai di halaman publik yang butuh
- * prioritas produk paling relevan.
+ * Combine recency, click performance, and label verified
+ * for dynamic recommendations.
  */
 export async function loadAffiliateProductsRanked(options?: {
-    days?: number; // window analitik untuk klik
-    limit?: number; // batasi hasil (optional)
-    clickWeight?: number; // bobot klik vs recency
+    days?: number;
+    limit?: number;
+    clickWeight?: number;
     recencyWeight?: number;
-    verifiedBoost?: number; // tambahan skor jika verified
+    verifiedBoost?: number;
 }): Promise<AffiliateProduct[]> {
     const {
         days = 30,
@@ -111,7 +86,7 @@ export async function loadAffiliateProductsRanked(options?: {
 
     const products = await loadAffiliateProducts();
 
-    // Ambil agregat klik (per productId) dari analytics; fallback aman ke 0
+    // Get aggregated clicks from analytics
     const clicksSummary = await getAffiliateClicksSummary(days, 500);
     const clickMap = new Map<string, number>();
     clicksSummary.forEach((item) => clickMap.set(item.productId, item.clicks));
@@ -122,8 +97,12 @@ export async function loadAffiliateProductsRanked(options?: {
     const scored = products.map((product, idx) => {
         const clicks = clickMap.get(product.id) ?? 0;
         const clickScore = maxClicks > 0 ? clicks / maxClicks : 0;
-        // Asumsikan produk terbaru ditambahkan di bawah file, jadi idx lebih tinggi = lebih baru
-        const recencyScore = (idx + 1) / total;
+        // Assuming products are ordered by created_at desc (newest first)
+        // So higher index means older? No, loadAffiliateProducts orders by created_at desc.
+        // So idx 0 is newest.
+        // We want newest to have higher score.
+        // (total - idx) / total gives 1 for idx 0, and near 0 for last idx.
+        const recencyScore = (total - idx) / total;
         const verifiedScore = product.verified ? verifiedBoost : 0;
         const score = clickWeight * clickScore + recencyWeight * recencyScore + verifiedScore;
 
@@ -147,29 +126,158 @@ export function getAffiliateByArticle(articleSlug: string): ArticleAffiliate | n
 }
 
 export async function getAffiliateProductsByIds(productIds: string[]): Promise<AffiliateProduct[]> {
-    const products = await loadAffiliateProducts();
-    return productIds
-        .map(id => products.find(product => product.id === id))
-        .filter((product): product is AffiliateProduct => product !== undefined);
+    if (!productIds.length) return [];
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('affiliate_products')
+            .select('*')
+            .in('id', productIds);
+
+        if (error) {
+            console.error("[Affiliate Store] Error fetching products by IDs:", error);
+            return [];
+        }
+
+        return (data || []).map(normalizeProduct);
+    } catch (error) {
+        console.error("[Affiliate Store] Unexpected error fetching products by IDs:", error);
+        return [];
+    }
 }
 
 export async function getProductsByCategory(category: string): Promise<AffiliateProduct[]> {
-    const products = await loadAffiliateProducts();
-    return products.filter(product =>
-        product.category?.toLowerCase() === category.toLowerCase()
-    );
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('affiliate_products')
+            .select('*')
+            .ilike('category', category); // Case insensitive match
+
+        if (error) {
+            console.error("[Affiliate Store] Error fetching products by category:", error);
+            return [];
+        }
+
+        return (data || []).map(normalizeProduct);
+    } catch (error) {
+        console.error("[Affiliate Store] Unexpected error fetching products by category:", error);
+        return [];
+    }
 }
 
 export async function getProductsByTags(tags: string[]): Promise<AffiliateProduct[]> {
-    const products = await loadAffiliateProducts();
-    return products.filter(product =>
-        tags.some(tag => product.tags.includes(tag))
-    );
+    if (!tags.length) return [];
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('affiliate_products')
+            .select('*')
+            .overlaps('tags', tags); // Array overlap check
+
+        if (error) {
+            console.error("[Affiliate Store] Error fetching products by tags:", error);
+            return [];
+        }
+
+        return (data || []).map(normalizeProduct);
+    } catch (error) {
+        console.error("[Affiliate Store] Unexpected error fetching products by tags:", error);
+        return [];
+    }
 }
 
 export async function getVerifiedProducts(): Promise<AffiliateProduct[]> {
-    const products = await loadAffiliateProducts();
-    return products.filter(product => product.verified);
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('affiliate_products')
+            .select('*')
+            .eq('verified', true);
+
+        if (error) {
+            console.error("[Affiliate Store] Error fetching verified products:", error);
+            return [];
+        }
+
+        return (data || []).map(normalizeProduct);
+    } catch (error) {
+        console.error("[Affiliate Store] Unexpected error fetching verified products:", error);
+        return [];
+    }
+}
+
+// CRUD Operations for Admin
+export async function addAffiliateProduct(product: AffiliateProduct): Promise<boolean> {
+    try {
+        const dbProduct = {
+            id: product.id,
+            name: product.name,
+            description: product.description,
+            price: product.price ? parseFloat(product.price) : null,
+            original_price: product.originalPrice ? parseFloat(product.originalPrice) : null,
+            discount: product.discount,
+            image: product.image,
+            link: product.link,
+            platform: product.platform,
+            category: product.category,
+            tags: product.tags,
+            rating: product.rating,
+            verified: product.verified || false,
+        };
+
+        const { error } = await supabaseAdmin
+            .from('affiliate_products')
+            .insert([dbProduct]);
+
+        if (error) {
+            console.error("[Affiliate Store] Error adding product:", error);
+            throw error;
+        }
+        return true;
+    } catch (error) {
+        console.error("[Affiliate Store] Unexpected error adding product:", error);
+        throw error;
+    }
+}
+
+export async function updateAffiliateProduct(id: string, updates: Partial<AffiliateProduct>): Promise<boolean> {
+    try {
+        const dbUpdates: any = { ...updates };
+        if (updates.price) dbUpdates.price = parseFloat(updates.price);
+        if (updates.originalPrice) dbUpdates.original_price = parseFloat(updates.originalPrice);
+        delete dbUpdates.originalPrice; // Remove camelCase key
+
+        const { error } = await supabaseAdmin
+            .from('affiliate_products')
+            .update(dbUpdates)
+            .eq('id', id);
+
+        if (error) {
+            console.error("[Affiliate Store] Error updating product:", error);
+            throw error;
+        }
+        return true;
+    } catch (error) {
+        console.error("[Affiliate Store] Unexpected error updating product:", error);
+        throw error;
+    }
+}
+
+export async function deleteAffiliateProduct(id: string): Promise<boolean> {
+    try {
+        const { error } = await supabaseAdmin
+            .from('affiliate_products')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error("[Affiliate Store] Error deleting product:", error);
+            throw error;
+        }
+        return true;
+    } catch (error) {
+        console.error("[Affiliate Store] Unexpected error deleting product:", error);
+        throw error;
+    }
 }
 
 // Platform configuration
