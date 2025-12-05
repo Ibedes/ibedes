@@ -5,13 +5,13 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "start": "node ./dist/server/entry.mjs",
     "preview": "astro preview",
     "astro": "astro",
     "sync-files": "node scripts/sync-files.js"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.6",
-    "@astrojs/netlify": "^6.6.3",
     "@astrojs/node": "^9.5.1",
     "@astrojs/react": "^4.4.2",
     "@astrojs/sitemap": "^3.6.0",
