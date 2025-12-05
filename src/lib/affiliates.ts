@@ -1,5 +1,3 @@
-// Affiliate management system for ibedes.xyz
-
 import { supabaseAdmin } from "./supabase";
 import { getAffiliateClicksSummary } from "./analytics-store";
 
@@ -55,6 +53,8 @@ export async function loadAffiliateProducts(): Promise<AffiliateProduct[]> {
 
         if (error) {
             console.error("[Affiliate Store] Error loading products:", error);
+            console.error("[Affiliate Store] Supabase URL:", import.meta.env.PUBLIC_SUPABASE_URL ? 'Set' : 'Not set');
+            console.error("[Affiliate Store] Service Key:", import.meta.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Not set');
             return [];
         }
 
@@ -283,38 +283,38 @@ export async function deleteAffiliateProduct(id: string): Promise<boolean> {
 // Platform configuration
 export const platformConfig = {
     shopee: {
-        name: 'Shopee',
-        color: '#EE4D2D',
-        icon: 'fa-solid fa-cart-shopping'
+        name: "Shopee",
+        icon: "fa-brands fa-shopify",
+        color: "#EE4D2D",
     },
     tokopedia: {
-        name: 'Tokopedia',
-        color: '#42B549',
-        icon: 'fa-solid fa-store'
+        name: "Tokopedia",
+        icon: "fa-solid fa-store",
+        color: "#42B549",
     },
     lazada: {
-        name: 'Lazada',
-        color: '#0F1471',
-        icon: 'fa-solid fa-bag-shopping'
+        name: "Lazada",
+        icon: "fa-solid fa-shopping-bag",
+        color: "#0F156D",
     },
     blibli: {
-        name: 'Blibli',
-        color: '#0095DA',
-        icon: 'fa-solid fa-basket-shopping'
+        name: "Blibli",
+        icon: "fa-solid fa-cart-shopping",
+        color: "#0095DA",
     },
     tiktok: {
-        name: 'TikTok Shop',
-        color: '#000000',
-        icon: 'fa-brands fa-tiktok'
+        name: "TikTok Shop",
+        icon: "fa-brands fa-tiktok",
+        color: "#000000",
     },
     amazon: {
-        name: 'Amazon',
-        color: '#FF9900',
-        icon: 'fa-brands fa-amazon'
+        name: "Amazon",
+        icon: "fa-brands fa-amazon",
+        color: "#FF9900",
     },
     other: {
-        name: 'Lainnya',
-        color: '#6B7280',
-        icon: 'fa-solid fa-link'
-    }
+        name: "Lainnya",
+        icon: "fa-solid fa-link",
+        color: "#6B7280",
+    },
 };

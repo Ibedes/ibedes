@@ -1,7 +1,6 @@
 import type { APIRoute } from 'astro';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getGitHubCMS } from '../../../lib/github-cms';
 
 export const prerender = false;
 
@@ -20,7 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
 
         const { filename, content } = data;
 
-        console.log(`[Admin API] Saving file via GitHub: ${filename}`);
+        console.log(`[Admin API] Saving article: ${filename}`);
 
         if (!filename || !content) {
             console.error('[Admin API] Missing filename or content');
@@ -39,30 +38,33 @@ export const POST: APIRoute = async ({ request }) => {
             });
         }
 
+        const isProduction = import.meta.env.PROD || process.env.NODE_ENV === 'production';
         const repoFilePath = `src/pages/blog/${filename}`;
         const localFilePath = path.join(process.cwd(), repoFilePath);
-        const commitMessage = `Update article: ${filename}`;
 
-        let savedViaGitHub = false;
+        let savedLocally = false;
 
-        try {
-            const github = getGitHubCMS();
-            await github.saveFile(repoFilePath, content, commitMessage);
-            savedViaGitHub = true;
-            console.log(`[Admin API] File saved successfully via GitHub`);
-        } catch (githubError) {
-            console.warn(
-                '[Admin API] GitHub save unavailable, falling back to local write:',
-                githubError instanceof Error ? githubError.message : githubError,
-            );
+        // Try to save to local filesystem (only in development or if writable)
+        if (!isProduction) {
+            try {
+                await fs.mkdir(path.dirname(localFilePath), { recursive: true });
+                await fs.writeFile(localFilePath, content, 'utf-8');
+                savedLocally = true;
+                console.log(`[Admin API] Local file saved at ${localFilePath}`);
+            } catch (localError: any) {
+                if (localError?.code === 'EROFS') {
+                    console.warn('[Admin API] Filesystem is read-only, skipping local save.');
+                } else {
+                    console.error('[Admin API] Error saving local file:', localError);
+                    // Don't throw, continue to Supabase save
+                }
+            }
+        } else {
+            console.log('[Admin API] Production mode: skipping local filesystem save');
         }
 
+        // Always sync with Supabase
         try {
-            await fs.mkdir(path.dirname(localFilePath), { recursive: true });
-            await fs.writeFile(localFilePath, content, 'utf-8');
-            console.log(`[Admin API] Local copy saved at ${localFilePath}`);
-
-            // Sync with Supabase
             const { supabaseAdmin } = await import('../../../lib/supabase');
             const matter = await import('gray-matter');
             const { data: frontmatter } = matter.default(content);
@@ -85,26 +87,26 @@ export const POST: APIRoute = async ({ request }) => {
 
             if (supabaseError) {
                 console.error('[Admin API] Supabase sync error:', supabaseError);
+                throw new Error(`Gagal menyimpan ke database: ${supabaseError.message}`);
             } else {
                 console.log('[Admin API] Synced with Supabase');
             }
 
-        } catch (localError: any) {
-            if (localError?.code === 'EROFS') {
-                console.warn('[Admin API] Local filesystem is read-only; skipping local save.');
-            } else if (!savedViaGitHub) {
-                throw localError;
-            } else {
-                console.warn('[Admin API] Failed to save local copy:', localError?.message ?? localError);
-            }
+        } catch (supabaseError: any) {
+            console.error('[Admin API] Error syncing with Supabase:', supabaseError);
+            throw supabaseError;
         }
+
+        const message = isProduction
+            ? 'Article berhasil disimpan ke database. File lokal akan diupdate saat rebuild/deploy berikutnya.'
+            : savedLocally
+                ? 'Article berhasil disimpan ke file lokal dan database. Jangan lupa commit dan push untuk deploy.'
+                : 'Article berhasil disimpan ke database. File lokal tidak dapat diupdate (read-only filesystem).';
 
         return new Response(JSON.stringify({
             success: true,
-            message: savedViaGitHub
-                ? 'File tersimpan di GitHub dan salinan lokal diperbarui. Netlify akan deploy otomatis dalam ±2 menit.'
-                : 'File disimpan secara lokal. Commit & deploy manual diperlukan sampai token GitHub aktif.',
-            mode: savedViaGitHub ? 'github' : 'local'
+            message: message,
+            mode: isProduction ? 'production' : (savedLocally ? 'local+db' : 'db-only')
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

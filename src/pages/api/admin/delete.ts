@@ -1,7 +1,6 @@
 import type { APIRoute } from 'astro';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getGitHubCMS } from '../../../lib/github-cms';
 
 export const prerender = false;
 
@@ -20,7 +19,7 @@ export const POST: APIRoute = async ({ request }) => {
 
         const { filename } = data;
 
-        console.log(`[Admin API] Deleting file via GitHub: ${filename}`);
+        console.log(`[Admin API] Deleting article: ${filename}`);
 
         if (!filename) {
             console.error('[Admin API] Missing filename');
@@ -39,32 +38,34 @@ export const POST: APIRoute = async ({ request }) => {
             });
         }
 
+        const isProduction = import.meta.env.PROD || process.env.NODE_ENV === 'production';
         const repoFilePath = `src/pages/blog/${filename}`;
         const localFilePath = path.join(process.cwd(), repoFilePath);
-        const commitMessage = `Delete article: ${filename}`;
-
-        let deletedViaGitHub = false;
-
-        try {
-            const github = getGitHubCMS();
-            await github.deleteFile(repoFilePath, commitMessage);
-            deletedViaGitHub = true;
-            console.log(`[Admin API] File deleted successfully via GitHub`);
-        } catch (githubError: any) {
-            if (githubError?.status === 404) {
-                console.warn('[Admin API] GitHub file not found, falling back to local delete.');
-            } else {
-                console.warn('[Admin API] GitHub delete failed, falling back to local delete:', githubError?.message ?? githubError);
-            }
-        }
 
         let deletedLocally = false;
-        try {
-            await fs.unlink(localFilePath);
-            deletedLocally = true;
-            console.log(`[Admin API] Local file deleted at ${localFilePath}`);
 
-            // Sync with Supabase
+        // Try to delete local file (only in development or if writable)
+        if (!isProduction) {
+            try {
+                await fs.unlink(localFilePath);
+                deletedLocally = true;
+                console.log(`[Admin API] Local file deleted at ${localFilePath}`);
+            } catch (localError: any) {
+                if (localError?.code === 'ENOENT') {
+                    console.warn('[Admin API] File not found locally, continuing with database delete.');
+                } else if (localError?.code === 'EROFS') {
+                    console.warn('[Admin API] Filesystem is read-only, skipping local delete.');
+                } else {
+                    console.error('[Admin API] Error deleting local file:', localError);
+                    // Don't throw, continue to Supabase delete
+                }
+            }
+        } else {
+            console.log('[Admin API] Production mode: skipping local filesystem delete');
+        }
+
+        // Always delete from Supabase
+        try {
             const slug = filename.replace('.md', '');
             const { supabaseAdmin } = await import('../../../lib/supabase');
             const { error: supabaseError } = await supabaseAdmin
@@ -74,31 +75,25 @@ export const POST: APIRoute = async ({ request }) => {
 
             if (supabaseError) {
                 console.error('[Admin API] Supabase delete error:', supabaseError);
+                throw new Error(`Gagal menghapus dari database: ${supabaseError.message}`);
             } else {
                 console.log('[Admin API] Deleted from Supabase');
             }
-
-        } catch (localError: any) {
-            if (localError?.code === 'ENOENT') {
-                // Nothing to delete locally
-            } else if (localError?.code === 'EROFS') {
-                console.warn('[Admin API] Local filesystem is read-only; skipping local delete.');
-            } else {
-                console.error('[Admin API] Error deleting local file:', localError);
-                if (!deletedViaGitHub) throw localError;
-            }
+        } catch (supabaseError: any) {
+            console.error('[Admin API] Error deleting from Supabase:', supabaseError);
+            throw supabaseError;
         }
 
-        if (!deletedViaGitHub && !deletedLocally) {
-            throw new Error('Unable to delete article on GitHub or local filesystem.');
-        }
+        const message = isProduction
+            ? 'Article berhasil dihapus dari database. File lokal akan dihapus saat rebuild/deploy berikutnya.'
+            : deletedLocally
+                ? 'Article berhasil dihapus dari file lokal dan database. Jangan lupa commit dan push untuk deploy.'
+                : 'Article berhasil dihapus dari database. File lokal tidak dapat dihapus (read-only filesystem).';
 
         return new Response(JSON.stringify({
             success: true,
-            message: deletedViaGitHub
-                ? 'File deleted via GitHub dan salinan lokal dibersihkan.'
-                : 'File lokal dihapus. Commit manual diperlukan untuk sinkronisasi.',
-            mode: deletedViaGitHub ? 'github' : 'local'
+            message: message,
+            mode: isProduction ? 'production' : (deletedLocally ? 'local+db' : 'db-only')
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

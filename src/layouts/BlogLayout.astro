@@ -73,37 +73,45 @@ const seoImage = featuredImageUrl ?? ogImageUrl;
 // Get affiliate products for this article
 let affiliateProducts: any[] = [];
 
-// Only check for affiliate mapping if filename exists
-if (frontmatter.filename) {
-  const articleAffiliate = getAffiliateByArticle(frontmatter.filename);
-  if (articleAffiliate) {
-    const mappedProducts = await getAffiliateProductsByIds(
-      articleAffiliate.productIds,
-    );
-    affiliateProducts = [...affiliateProducts, ...mappedProducts];
+try {
+  // Only check for affiliate mapping if filename exists
+  if (frontmatter.filename) {
+    const articleAffiliate = getAffiliateByArticle(frontmatter.filename);
+    if (articleAffiliate) {
+      const mappedProducts = await getAffiliateProductsByIds(
+        articleAffiliate.productIds,
+      );
+      affiliateProducts = [...affiliateProducts, ...mappedProducts];
+    }
   }
-}
 
-if (frontmatter.affiliateProducts && frontmatter.affiliateProducts.length > 0) {
-  affiliateProducts = await getAffiliateProductsByIds(
-    frontmatter.affiliateProducts,
-  );
+  if (
+    frontmatter.affiliateProducts &&
+    frontmatter.affiliateProducts.length > 0
+  ) {
+    affiliateProducts = await getAffiliateProductsByIds(
+      frontmatter.affiliateProducts,
+    );
+  }
+} catch (error) {
+  console.warn("[BlogLayout] Failed to fetch affiliate products:", error);
+  // Fallback to empty array - products won't show but page will still render
+  affiliateProducts = [];
 }
 
 const affiliateContext = frontmatter.affiliateContext;
 ---
 
-  <Layout
-    title={`${frontmatter.title} • ${GLOBAL.username}`}
-    description={frontmatter.description}
-    image={seoImage}
-    imageAlt={frontmatter.featuredImageAlt || frontmatter.title}
-    type="article"
-    canonicalURL={canonicalUrl}
-    breadcrumbs={breadcrumbItems}
-    keywords={frontmatter.tags?.join(", ")}
-  >
-
+<Layout
+  title={`${frontmatter.title} • ${GLOBAL.username}`}
+  description={frontmatter.description}
+  image={seoImage}
+  imageAlt={frontmatter.featuredImageAlt || frontmatter.title}
+  type="article"
+  canonicalURL={canonicalUrl}
+  breadcrumbs={breadcrumbItems}
+  keywords={frontmatter.tags?.join(", ")}
+>
   <Section class="pt-8 !max-w-6xl">
     <div class="grid grid-cols-1 lg:grid-cols-[1fr_250px] gap-12 relative">
       <div class="w-full min-w-0">

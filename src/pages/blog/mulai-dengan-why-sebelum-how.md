@@ -15,6 +15,8 @@ pubDate: "2025-11-24"
 featuredImage: "https://images.unsplash.com/photo-1604661808622-639387f6f698?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&q=80&w=870"
 featuredImageAlt: "why not"
 featuredImageCaption: " Foto oleh <b>Markus Winkler</b> di Unsplash"
+affiliateProducts:
+  - "kipas-portable1"
 ---
 
 ## Mulai dengan Why Sebelum How

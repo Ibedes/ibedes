@@ -458,6 +458,9 @@ const sortedProducts = [...allProducts].reverse();
             const productCountChip = document.querySelector(
                 "[data-product-count]",
             );
+            const affiliatePill = document.querySelector(
+                ".editor-card .editor-pill",
+            );
             const productCheckboxes = Array.from(
                 document.querySelectorAll('input[name="affiliate-products"]'),
             );
@@ -530,6 +533,9 @@ const sortedProducts = [...allProducts].reverse();
             ) {
                 if (productCountChip) {
                     productCountChip.textContent = String(count);
+                }
+                if (affiliatePill) {
+                    affiliatePill.textContent = `${count} dipilih`;
                 }
             }
 
