@@ -1,5 +1,16 @@
-import { supabaseAdmin } from "./supabase";
-import { getAffiliateClicksSummary } from "./analytics-store";
+import { supabaseAdmin, hasSupabaseConfig } from "./supabase.ts";
+import { getAffiliateClicksSummary } from "./analytics-store.ts";
+import localProducts from "../data/affiliate-products.json" assert { type: "json" };
+
+// Works both in Astro (import.meta.env) and direct Node execution (process.env)
+const supabaseUrl = 
+    import.meta.env?.PUBLIC_SUPABASE_URL || 
+    (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : "") || 
+    "";
+const supabaseServiceKey = 
+    import.meta.env?.SUPABASE_SERVICE_ROLE_KEY || 
+    (typeof process !== 'undefined' ? process.env.SUPABASE_SERVICE_ROLE_KEY : "") || 
+    "";
 
 export interface AffiliateProduct {
     id: string;
@@ -44,7 +55,41 @@ function normalizeProduct(data: any): AffiliateProduct {
     };
 }
 
+// In-memory cache so we don't hit Supabase on every request, but still refresh quickly
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+let cachedProducts: AffiliateProduct[] | null = null;
+let cacheTimestamp = 0;
+
 export async function loadAffiliateProducts(): Promise<AffiliateProduct[]> {
+    console.log("[AffiliateStore] loadAffiliateProducts called");
+    console.log("[AffiliateStore] hasSupabaseConfig:", hasSupabaseConfig);
+    console.log("[AffiliateStore] supabaseAdmin available:", !!supabaseAdmin);
+    console.log("[AffiliateStore] cachedProducts available:", !!cachedProducts);
+    
+    // Return cached products if available and not stale
+    if (cachedProducts && Date.now() - cacheTimestamp < CACHE_TTL_MS) {
+        console.log("[AffiliateStore] Returning cached products:", cachedProducts.length);
+        return cachedProducts;
+    }
+    
+    // Always load local products first for debugging
+    const local = (localProducts as AffiliateProduct[]).map((p) => ({
+        ...p,
+        id: String(p.id),
+    }));
+    console.log("[AffiliateStore] Local products loaded:", local.length);
+    console.log("[AffiliateStore] Local product IDs:", local.map(p => p.id));
+    
+    // Local fallback for development/offline
+    const useLocalFallback = !hasSupabaseConfig;
+
+    if (useLocalFallback || !supabaseAdmin) {
+        console.log("[AffiliateStore] Using local products only");
+        cachedProducts = local;
+        cacheTimestamp = Date.now();
+        return local;
+    }
+
     try {
         const { data, error } = await supabaseAdmin
             .from('affiliate_products')
@@ -53,15 +98,37 @@ export async function loadAffiliateProducts(): Promise<AffiliateProduct[]> {
 
         if (error) {
             console.error("[Affiliate Store] Error loading products:", error);
-            console.error("[Affiliate Store] Supabase URL:", import.meta.env.PUBLIC_SUPABASE_URL ? 'Set' : 'Not set');
-            console.error("[Affiliate Store] Service Key:", import.meta.env.SUPABASE_SERVICE_ROLE_KEY ? 'Set' : 'Not set');
-            return [];
+            console.error("[Affiliate Store] Supabase URL:", supabaseUrl ? 'Set' : 'Not set');
+            console.error("[Affiliate Store] Service Key:", supabaseServiceKey ? 'Set' : 'Not set');
+            console.log("[Affiliate Store] Falling back to local products");
+            cachedProducts = local;
+            cacheTimestamp = Date.now();
+            return local;
         }
 
-        return (data || []).map(normalizeProduct);
+        const normalized = (data || []).map(normalizeProduct);
+        console.log("[Affiliate Store] Supabase returned:", normalized.length, "products");
+        // If Supabase reachable but empty, fallback ke bundled dataset
+        if (normalized.length === 0) {
+            console.warn("[Affiliate Store] Supabase returned 0 products. Using local fallback dataset.");
+            cachedProducts = local;
+            cacheTimestamp = Date.now();
+            return local;
+        }
+
+        // Penting: jika Supabase punya data, pakai data Supabase saja.
+        // Menggabungkan dengan dataset lokal pernah membuat produk yang sudah dihapus muncul lagi,
+        // karena item sample di bundle ikut dimunculkan ulang.
+        cachedProducts = normalized;
+        cacheTimestamp = Date.now();
+        return normalized;
     } catch (error) {
         console.error("[Affiliate Store] Unexpected error loading products:", error);
-        return [];
+        console.log("[Affiliate Store] Falling back to local products due to error");
+        // Fallback to bundled dataset
+        cachedProducts = local;
+        cacheTimestamp = Date.now();
+        return local;
     }
 }
 
@@ -128,6 +195,28 @@ export function getAffiliateByArticle(articleSlug: string): ArticleAffiliate | n
 export async function getAffiliateProductsByIds(productIds: string[]): Promise<AffiliateProduct[]> {
     if (!productIds.length) return [];
 
+    console.log("[AffiliateStore] getAffiliateProductsByIds called with:", productIds);
+    console.log("[AffiliateStore] hasSupabaseConfig:", hasSupabaseConfig);
+    console.log("[AffiliateStore] supabaseAdmin available:", !!supabaseAdmin);
+
+    // Fast-path fallback when Supabase isn't configured
+    if (!supabaseAdmin || !hasSupabaseConfig) {
+        console.log("[AffiliateStore] Using local fallback path");
+        const all = await loadAffiliateProducts();
+        console.log("[AffiliateStore] Loaded all products:", all.length);
+        console.log("[AffiliateStore] Available product IDs:", all.map(p => p.id));
+        const idSet = new Set(productIds.map((id) => String(id).trim()));
+        console.log("[AffiliateStore] Looking for IDs:", Array.from(idSet));
+        const filtered = all.filter((p) => {
+            const match = idSet.has(String(p.id).trim());
+            console.log("[AffiliateStore] Checking product", p.id, "against", idSet, "-> match:", match);
+            return match;
+        });
+        console.log("[AffiliateStore] Filtered products:", filtered.length);
+        console.log("[AffiliateStore] Filtered product IDs:", filtered.map(p => p.id));
+        return filtered;
+    }
+
     try {
         const { data, error } = await supabaseAdmin
             .from('affiliate_products')
@@ -136,19 +225,53 @@ export async function getAffiliateProductsByIds(productIds: string[]): Promise<A
 
         if (error) {
             console.error("[Affiliate Store] Error fetching products by IDs:", error);
-            return [];
+            console.warn("[Affiliate Store] Falling back to local products due to Supabase error");
+            // Fallback to local filtering on error
+            const all = await loadAffiliateProducts();
+            const idSet = new Set(productIds.map((id) => String(id).trim()));
+            const fallback = all.filter((p) => idSet.has(String(p.id).trim()));
+            console.log("[Affiliate Store] Local fallback found:", fallback.length, "products");
+            return fallback;
+        }
+        const normalized = (data || []).map(normalizeProduct);
+        console.log("[Affiliate Store] Supabase returned:", normalized.length, "products");
+
+        const requestedIds = new Set(productIds.map((id) => String(id).trim()));
+
+        // Always try local fallback if Supabase returns empty OR missing some IDs
+        if (normalized.length < requestedIds.size) {
+            console.warn("[Affiliate Store] Supabase returned fewer products than requested, merging with local fallback");
+            const all = await loadAffiliateProducts();
+            console.log("[Affiliate Store] Local products loaded:", all.length);
+            const existingIds = new Set(normalized.map((p) => String(p.id).trim()));
+            const missing = all.filter((p) => {
+                const id = String(p.id).trim();
+                return requestedIds.has(id) && !existingIds.has(id);
+            });
+            console.log("[Affiliate Store] Missing products filled from local:", missing.length);
+            return [...normalized, ...missing];
         }
 
-        return (data || []).map(normalizeProduct);
+        return normalized;
     } catch (error) {
         console.error("[Affiliate Store] Unexpected error fetching products by IDs:", error);
-        return [];
+        // Last resort fallback
+        try {
+            const all = await loadAffiliateProducts();
+            const idSet = new Set(productIds.map((id) => String(id).trim()));
+            return all.filter((p) => idSet.has(String(p.id).trim()));
+        } catch (fallbackError) {
+            console.error("[Affiliate Store] Fallback filter failed:", fallbackError);
+            return [];
+        }
     }
 }
 
 export async function getProductsByCategory(category: string): Promise<AffiliateProduct[]> {
+    const admin = supabaseAdmin;
+    if (!admin || !hasSupabaseConfig) return [];
     try {
-        const { data, error } = await supabaseAdmin
+        const { data, error } = await admin
             .from('affiliate_products')
             .select('*')
             .ilike('category', category); // Case insensitive match
@@ -168,8 +291,11 @@ export async function getProductsByCategory(category: string): Promise<Affiliate
 export async function getProductsByTags(tags: string[]): Promise<AffiliateProduct[]> {
     if (!tags.length) return [];
 
+    const admin = supabaseAdmin;
+    if (!admin || !hasSupabaseConfig) return [];
+
     try {
-        const { data, error } = await supabaseAdmin
+        const { data, error } = await admin
             .from('affiliate_products')
             .select('*')
             .overlaps('tags', tags); // Array overlap check
@@ -187,8 +313,10 @@ export async function getProductsByTags(tags: string[]): Promise<AffiliateProduc
 }
 
 export async function getVerifiedProducts(): Promise<AffiliateProduct[]> {
+    const admin = supabaseAdmin;
+    if (!admin || !hasSupabaseConfig) return [];
     try {
-        const { data, error } = await supabaseAdmin
+        const { data, error } = await admin
             .from('affiliate_products')
             .select('*')
             .eq('verified', true);
@@ -207,6 +335,8 @@ export async function getVerifiedProducts(): Promise<AffiliateProduct[]> {
 
 // CRUD Operations for Admin
 export async function addAffiliateProduct(product: AffiliateProduct): Promise<boolean> {
+    const admin = supabaseAdmin;
+    if (!admin) throw new Error("Supabase admin client is not configured");
     try {
         const dbProduct = {
             id: product.id,
@@ -224,7 +354,7 @@ export async function addAffiliateProduct(product: AffiliateProduct): Promise<bo
             verified: product.verified || false,
         };
 
-        const { error } = await supabaseAdmin
+        const { error } = await admin
             .from('affiliate_products')
             .insert([dbProduct]);
 
@@ -232,6 +362,9 @@ export async function addAffiliateProduct(product: AffiliateProduct): Promise<bo
             console.error("[Affiliate Store] Error adding product:", error);
             throw error;
         }
+        // Invalidate cache so new product appears immediately
+        cachedProducts = null;
+        cacheTimestamp = 0;
         return true;
     } catch (error) {
         console.error("[Affiliate Store] Unexpected error adding product:", error);
@@ -240,13 +373,15 @@ export async function addAffiliateProduct(product: AffiliateProduct): Promise<bo
 }
 
 export async function updateAffiliateProduct(id: string, updates: Partial<AffiliateProduct>): Promise<boolean> {
+    const admin = supabaseAdmin;
+    if (!admin) throw new Error("Supabase admin client is not configured");
     try {
         const dbUpdates: any = { ...updates };
         if (updates.price) dbUpdates.price = parseFloat(updates.price);
         if (updates.originalPrice) dbUpdates.original_price = parseFloat(updates.originalPrice);
         delete dbUpdates.originalPrice; // Remove camelCase key
 
-        const { error } = await supabaseAdmin
+        const { error } = await admin
             .from('affiliate_products')
             .update(dbUpdates)
             .eq('id', id);
@@ -255,6 +390,8 @@ export async function updateAffiliateProduct(id: string, updates: Partial<Affili
             console.error("[Affiliate Store] Error updating product:", error);
             throw error;
         }
+        cachedProducts = null;
+        cacheTimestamp = 0;
         return true;
     } catch (error) {
         console.error("[Affiliate Store] Unexpected error updating product:", error);
@@ -263,8 +400,10 @@ export async function updateAffiliateProduct(id: string, updates: Partial<Affili
 }
 
 export async function deleteAffiliateProduct(id: string): Promise<boolean> {
+    const admin = supabaseAdmin;
+    if (!admin) throw new Error("Supabase admin client is not configured");
     try {
-        const { error } = await supabaseAdmin
+        const { error } = await admin
             .from('affiliate_products')
             .delete()
             .eq('id', id);
@@ -273,6 +412,8 @@ export async function deleteAffiliateProduct(id: string): Promise<boolean> {
             console.error("[Affiliate Store] Error deleting product:", error);
             throw error;
         }
+        cachedProducts = null;
+        cacheTimestamp = 0;
         return true;
     } catch (error) {
         console.error("[Affiliate Store] Unexpected error deleting product:", error);

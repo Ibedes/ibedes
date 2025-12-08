@@ -30,7 +30,7 @@ export const GET: APIRoute = async ({ request }) => {
         const { data, error } = await supabase
             .from("analytics_events")
             .select("*")
-            .eq("event", "newsletter_subscribe")
+            .eq("event_name", "newsletter_subscribe")
             .gte("created_at", new Date(sinceTimestamp).toISOString())
             .order("created_at", { ascending: false })
             .limit(50);

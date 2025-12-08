@@ -1,5 +1,22 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
+// Works in Astro runtime (import.meta.env) and direct Node execution (process.env)
+const supabaseUrl =
+    import.meta.env?.SUPABASE_URL ??
+    import.meta.env?.PUBLIC_SUPABASE_URL ??
+    process.env.SUPABASE_URL ??
+    process.env.PUBLIC_SUPABASE_URL ??
+    "";
+
+const supabaseServiceKey =
+    import.meta.env?.SUPABASE_SERVICE_ROLE_KEY ??
+    import.meta.env?.SUPABASE_ANON_KEY ??
+    import.meta.env?.PUBLIC_SUPABASE_ANON_KEY ??
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.SUPABASE_ANON_KEY ??
+    process.env.PUBLIC_SUPABASE_ANON_KEY ??
+    "";
+
 export interface AnalyticsEventInput {
     event: string;
     category?: string;
@@ -25,6 +42,9 @@ export interface StoredAnalyticsEvent extends AnalyticsEventInput {
     id?: string;
     created_at: string;
     event: string;
+    product_id?: string;
+    product_name?: string;
+    platform?: string;
 }
 
 export interface RealtimeSnapshot {
@@ -86,27 +106,12 @@ interface SupabaseAnalyticsRow {
     metadata?: Record<string, any> | null;
 }
 
-const supabaseUrl =
-    import.meta.env.SUPABASE_URL ??
-    process.env.SUPABASE_URL ??
-    import.meta.env.PUBLIC_SUPABASE_URL ??
-    process.env.PUBLIC_SUPABASE_URL ??
-    "";
-
-const supabaseServiceKey =
-    import.meta.env.SUPABASE_SERVICE_ROLE_KEY ??
-    process.env.SUPABASE_SERVICE_ROLE_KEY ??
-    import.meta.env.SUPABASE_ANON_KEY ??
-    process.env.SUPABASE_ANON_KEY ??
-    import.meta.env.PUBLIC_SUPABASE_ANON_KEY ??
-    process.env.PUBLIC_SUPABASE_ANON_KEY ??
-    "";
-
 const SUPABASE_TABLE = "analytics_events";
 const FALLBACK_CACHE_LIMIT = 2000;
 
 let supabaseClient: SupabaseClient | null = null;
 const fallbackEvents: StoredAnalyticsEvent[] = [];
+let analyticsDisabledReason: string | null = null;
 
 const getSupabaseClient = () => {
     if (!supabaseUrl || !supabaseServiceKey) return null;
@@ -174,7 +179,7 @@ const getFallbackEvents = (since?: Date) => {
 
 const fetchEvents = async (since?: Date, limit = 2000) => {
     const client = getSupabaseClient();
-    if (!client) {
+    if (!client || analyticsDisabledReason) {
         return getFallbackEvents(since);
     }
 
@@ -191,7 +196,15 @@ const fetchEvents = async (since?: Date, limit = 2000) => {
     const { data, error } = await query;
 
     if (error) {
-        console.error("[Analytics] Failed to fetch events:", error.message);
+        const message = error.message || "unknown";
+        if (message.includes("analytics_events")) {
+            analyticsDisabledReason = "analytics_events table missing";
+            console.warn(
+                "[Analytics] Disabling Supabase analytics because table is missing; falling back to in-memory cache.",
+            );
+        } else {
+            console.error("[Analytics] Failed to fetch events:", message);
+        }
         return getFallbackEvents(since);
     }
 
@@ -241,7 +254,7 @@ export const collectAnalyticsEvent = async (
     };
 
     const client = getSupabaseClient();
-    if (client) {
+    if (client && !analyticsDisabledReason) {
         const { error } = await client.from(SUPABASE_TABLE).insert({
             event_name: sanitized.event,
             event_category: sanitized.category ?? null,
@@ -264,7 +277,15 @@ export const collectAnalyticsEvent = async (
         } as Record<string, unknown>);
 
         if (error) {
-            console.error("[Analytics] Failed to store event:", error.message);
+            const message = error.message || "unknown";
+            if (message.includes("analytics_events")) {
+                analyticsDisabledReason = "analytics_events table missing";
+                console.warn(
+                    "[Analytics] Disabling Supabase analytics because table is missing; using in-memory cache only.",
+                );
+            } else {
+                console.error("[Analytics] Failed to store event:", message);
+            }
         }
     }
 

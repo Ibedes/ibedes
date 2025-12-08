@@ -1,11 +1,18 @@
 ---
-title: "Seni Mengenal Diri: Antara Akal, Jiwa, dan Cinta Ilahi"
-description: "Renungan tentang bagaimana manusia dapat mengenal dirinya melalui keseimbangan antara akal yang berpikir, jiwa yang merasa, dan cinta Ilahi yang menuntun keduanya kembali kepada sumbernya."
-pubDate: "2025-11-24T00:00:00+00:00"
-tags: []
-featuredImage: "https://images.unsplash.com/photo-1503264116251-35a269479413?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=1470"
+tags:
+  - "spiritualitas"
+  - "refleksi"
 time: 5
 featured: false
+layout: "../../layouts/BlogLayout.astro"
+title: "Seni Mengenal Diri: Antara Akal, Jiwa, dan Cinta Ilahi"
+description: "Renungan tentang bagaimana manusia dapat mengenal dirinya melalui keseimbangan antara akal yang berpikir, jiwa yang merasa, dan cinta Ilahi yang menuntun keduanya kembali kepada sumbernya."
+pubDate: "2025-12-08"
+category: "refleksi"
+featuredImage: "https://images.unsplash.com/photo-1503264116251-35a269479413?ixlib=rb-4.1.0&auto=format&fit=crop&q=80&w=1470"
+affiliateProducts:
+  - "worksheet1"
+  - "bukubayi1"
 ---
 
 

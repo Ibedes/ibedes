@@ -9,8 +9,15 @@ import { formatRupiah } from "../../lib/utils";
 
 export const prerender = false;
 
+const normalizeFilename = (name?: string | null) => {
+    if (!name) return "";
+    return name.endsWith(".md") ? name : `${name}.md`;
+};
+
 const { searchParams } = Astro.url;
-const filename = searchParams.get("file");
+const filename = normalizeFilename(searchParams.get("file"));
+const blogDir = path.join(process.cwd(), "src/content/blog");
+const legacyBlogDir = path.join(process.cwd(), "src/pages/blog");
 
 interface Frontmatter {
     title: string;
@@ -34,12 +41,32 @@ let frontmatter: Frontmatter = {
 };
 
 if (filename) {
-    try {
-        const filePath = path.join(process.cwd(), "src/pages/blog", filename);
+    const tryRead = async (baseDir: string) => {
+        const filePath = path.join(baseDir, filename);
         const fileContent = await fs.readFile(filePath, "utf-8");
-        const parsed = matter(fileContent);
+        return { filePath, fileContent };
+    };
+
+    try {
+        let fileData;
+        try {
+            fileData = await tryRead(blogDir);
+        } catch (err) {
+            // fallback to legacy path for older repos
+            fileData = await tryRead(legacyBlogDir);
+        }
+
+        const parsed = matter(fileData.fileContent);
         content = parsed.content;
         frontmatter = { ...frontmatter, ...parsed.data };
+
+        // Normalize affiliate IDs to strings for checkbox binding
+        if (Array.isArray(frontmatter.affiliateProducts)) {
+            frontmatter.affiliateProducts = frontmatter.affiliateProducts.map(
+                (id: any) => String(id),
+            );
+        }
+
         // Handle date format if it's a Date object
         if (frontmatter.pubDate instanceof Date) {
             frontmatter.pubDate = frontmatter.pubDate
@@ -299,7 +326,7 @@ const sortedProducts = [...allProducts].reverse();
                             <p class="editor-eyebrow">Afiliasi</p>
                             <h3>Produk tertaut</h3>
                         </div>
-                        <span class="editor-pill">
+                        <span class="editor-pill" data-affiliate-pill>
                             {frontmatter.affiliateProducts?.length ?? 0} dipilih
                         </span>
                     </div>
@@ -459,7 +486,7 @@ const sortedProducts = [...allProducts].reverse();
                 "[data-product-count]",
             );
             const affiliatePill = document.querySelector(
-                ".editor-card .editor-pill",
+                "[data-affiliate-pill]",
             );
             const productCheckboxes = Array.from(
                 document.querySelectorAll('input[name="affiliate-products"]'),

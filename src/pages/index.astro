@@ -1,6 +1,6 @@
 ---
-import { featuredArticles } from "../lib/featured";
 import { GLOBAL } from "../lib/variables";
+import { articles } from "../lib/list";
 import Layout from "../layouts/Layout.astro";
 import Hero from "../components/home/Hero.astro";
 import Section from "../components/common/Section.astro";
@@ -9,6 +9,9 @@ import SubscribeCard from "../components/SubscribeCard.astro";
 import AffiliateProducts from "../components/AffiliateProducts.astro";
 import { loadAffiliateProductsRanked } from "../lib/affiliates";
 
+// Run this page on the server so affiliate data stays fresh
+export const prerender = false;
+
 // Kombinasi klik + recency + verified untuk urutan yang paling relevan
 const rankedAffiliateProducts = await loadAffiliateProductsRanked({
   days: 30,
@@ -16,7 +19,7 @@ const rankedAffiliateProducts = await loadAffiliateProductsRanked({
 });
 
 const homepageAffiliateProducts = rankedAffiliateProducts.slice(0, 6);
-const homepageFeaturedArticles = featuredArticles.slice(0, 6);
+const homepageArticles = articles.slice(0, 5);
 ---
 
 <Layout
@@ -27,7 +30,7 @@ const homepageFeaturedArticles = featuredArticles.slice(0, 6);
   <Hero />
 
   <Section>
-    <FeaturedArticles featuredArticles={homepageFeaturedArticles} />
+    <FeaturedArticles featuredArticles={homepageArticles} />
     <div class="mt-12"></div>
   </Section>
   <Section>

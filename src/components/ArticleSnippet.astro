@@ -28,15 +28,15 @@ const {
       <SkeletonLoader variant="article" count={1} />
     </div>
   ) : (
-    <div class="zag-text zag-transition flex flex-col gap-3 pb-8">
-      <Anchor url={url} class="text-xl">
+    <article class="h-full rounded-xl border border-gray-200/70 dark:border-gray-800/80 bg-white/90 dark:bg-gray-900/70 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col gap-3 p-4 hover:-translate-y-0.5">
+      <Anchor url={url} class="text-lg font-semibold leading-snug hover:text-blue-600 dark:hover:text-blue-400">
         {title}
       </Anchor>
-      <p class="">{description}</p>
-      <div class="zag-muted zag-transition flex justify-between items-center">
-        {timestamp ? <p>{processArticleDate(timestamp)}</p> : null}
+      <p class="text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{description}</p>
+      <div class="zag-muted zag-transition flex justify-between items-center text-xs uppercase tracking-wide mt-auto">
+        {timestamp ? <p>{processArticleDate(timestamp)}</p> : <span></span>}
         {duration ? <p>{duration}</p> : null}
       </div>
-    </div>
+    </article>
   )
 }

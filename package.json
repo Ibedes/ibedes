@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "start": "node ./dist/server/entry.mjs",
-    "preview": "astro preview",
+    "start": "node -r dotenv/config ./dist/server/entry.mjs",
+    "preview": "npm run build && PORT=4321 node -r dotenv/config ./dist/server/entry.mjs",
     "astro": "astro",
     "sync-files": "node scripts/sync-files.js"
   },
@@ -42,6 +42,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.5",
+    "ts-node": "^10.9.2",
     "wrangler": "^4.51.0"
   }
 }

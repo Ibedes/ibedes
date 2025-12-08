@@ -44,13 +44,13 @@ const articleDate = processArticleDate(frontmatter.timestamp);
 const sourceUrl = frontmatter.filename
   ? generateSourceUrl(frontmatter.filename, "blog")
   : "";
-const canonicalUrl = `${GLOBAL.rootUrl}${frontmatter.url ?? sourceUrl}`;
+const canonicalUrl = `${GLOBAL.rootUrl}${sourceUrl}`;
 
 // Breadcrumb items
 const breadcrumbItems = [
   { name: "Home", url: "/" },
   { name: "Blog", url: "/blog" },
-  { name: frontmatter.title, url: frontmatter.url ?? sourceUrl },
+  { name: frontmatter.title, url: sourceUrl },
 ];
 
 // Generate Article structured data
@@ -77,36 +77,27 @@ const ogImageUrl = frontmatter.filename
   : `${GLOBAL.rootUrl}/og/default.svg`;
 const seoImage = featuredImageUrl ?? ogImageUrl;
 
-// Get affiliate products for this article
+// Load affiliate products server-side so HTML langsung muncul
+const affiliateProductIds = frontmatter.affiliateProducts || [];
 let affiliateProducts: any[] = [];
 
-try {
-  // Only check for affiliate mapping if filename exists
-  if (frontmatter.filename) {
-    const articleAffiliate = getAffiliateByArticle(frontmatter.filename);
-    if (articleAffiliate) {
-      const mappedProducts = await getAffiliateProductsByIds(
-        articleAffiliate.productIds,
-      );
-      affiliateProducts = [...affiliateProducts, ...mappedProducts];
-    }
+if (affiliateProductIds.length > 0) {
+  try {
+    affiliateProducts = await getAffiliateProductsByIds(affiliateProductIds);
+    console.log("[BlogLayout] Loaded affiliate products server-side:", affiliateProducts.length);
+  } catch (error) {
+    console.error("[BlogLayout] Failed to load affiliate products server-side:", error);
+    affiliateProducts = [];
   }
-
-  if (
-    frontmatter.affiliateProducts &&
-    frontmatter.affiliateProducts.length > 0
-  ) {
-    affiliateProducts = await getAffiliateProductsByIds(
-      frontmatter.affiliateProducts,
-    );
-  }
-} catch (error) {
-  console.warn("[BlogLayout] Failed to fetch affiliate products:", error);
-  // Fallback to empty array - products won't show but page will still render
-  affiliateProducts = [];
 }
 
-const affiliateContext = frontmatter.affiliateContext;
+// Debug logging for affiliate products
+console.log("[BlogLayout] Article will load affiliate products client-side:", {
+  filename: frontmatter.filename,
+  productIds: affiliateProductIds
+});
+
+
 ---
 
 <Layout
@@ -139,7 +130,7 @@ const affiliateContext = frontmatter.affiliateContext;
               <span class="whitespace-nowrap">
                 {
                   processArticleDate(
-                    frontmatter.pubDate || frontmatter.timestamp || new Date(),
+                    frontmatter.pubDate || frontmatter.timestamp || new Date().toISOString(),
                   )
                 }
               </span>
@@ -172,6 +163,9 @@ const affiliateContext = frontmatter.affiliateContext;
             <slot />
           </Prose>
 
+          <!-- TOC stopper so sidebar only sticks along article body -->
+          <div id="toc-end-sentinel" class="h-px" aria-hidden="true"></div>
+
           <RelatedArticles
             currentSlug={frontmatter.filename
               ? (frontmatter.filename.split("/").pop() ?? "")
@@ -187,7 +181,7 @@ const affiliateContext = frontmatter.affiliateContext;
               <div class="my-12">
                 <AffiliateProducts
                   products={affiliateProducts}
-                  context={affiliateContext}
+                  context={frontmatter.affiliateContext}
                   title="Produk yang Mungkin Bantu"
                 />
               </div>
@@ -197,7 +191,7 @@ const affiliateContext = frontmatter.affiliateContext;
           <div class="my-12">
             <ShareActions
               title={frontmatter.title}
-              url={frontmatter.url ?? sourceUrl}
+              url={sourceUrl}
               image={ogImageUrl}
             />
           </div>
@@ -208,10 +202,8 @@ const affiliateContext = frontmatter.affiliateContext;
         </div>
       </div>
 
-      <aside class="hidden lg:block relative">
-        <div class="sticky top-24">
-          <TableOfContents headings={headings} />
-        </div>
+      <aside class="hidden lg:block relative lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+        <TableOfContents headings={headings} />
       </aside>
     </div>
   </Section>
@@ -219,7 +211,7 @@ const affiliateContext = frontmatter.affiliateContext;
   <ReadingProgress />
   <TextShareTooltip
     title={frontmatter.title}
-    url={frontmatter.url ?? sourceUrl}
+    url={sourceUrl}
   />
   <FloatingReactions
     slug={frontmatter.filename || "default"}
@@ -250,8 +242,19 @@ const affiliateContext = frontmatter.affiliateContext;
         }
       });
     }
+
   </script>
   <CodeCopy />
   <ImageLightbox />
   <BackToTop />
+
+  <!-- Styles for affiliate products -->
+  <style>
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  </style>
 </Layout>

@@ -1,6 +1,6 @@
 <button
     id="back-to-top"
-    class="fixed bottom-24 lg:bottom-40 right-8 z-50 p-3 rounded-full bg-emerald-600 dark:bg-emerald-500 text-white shadow-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all opacity-0 invisible translate-y-4"
+    class="fixed bottom-8 lg:bottom-8 left-8 lg:left-8 z-40 p-3 rounded-full bg-emerald-600 dark:bg-emerald-500 text-white shadow-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all opacity-0 invisible translate-y-4"
     aria-label="Kembali ke atas"
 >
     <i class="fa-solid fa-arrow-up text-xl"></i>
@@ -17,6 +17,17 @@
             const isCommentOpen =
                 commentPopup && !commentPopup.hasAttribute("hidden");
 
+            // Mirror floating engagement visibility: show after ~30% scroll
+            const doc = document.documentElement;
+            const scrollTop = doc.scrollTop || document.body.scrollTop || 0;
+            const scrollHeight =
+                doc.scrollHeight || document.body.scrollHeight || 0;
+            const clientHeight = doc.clientHeight || window.innerHeight || 1;
+            const maxScroll = Math.max(1, scrollHeight - clientHeight);
+            const progress =
+                scrollHeight <= clientHeight ? 1 : scrollTop / maxScroll;
+            const shouldShow = progress >= 0.3;
+
             if (isCommentOpen) {
                 // Hide button when comment popup is open
                 backToTopBtn.classList.add(
@@ -29,7 +40,7 @@
                     "visible",
                     "translate-y-0",
                 );
-            } else if (window.scrollY > 300) {
+            } else if (shouldShow) {
                 backToTopBtn.classList.remove(
                     "opacity-0",
                     "invisible",
@@ -54,6 +65,14 @@
             }
         };
 
+        const syncWithFloatingControls = () => {
+            // Pin to left with same spacing as reaction FAB (2rem)
+            backToTopBtn.style.left = "2rem";
+            backToTopBtn.style.right = "auto";
+            backToTopBtn.style.bottom = "2rem";
+            backToTopBtn.style.zIndex = "41";
+        };
+
         const scrollToTop = () => {
             window.scrollTo({
                 top: 0,
@@ -61,8 +80,10 @@
             });
         };
 
-        window.addEventListener("scroll", toggleButton);
+        window.addEventListener("scroll", toggleButton, { passive: true });
         backToTopBtn.addEventListener("click", scrollToTop);
+        window.addEventListener("resize", syncWithFloatingControls);
+        syncWithFloatingControls();
 
         // Watch for comment popup changes
         const observer = new MutationObserver(toggleButton);

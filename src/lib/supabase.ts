@@ -1,36 +1,36 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
-const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+// Support both Astro runtime (import.meta.env) and direct Node execution (process.env)
+const supabaseUrl = import.meta.env?.PUBLIC_SUPABASE_URL || (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : undefined);
+const supabaseAnonKey = import.meta.env?.PUBLIC_SUPABASE_ANON_KEY || (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_ANON_KEY : undefined);
+const supabaseServiceKey = import.meta.env?.SUPABASE_SERVICE_ROLE_KEY || (typeof process !== 'undefined' ? process.env.SUPABASE_SERVICE_ROLE_KEY : undefined);
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn('Supabase URL or Anon Key is missing. Supabase client will not be initialized.');
+const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);
+
+if (!hasSupabaseConfig) {
+    console.warn(
+        'Supabase URL or Anon Key is missing. Supabase client will not be initialized; falling back to local data where possible.'
+    );
 }
 
-// Public client (for frontend, respects RLS)
-export const supabase = createClient(
-    supabaseUrl || '',
-    supabaseAnonKey || '',
-    {
+let supabase: SupabaseClient | null = null;
+let supabaseAdmin: SupabaseClient | null = null;
+
+if (hasSupabaseConfig) {
+    supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
         auth: {
             persistSession: true,
+            storageKey: 'sb-ibedes-auth',
         },
-    }
-);
+    });
 
-// Admin client (for backend/API routes, bypasses RLS)
-// Only use this in server-side code!
-export const supabaseAdmin = createClient(
-    supabaseUrl || '',
-    supabaseServiceKey || supabaseAnonKey || '',
-    {
-        auth: {
-            persistSession: false,
-            autoRefreshToken: false,
-        },
-    }
-);
+    const adminKey = supabaseServiceKey || supabaseAnonKey!;
+    supabaseAdmin = createClient(supabaseUrl!, adminKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+    });
+}
+
+export { supabase, supabaseAdmin, hasSupabaseConfig };
 
 export type Database = {
     public: {

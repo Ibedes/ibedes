@@ -410,7 +410,7 @@ const previewProducts = sortedProducts.slice(0, 3);
                             <span>Artikel</span>
                         </a>
                     </div>
-                    <div class="admin-records" role="table">
+                    <div class="admin-records" role="table" id="articles-list">
                         {
                             articles.map((article) => (
                                 <article class="admin-record" role="row">
@@ -474,6 +474,7 @@ const previewProducts = sortedProducts.slice(0, 3);
                             ))
                         }
                     </div>
+                    <div class="admin-pagination" id="articles-pagination"></div>
                 </div>
             </section>
 
@@ -497,7 +498,7 @@ const previewProducts = sortedProducts.slice(0, 3);
                             <span>Produk</span>
                         </a>
                     </div>
-                    <div class="admin-records" role="table">
+                    <div class="admin-records" role="table" id="products-list">
                         {
                             sortedProducts.map((product) => (
                                 <article
@@ -564,6 +565,7 @@ const previewProducts = sortedProducts.slice(0, 3);
                             ))
                         }
                     </div>
+                    <div class="admin-pagination" id="products-pagination"></div>
                 </div>
             </section>
 
@@ -995,7 +997,15 @@ const previewProducts = sortedProducts.slice(0, 3);
 
                     if (response.ok) {
                         alert("Produk berhasil dihapus");
-                        setTimeout(() => window.location.reload(), 1200);
+                        
+                        // Remove from UI immediately
+                        const productElement = button.closest('.admin-record');
+                        if (productElement) {
+                            productElement.remove();
+                        }
+                        
+                        // Refresh page after short delay to update cache
+                        setTimeout(() => window.location.reload(), 800);
                     } else {
                         alert(result.error || "Gagal menghapus produk");
                         button.disabled = false;
@@ -1014,10 +1024,10 @@ const previewProducts = sortedProducts.slice(0, 3);
 
 <style>
     .admin-shell {
-        max-width: 1000px;
+        max-width: 1040px;
         margin: 0 auto;
         padding: 1rem 1rem 4.5rem;
-        padding-top: 5rem; /* Account for sidebar toggle button */
+        padding-top: 3.25rem;
         --admin-font-xs: clamp(0.65rem, 1vw, 0.75rem);
         --admin-font-sm: clamp(0.75rem, 1.2vw, 0.85rem);
         --admin-font-base: clamp(0.85rem, 1.35vw, 0.95rem);
@@ -1033,14 +1043,19 @@ const previewProducts = sortedProducts.slice(0, 3);
     @media (max-width: 640px) {
         .admin-shell {
             padding: 0.75rem 0.75rem 5.25rem;
-            padding-top: 4.5rem; /* Smaller top padding on mobile */
+            padding-top: 2.75rem;
         }
     }
 
     @media (min-width: 1024px) {
         .admin-shell {
-            padding-top: 6rem; /* More padding on desktop for toggle button */
-            padding-left: 6rem; /* Account for sidebar when open */
+            max-width: none;
+            width: min(1400px, calc(100% - var(--admin-sidebar-active-width) - 2.5rem));
+            margin-left: var(--admin-sidebar-active-width);
+            margin-right: 1.25rem;
+            padding-top: 4.25rem;
+            padding-left: 1.5rem;
+            padding-right: 0.5rem;
         }
     }
 
@@ -1545,6 +1560,57 @@ const previewProducts = sortedProducts.slice(0, 3);
         gap: 0.55rem;
     }
 
+    .admin-pagination {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .admin-pagination__button {
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.75rem;
+        border: 1px solid
+            color-mix(in srgb, var(--color-foreground) 15%, transparent);
+        background: transparent;
+        color: inherit;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        transition:
+            background-color 150ms ease,
+            border-color 150ms ease,
+            transform 120ms ease;
+    }
+
+    .admin-pagination__button:hover:not(:disabled),
+    .admin-pagination__button:focus-visible:not(:disabled) {
+        background: color-mix(in srgb, var(--color-foreground) 8%, transparent);
+        border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+        color: var(--color-primary);
+        transform: translateY(-1px);
+    }
+
+    .admin-pagination__button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    .admin-pagination__indicator {
+        font-family: var(--font-mono);
+        font-size: var(--admin-font-sm);
+        padding: 0.35rem 0.75rem;
+        border-radius: 0.65rem;
+        border: var(--admin-border);
+        background: color-mix(
+            in srgb,
+            var(--color-background) 96%,
+            transparent
+        );
+    }
+
     .admin-record {
         display: grid;
         gap: 0.7rem;
@@ -1802,6 +1868,68 @@ const previewProducts = sortedProducts.slice(0, 3);
 <script>
     // Analytics Dashboard Logic
     document.addEventListener("DOMContentLoaded", () => {
+        const ARTICLES_PER_PAGE = 5;
+        const PRODUCTS_PER_PAGE = 5;
+
+        const setupPagination = (
+            listId: string,
+            itemSelector: string,
+            pagerId: string,
+            perPage: number,
+        ) => {
+            const listEl = document.getElementById(listId);
+            const pagerEl = document.getElementById(pagerId);
+            if (!listEl || !pagerEl) return;
+
+            const items = Array.from(
+                listEl.querySelectorAll<HTMLElement>(itemSelector),
+            );
+
+            if (items.length <= perPage) {
+                pagerEl.style.display = "none";
+                return;
+            }
+
+            let currentPage = 1;
+            const totalPages = Math.ceil(items.length / perPage);
+
+            const prevBtn = document.createElement("button");
+            prevBtn.className = "admin-pagination__button";
+            prevBtn.type = "button";
+            prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+
+            const indicator = document.createElement("span");
+            indicator.className = "admin-pagination__indicator";
+
+            const nextBtn = document.createElement("button");
+            nextBtn.className = "admin-pagination__button";
+            nextBtn.type = "button";
+            nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+
+            pagerEl.append(prevBtn, indicator, nextBtn);
+
+            const render = (page: number) => {
+                currentPage = Math.max(1, Math.min(totalPages, page));
+                const start = (currentPage - 1) * perPage;
+                const end = start + perPage;
+
+                items.forEach((item, idx) => {
+                    const visible = idx >= start && idx < end;
+                    item.style.display = visible ? "" : "none";
+                    item.setAttribute("aria-hidden", visible ? "false" : "true");
+                });
+
+                indicator.textContent = `${currentPage} / ${totalPages}`;
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = currentPage === totalPages;
+            };
+
+            prevBtn.addEventListener("click", () => render(currentPage - 1));
+            nextBtn.addEventListener("click", () => render(currentPage + 1));
+
+            render(1);
+        };
+
         const fetchRealtimeData = async () => {
             try {
                 const response = await fetch("/api/analytics/realtime");
@@ -1934,6 +2062,20 @@ const previewProducts = sortedProducts.slice(0, 3);
 
             contentDiv.innerHTML = html;
         };
+
+        // Initialize pagination for article & product tables
+        setupPagination(
+            "articles-list",
+            ".admin-record",
+            "articles-pagination",
+            ARTICLES_PER_PAGE,
+        );
+        setupPagination(
+            "products-list",
+            ".admin-record",
+            "products-pagination",
+            PRODUCTS_PER_PAGE,
+        );
 
         // Initial fetch
         fetchRealtimeData();

@@ -13,7 +13,7 @@ const tocHeadings = headings.filter((h) => h.depth > 1 && h.depth < 4);
 
 {
     tocHeadings.length > 0 && (
-        <nav class="toc-container hidden lg:block sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-4">
+        <nav class="toc-container hidden lg:block sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto pr-4">
             <h2 class="font-display text-xs uppercase tracking-widest mb-4 text-gray-900 dark:text-gray-100">
                 Daftar Isi
             </h2>
@@ -89,6 +89,27 @@ const tocHeadings = headings.filter((h) => h.depth > 1 && h.depth < 4);
     document.querySelectorAll("h2[id], h3[id]").forEach((section) => {
         observer.observe(section);
     });
+    const toc = document.querySelector(".toc-container");
+    const sentinel = document.getElementById("toc-end-sentinel");
+
+    if (toc && sentinel) {
+        const toggleStickiness = (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    toc.classList.add("toc-at-end");
+                } else {
+                    toc.classList.remove("toc-at-end");
+                }
+            });
+        };
+
+        const endObserver = new IntersectionObserver(toggleStickiness, {
+            rootMargin: "0px 0px -20% 0px",
+            threshold: 0,
+        });
+
+        endObserver.observe(sentinel);
+    }
 </script>
 
 <style>
@@ -105,5 +126,14 @@ const tocHeadings = headings.filter((h) => h.depth > 1 && h.depth < 4);
     }
     .dark .toc-container::-webkit-scrollbar-thumb {
         background-color: rgba(156, 163, 175, 0.2);
+    }
+</style>
+
+<style>
+    .toc-at-end {
+        position: absolute;
+        top: auto;
+        bottom: 0;
+        max-height: none;
     }
 </style>

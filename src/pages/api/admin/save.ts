@@ -63,37 +63,58 @@ export const POST: APIRoute = async ({ request }) => {
             console.log('[Admin API] Production mode: skipping local filesystem save');
         }
 
-        // Always sync with Supabase
+        // Always sync with Supabase (if configured)
         try {
-            const { supabaseAdmin } = await import('../../../lib/supabase');
+            const { supabaseAdmin, hasSupabaseConfig } = await import('../../../lib/supabase');
             const matter = await import('gray-matter');
             const { data: frontmatter } = matter.default(content);
 
-            const articleData = {
-                slug: filename.replace('.md', ''),
-                title: frontmatter.title,
-                content: content,
-                excerpt: frontmatter.description,
-                image: frontmatter.featuredImage,
-                status: 'published',
-                published_at: frontmatter.pubDate ? new Date(frontmatter.pubDate).toISOString() : new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                affiliate_ids: frontmatter.affiliateProducts || []
-            };
+            if (hasSupabaseConfig && supabaseAdmin) {
+                const articleData = {
+                    slug: filename.replace('.md', ''),
+                    title: frontmatter.title,
+                    content: content,
+                    excerpt: frontmatter.description,
+                    image: frontmatter.featuredImage,
+                    status: 'published',
+                    published_at: frontmatter.pubDate ? new Date(frontmatter.pubDate).toISOString() : new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                    affiliate_ids: frontmatter.affiliateProducts || []
+                };
 
-            const { error: supabaseError } = await supabaseAdmin
-                .from('articles')
-                .upsert(articleData, { onConflict: 'slug' });
+                const { error: supabaseError } = await supabaseAdmin
+                    .from('articles')
+                    .upsert(articleData, { onConflict: 'slug' });
 
-            if (supabaseError) {
-                console.error('[Admin API] Supabase sync error:', supabaseError);
-                throw new Error(`Gagal menyimpan ke database: ${supabaseError.message}`);
-            } else {
+                if (supabaseError) {
+                    console.error('[Admin API] Supabase sync error:', supabaseError);
+                    const friendly =
+                        supabaseError.message?.includes('affiliate_ids') ||
+                        supabaseError.details?.includes('affiliate_ids')
+                            ? 'Kolom affiliate_ids belum ada di tabel articles. Jalankan migrasi db/migration_update.sql pada Supabase.'
+                            : supabaseError.message;
+                    throw new Error(`Gagal menyimpan ke database: ${friendly}`);
+                }
+
                 console.log('[Admin API] Synced with Supabase');
+            } else {
+                console.warn('[Admin API] Supabase config missing, skipping DB sync. Content saved locally only.');
             }
 
         } catch (supabaseError: any) {
             console.error('[Admin API] Error syncing with Supabase:', supabaseError);
+            // If we already saved the file locally, return a soft warning instead of hard failing
+            if (!isProduction && savedLocally) {
+                return new Response(JSON.stringify({
+                    success: true,
+                    message: 'Artikel tersimpan ke file lokal, namun gagal sinkron ke database. Cek konfigurasi Supabase.',
+                    mode: 'local-only',
+                    warning: supabaseError.message,
+                }), {
+                    status: 200,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
             throw supabaseError;
         }
 

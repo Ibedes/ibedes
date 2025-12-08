@@ -9,26 +9,27 @@ type Props = {
 }
 
 const { featuredArticles } = Astro.props;
-console.log(featuredArticles);
 ---
 
 <div class="flex justify-between items-center w-full">
   <h3 class="font-display text-lg sm:text-xl leading-loose">{GLOBAL.articlesName}</h3>
   <Anchor url="/blog" class="text-base">{GLOBAL.viewAll}</Anchor>
 </div>
-<ul class="my-8">
-  {
-    (featuredArticles.length === 0 && <p>{GLOBAL.noArticles}</p>) ||
-      featuredArticles.map((article) => (
-        <li>
-          <ArticleSnippet
-            title={article.title}
-            description={article.description}
-            url={article.filename}
-            timestamp={article.timestamp}
-            duration={`${article.time} min`}
-          />
-        </li>
-      ))
-  }
-</ul>
+<div class="my-8">
+  <ul class="flex gap-4 overflow-x-auto snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-1" aria-label="Artikel terbaru">
+    {
+      (featuredArticles.length === 0 && <p class="px-1">{GLOBAL.noArticles}</p>) ||
+        featuredArticles.map((article) => (
+          <li class="min-w-[240px] max-w-[320px] snap-start md:min-w-0 md:max-w-full">
+            <ArticleSnippet
+              title={article.title}
+              description={article.description}
+              url={article.filename}
+              timestamp={article.timestamp}
+              duration={`${article.time} min`}
+            />
+          </li>
+        ))
+    }
+  </ul>
+</div>

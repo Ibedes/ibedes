@@ -38,12 +38,14 @@ const websiteSchema = generateWebsiteSchema(
       </h1>
     </div>
 
-    <SearchBar />
+    <div class="mt-4 mb-6">
+      <SearchBar />
+    </div>
 
-    <ul>
+    <ul class="flex flex-col gap-4">
       {
         articles.map((project) => (
-          <li>
+          <li class="list-none">
             <ArticleSnippet
               title={project.title}
               description={project.description}

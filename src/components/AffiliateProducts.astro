@@ -66,8 +66,8 @@ const productSchemas = products.map(product =>
     )}
   </div>
 
-  <!-- Products Grid -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <!-- Products Grid / Horizontal scroll on mobile -->
+  <div class="flex gap-3 overflow-x-auto snap-x snap-mandatory -mx-3 px-3 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 sm:gap-4">
     {products.map((product) => {
       const platform = platformConfig[product.platform];
       return (
@@ -75,7 +75,7 @@ const productSchemas = products.map(product =>
           href={product.link}
           target="_blank"
           rel="noopener noreferrer sponsored"
-          class="group flex gap-4 p-3 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200"
+          class="group flex gap-4 p-3 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 min-w-[260px] snap-start sm:min-w-0"
           data-affiliate-link
           data-product-id={product.id}
           data-platform={product.platform}
@@ -146,6 +146,7 @@ const productSchemas = products.map(product =>
     </p>
   </div>
 </div>
+)}
 
 <!-- Structured Data for Products -->
 {productSchemas.map((schema) => (
@@ -196,7 +197,6 @@ const productSchemas = products.map(product =>
   });
 </script>
 
-
 <style>
   .line-clamp-2 {
     display: -webkit-box;
@@ -205,4 +205,3 @@ const productSchemas = products.map(product =>
     overflow: hidden;
   }
 </style>
-)}

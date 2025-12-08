@@ -21,28 +21,10 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
     aria-label="Navigasi admin dashboard"
     data-admin-nav
 >
-    <!-- Desktop Sidebar Toggle Button -->
-    <button 
-        class="admin-nav-toggle desktop-only" 
-        type="button" 
-        aria-label="Toggle sidebar"
-        data-nav-toggle
-    >
-        <i class="fa-solid fa-bars" aria-hidden="true"></i>
-    </button>
-
     <!-- Desktop Sidebar -->
     <aside class="admin-sidebar desktop-only" data-sidebar>
         <div class="admin-sidebar__header">
             <h2 class="admin-sidebar__title">Admin Panel</h2>
-            <button 
-                class="admin-sidebar__close" 
-                type="button" 
-                aria-label="Close sidebar"
-                data-sidebar-close
-            >
-                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-            </button>
         </div>
         
         <div class="admin-sidebar__content">
@@ -84,6 +66,14 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
 
     <!-- Mobile Bottom Navigation -->
     <div class="admin-bottom-nav mobile-only" data-bottom-nav>
+        <button
+            type="button"
+            class="admin-bottom-nav__scroll-btn"
+            data-scroll-left
+            aria-label="Geser menu ke kiri"
+        >
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
         <div class="admin-bottom-nav__scroll-container" data-scroll-container>
             <div class="admin-bottom-nav__wrapper" style={`--nav-count: ${tabs.length}; --active-index: ${tabs.findIndex(tab => tab.id === activeTab)};`}>
                 {tabs.map((tab, index) => (
@@ -107,6 +97,14 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
                 <span class="admin-bottom-nav__indicator" aria-hidden="true"></span>
             </div>
         </div>
+        <button
+            type="button"
+            class="admin-bottom-nav__scroll-btn"
+            data-scroll-right
+            aria-label="Geser menu ke kanan"
+        >
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
         
         <!-- Mobile Slide Indicator -->
         <div class="admin-bottom-nav__slide-indicator" data-slide-indicator>
@@ -122,6 +120,12 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
 </nav>
 
 <style>
+    :global(:root) {
+        --admin-sidebar-width: 280px;
+        --admin-sidebar-collapsed-width: 82px;
+        --admin-sidebar-active-width: var(--admin-sidebar-width);
+    }
+
     .admin-responsive-nav {
         position: relative;
         z-index: 50;
@@ -131,20 +135,20 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
     .admin-sidebar {
         position: fixed;
         top: 0;
-        left: -300px;
-        width: 280px;
+        left: 0;
+        width: var(--admin-sidebar-width);
         height: 100vh;
         background: color-mix(in srgb, var(--color-background) 95%, transparent);
         border-right: 1px solid color-mix(in srgb, var(--color-foreground) 12%, transparent);
         backdrop-filter: blur(18px);
         display: flex;
         flex-direction: column;
-        transition: left 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        transition: width 220ms cubic-bezier(0.4, 0, 0.2, 1), left 220ms ease;
         z-index: 60;
     }
 
-    .admin-sidebar--open {
-        left: 0;
+    .admin-sidebar--collapsed {
+        width: var(--admin-sidebar-collapsed-width);
     }
 
     .admin-sidebar__header {
@@ -216,6 +220,7 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
         transition: all 150ms ease;
         text-align: left;
         font-size: 0.95rem;
+        position: relative;
     }
 
     .admin-sidebar__button:hover {
@@ -237,6 +242,7 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
 
     .admin-sidebar__label {
         flex: 1;
+        transition: opacity 150ms ease, transform 150ms ease;
     }
 
     .admin-sidebar__footer {
@@ -251,7 +257,7 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
         padding: 0.75rem;
         border-radius: 0.75rem;
         background: color-mix(in srgb, var(--color-foreground) 6%, transparent);
-    }
+        }
 
     .admin-sidebar__avatar {
         width: 2.5rem;
@@ -286,8 +292,8 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
     /* Toggle Button */
     .admin-nav-toggle {
         position: fixed;
-        top: 1rem;
-        left: 1rem;
+        top: 1.1rem;
+        left: calc(var(--admin-sidebar-active-width) + 0.5rem);
         width: 2.75rem;
         height: 2.75rem;
         border: 1px solid color-mix(in srgb, var(--color-foreground) 15%, transparent);
@@ -312,11 +318,20 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
     /* Mobile Bottom Navigation */
     .admin-bottom-nav {
         position: fixed;
-        bottom: 0.75rem;
-        left: 50%;
-        transform: translateX(-50%);
-        width: min(480px, calc(100% - 1.5rem));
+        bottom: 0;
+        left: 0;
+        right: 0;
+        transform: none;
+        width: 100%;
         z-index: 45;
+        display: flex;
+        align-items: center;
+        padding: 0.35rem 0.5rem calc(env(safe-area-inset-bottom, 0) + 0.35rem);
+        background: color-mix(in srgb, var(--color-background) 96%, transparent);
+        backdrop-filter: blur(14px);
+        border-top: 1px solid color-mix(in srgb, var(--color-foreground) 12%, transparent);
+        box-shadow: 0 -6px 18px color-mix(in srgb, var(--color-background) 75%, transparent);
+        gap: 0.35rem;
     }
 
     .admin-bottom-nav__scroll-container {
@@ -325,6 +340,9 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* IE and Edge */
         padding-bottom: 0.25rem;
+        scroll-snap-type: x mandatory;
+        display: flex;
+        align-items: center;
     }
 
     .admin-bottom-nav__scroll-container::-webkit-scrollbar {
@@ -333,16 +351,15 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
 
     .admin-bottom-nav__wrapper {
         position: relative;
-        padding: 0.4rem;
-        border-radius: 1rem;
-        background: color-mix(in srgb, var(--color-background) 92%, transparent);
-        border: 1px solid color-mix(in srgb, var(--color-foreground) 12%, transparent);
-        backdrop-filter: blur(18px);
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        padding: 0.25rem 0.35rem;
+        border-radius: 0.85rem;
+        display: flex;
+        align-items: center;
         gap: 0.25rem;
         min-width: max-content;
         overflow: visible;
+        height: 3.6rem;
+        margin-inline: auto; /* center the icon group when it fits the viewport */
     }
 
     .admin-bottom-nav__item {
@@ -354,13 +371,16 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 0.75rem 0.5rem;
-        aspect-ratio: 1;
+        padding: 0.5rem 0.7rem;
         transition: all 150ms ease;
         position: relative;
         overflow: hidden;
-        min-height: 3.5rem;
+        min-height: 3.25rem;
         cursor: pointer;
+        min-width: 3.25rem;
+        scroll-snap-align: center;
+        gap: 0.1rem;
+        flex: 0 0 auto; /* keep icon size consistent and prevent shrinking */
     }
 
     .admin-bottom-nav__item::before {
@@ -377,24 +397,28 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
     }
 
     .admin-bottom-nav__item i {
-        font-size: 1rem;
+        font-size: 1.05rem;
         position: relative;
         z-index: 1;
-        margin-bottom: 0.25rem;
+        line-height: 1;
+        margin: 0;
+        display: block;
     }
 
     .admin-bottom-nav__label {
-        font-size: 0.65rem;
-        font-weight: 500;
+        font-size: 0.62rem;
+        font-weight: 600;
         position: relative;
         z-index: 1;
         text-align: center;
-        line-height: 1.2;
+        line-height: 1.1;
+        display: none;
+        min-height: 0.95rem; /* reserve space so icon stays centered */
     }
 
     .admin-bottom-nav__item.active {
         color: var(--color-primary);
-        background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+        background: color-mix(in srgb, var(--color-primary) 8%, transparent);
     }
 
     .admin-bottom-nav__item.active::before {
@@ -402,25 +426,26 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
         box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 35%, transparent);
     }
 
+    .admin-bottom-nav__item.active .admin-bottom-nav__label {
+        display: block;
+    }
+
     .admin-bottom-nav__indicator {
         position: absolute;
-        bottom: 0.25rem;
-        left: 0.4rem;
-        height: 2px;
-        width: calc((100% - 0.8rem) / var(--nav-count, 5));
+        bottom: 0.2rem;
+        left: 0;
+        height: 3px;
+        width: 28px;
         border-radius: 999px;
         background: var(--color-primary);
-        transform: translateX(calc(var(--active-index, 0) * (100% - 0.8rem) / var(--nav-count, 5)));
-        transition: transform 220ms ease;
+        transform: translateX(0);
+        transition: transform 220ms ease, width 150ms ease;
         pointer-events: none;
     }
 
     /* Mobile Slide Indicator */
     .admin-bottom-nav__slide-indicator {
-        display: flex;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-top: 0.75rem;
+        display: none;
     }
 
     .admin-bottom-nav__slide-dot {
@@ -434,6 +459,10 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
     .admin-bottom-nav__slide-dot.active {
         background: var(--color-primary);
         transform: scale(1.2);
+    }
+
+    .admin-bottom-nav__scroll-btn {
+        display: none;
     }
 
     /* Overlay */
@@ -468,35 +497,45 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
             display: none;
         }
 
-        .admin-nav-toggle {
-            top: 1.5rem;
-            left: 1.5rem;
-        }
-
         .admin-bottom-nav {
             display: none;
+        }
+
+        :global(.admin-shell) {
+            padding-left: calc(var(--admin-sidebar-active-width) + 1.25rem);
+            padding-right: 1.25rem;
+        }
+
+        .admin-sidebar__label,
+        .admin-sidebar__user-info {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .admin-sidebar--collapsed .admin-sidebar__label,
+        .admin-sidebar--collapsed .admin-sidebar__user-info {
+            opacity: 0;
+            transform: translateX(-6px);
+            pointer-events: none;
+        }
+
+        .admin-sidebar--collapsed .admin-sidebar__button {
+            justify-content: center;
+        }
+
+        .admin-sidebar--collapsed .admin-sidebar__user {
+            justify-content: center;
+        }
+
+        .admin-sidebar--collapsed .admin-sidebar__avatar {
+            margin-inline: auto;
         }
     }
 
     /* Responsive adjustments */
     @media (max-width: 640px) {
         .admin-bottom-nav {
-            width: min(100vw - 1rem, 480px);
-            bottom: 0.5rem;
-        }
-
-        .admin-bottom-nav__wrapper {
-            padding: 0.35rem;
-            gap: 0.2rem;
-        }
-
-        .admin-bottom-nav__item {
-            padding: 0.6rem 0.25rem;
-            min-height: 3rem;
-        }
-
-        .admin-bottom-nav__label {
-            font-size: 0.6rem;
+            padding-inline: 0.35rem;
         }
     }
 
@@ -504,6 +543,22 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
     .admin-sidebar,
     .admin-nav-overlay {
         transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Admin global overrides to keep experience contained and aligned */
+    :global(body.admin-page) {
+        padding-top: 0;
+        background: radial-gradient(circle at 10% 10%, rgba(255,255,255,0.03), transparent 40%), var(--color-background);
+    }
+
+    :global(body.admin-page .retro-marquee),
+    :global(body.admin-page > header.zag-bg) {
+        display: none;
+    }
+
+    :global(body.admin-page main) {
+        margin-top: 0;
+        padding-top: 0;
     }
 
     /* Hide scrollbar but keep functionality */
@@ -528,49 +583,51 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
 <script>
     // Admin Navigation Logic with Mobile Gestures
     document.addEventListener("DOMContentLoaded", () => {
+        // Mark body for admin-specific theming (hide public header/marquee, adjust spacing)
+        document.body.classList.add("admin-page");
+
         const nav = document.querySelector("[data-admin-nav]");
         const sidebar = nav?.querySelector("[data-sidebar]");
-        const toggle = nav?.querySelector("[data-nav-toggle]");
-        const closeBtn = nav?.querySelector("[data-sidebar-close]");
         const overlay = nav?.querySelector("[data-nav-overlay]");
         const bottomNav = nav?.querySelector("[data-bottom-nav]");
         const scrollContainer = nav?.querySelector("[data-scroll-container]");
+        const scrollLeftBtn = nav?.querySelector("[data-scroll-left]") as HTMLButtonElement | null;
+        const scrollRightBtn = nav?.querySelector("[data-scroll-right]") as HTMLButtonElement | null;
         
         const TAB_TRIGGER_SELECTOR = "[data-tab-trigger]";
         const TAB_PANE_SELECTOR = ".tab-pane";
 
-        // Sidebar toggle functionality
+        const isDesktop = () => window.innerWidth >= 1024;
+
+        const applySidebarWidth = () => {
+            document.documentElement.style.setProperty(
+                "--admin-sidebar-active-width",
+                "var(--admin-sidebar-width)",
+            );
+            sidebar?.classList.remove("admin-sidebar--collapsed");
+        };
+
+        // Sidebar toggle functionality (kept for mobile overlay support, desktop stays open)
         function openSidebar() {
-            if (sidebar) {
+            if (sidebar && !isDesktop()) {
                 sidebar.classList.add("admin-sidebar--open");
             }
-            if (overlay) {
+            if (overlay && !isDesktop()) {
                 (overlay as HTMLElement).hidden = false;
             }
-            document.body.style.overflow = "hidden";
+            if (!isDesktop()) document.body.style.overflow = "hidden";
         }
 
         function closeSidebar() {
-            if (sidebar) {
+            if (sidebar && !isDesktop()) {
                 sidebar.classList.remove("admin-sidebar--open");
             }
-            if (overlay) {
+            if (overlay && !isDesktop()) {
                 (overlay as HTMLElement).hidden = true;
             }
-            document.body.style.overflow = "";
+            if (!isDesktop()) document.body.style.overflow = "";
         }
 
-        function toggleSidebar() {
-            if (sidebar?.classList.contains("admin-sidebar--open")) {
-                closeSidebar();
-            } else {
-                openSidebar();
-            }
-        }
-
-        // Event listeners
-        toggle?.addEventListener("click", toggleSidebar);
-        closeBtn?.addEventListener("click", closeSidebar);
         overlay?.addEventListener("click", closeSidebar);
 
         // Tab switching functionality
@@ -626,11 +683,11 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
             });
         }
 
-        function updateBottomNavIndicator(tabName: string) {
-            const bottomNav = document.querySelector(".admin-bottom-nav__wrapper");
-            if (!bottomNav) return;
+    function updateBottomNavIndicator(tabName: string) {
+        const bottomNavWrapper = document.querySelector(".admin-bottom-nav__wrapper");
+        if (!bottomNavWrapper) return;
 
-            const triggers = bottomNav.querySelectorAll<HTMLElement>("[data-tab-trigger]");
+        const triggers = bottomNavWrapper.querySelectorAll<HTMLElement>("[data-tab-trigger]");
             
             let activeIndex = 0;
             triggers.forEach((trigger, index) => {
@@ -639,11 +696,23 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
                 }
             });
 
-            (bottomNav as HTMLElement).style.setProperty("--active-index", String(activeIndex));
-            
-            // Update slide indicator
-            updateSlideIndicator(activeIndex);
+        (bottomNavWrapper as HTMLElement).style.setProperty("--active-index", String(activeIndex));
+        
+        // Update slide indicator
+        updateSlideIndicator(activeIndex);
+
+        // Move underline indicator to active tab
+        const activeTrigger = triggers[activeIndex];
+        const indicator = bottomNavWrapper.querySelector<HTMLElement>(".admin-bottom-nav__indicator");
+        if (activeTrigger && indicator) {
+            const triggerRect = activeTrigger.getBoundingClientRect();
+            const wrapperRect = bottomNavWrapper.getBoundingClientRect();
+            const width = Math.max(24, triggerRect.width * 0.6);
+            const offset = triggerRect.left - wrapperRect.left;
+            indicator.style.width = `${width}px`;
+            indicator.style.transform = `translateX(${offset + (triggerRect.width - width) / 2}px)`;
         }
+    }
 
         function updateSlideIndicator(activeIndex: number) {
             const slideDots = document.querySelectorAll("[data-slide-dot]");
@@ -651,6 +720,11 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
                 dot.classList.toggle("active", index === Math.floor(activeIndex / 4));
             });
         }
+
+        const updateScrollButtons = () => {
+            // Scroll buttons hidden in current design; keep logic no-op safe
+            if (!scrollContainer) return;
+        };
 
         // Global function for tab switching
         (window as any).switchTab = (tabName: string) => {
@@ -719,12 +793,19 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
             scrollContainer.addEventListener("pointermove", handlePointerMove);
             scrollContainer.addEventListener("pointerup", handlePointerUp);
             scrollContainer.addEventListener("pointercancel", handlePointerUp);
+            scrollContainer.addEventListener("scroll", () => {
+                updateScrollButtons();
+            });
         }
 
         // Handle window resize
         window.addEventListener("resize", () => {
             if (window.innerWidth >= 1024) {
                 closeSidebar();
+                applySidebarWidth();
+            } else {
+                // reset body overflow when leaving desktop
+                document.body.style.overflow = "";
             }
         });
 
@@ -748,5 +829,9 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
                 setActiveTab(tabName);
             }
         }
+
+        // Ensure sidebar width is applied on load
+        applySidebarWidth();
+        updateScrollButtons();
     });
 </script>

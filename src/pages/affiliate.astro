@@ -5,6 +5,9 @@ import AffiliateProducts from "../components/AffiliateProducts.astro";
 import { GLOBAL } from "../lib/variables";
 import { loadAffiliateProductsRanked } from "../lib/affiliates";
 
+// Server-render so product list always reflects Supabase data
+export const prerender = false;
+
 // Ranking kombinasi: klik (30 hari), recency, dan status verified
 const products = await loadAffiliateProductsRanked({ days: 30 });
 const verifiedProducts = products.filter((product) => product.verified);

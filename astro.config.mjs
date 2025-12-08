@@ -5,13 +5,12 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import node from "@astrojs/node";
 
-const isDev = process.env.NODE_ENV !== 'production';
-
 // https://astro.build/config
 export default defineConfig({
   site: "https://ibedes.xyz",
-  output: isDev ? "static" : "server",
-  adapter: isDev ? undefined : node({
+  // Force full SSR in all environments so CRUD routes always execute on the server
+  output: "server",
+  adapter: node({
     mode: 'standalone'
   }),
   image: {
