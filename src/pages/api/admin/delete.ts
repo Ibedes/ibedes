@@ -39,13 +39,15 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         const isProduction = import.meta.env.PROD || process.env.NODE_ENV === 'production';
+        // Opt-in to keep filesystem delete enabled during `npm run preview`
+        const allowLocalWrite = process.env.PREVIEW_ALLOW_FS === 'true';
         const repoFilePath = `src/content/blog/${filename}`;
         const localFilePath = path.join(process.cwd(), repoFilePath);
 
         let deletedLocally = false;
 
         // Try to delete local file (only in development or if writable)
-        if (!isProduction) {
+        if (!isProduction || allowLocalWrite) {
             try {
                 await fs.unlink(localFilePath);
                 deletedLocally = true;
@@ -84,7 +86,7 @@ export const POST: APIRoute = async ({ request }) => {
             throw supabaseError;
         }
 
-        const message = isProduction
+        const message = isProduction && !allowLocalWrite
             ? 'Article berhasil dihapus dari database. File lokal akan dihapus saat rebuild/deploy berikutnya.'
             : deletedLocally
                 ? 'Article berhasil dihapus dari file lokal dan database. Jangan lupa commit dan push untuk deploy.'
@@ -93,7 +95,7 @@ export const POST: APIRoute = async ({ request }) => {
         return new Response(JSON.stringify({
             success: true,
             message: message,
-            mode: isProduction ? 'production' : (deletedLocally ? 'local+db' : 'db-only')
+            mode: isProduction && !allowLocalWrite ? 'production' : (deletedLocally ? 'local+db' : 'db-only')
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

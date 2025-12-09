@@ -3,7 +3,13 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 // Support both Astro runtime (import.meta.env) and direct Node execution (process.env)
 const supabaseUrl = import.meta.env?.PUBLIC_SUPABASE_URL || (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : undefined);
 const supabaseAnonKey = import.meta.env?.PUBLIC_SUPABASE_ANON_KEY || (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_ANON_KEY : undefined);
-const supabaseServiceKey = import.meta.env?.SUPABASE_SERVICE_ROLE_KEY || (typeof process !== 'undefined' ? process.env.SUPABASE_SERVICE_ROLE_KEY : undefined);
+// Accept both the correct private env name and the accidental PUBLIC variant to avoid breakage
+const supabaseServiceKey =
+    import.meta.env?.SUPABASE_SERVICE_ROLE_KEY ||
+    import.meta.env?.PUBLIC_SUPABASE_SERVICE_ROLE_KEY ||
+    (typeof process !== 'undefined'
+        ? process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.PUBLIC_SUPABASE_SERVICE_ROLE_KEY
+        : undefined);
 
 const hasSupabaseConfig = Boolean(supabaseUrl && supabaseAnonKey);
 

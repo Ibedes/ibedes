@@ -39,13 +39,15 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         const isProduction = import.meta.env.PROD || process.env.NODE_ENV === 'production';
+        // Allow file writes during `npm run preview` by opt-in flag
+        const allowLocalWrite = process.env.PREVIEW_ALLOW_FS === 'true';
         const repoFilePath = `src/content/blog/${filename}`;
         const localFilePath = path.join(process.cwd(), repoFilePath);
 
         let savedLocally = false;
 
         // Try to save to local filesystem (only in development or if writable)
-        if (!isProduction) {
+        if (!isProduction || allowLocalWrite) {
             try {
                 await fs.mkdir(path.dirname(localFilePath), { recursive: true });
                 await fs.writeFile(localFilePath, content, 'utf-8');
@@ -118,7 +120,7 @@ export const POST: APIRoute = async ({ request }) => {
             throw supabaseError;
         }
 
-        const message = isProduction
+        const message = isProduction && !allowLocalWrite
             ? 'Article berhasil disimpan ke database. File lokal akan diupdate saat rebuild/deploy berikutnya.'
             : savedLocally
                 ? 'Article berhasil disimpan ke file lokal dan database. Jangan lupa commit dan push untuk deploy.'
@@ -127,7 +129,7 @@ export const POST: APIRoute = async ({ request }) => {
         return new Response(JSON.stringify({
             success: true,
             message: message,
-            mode: isProduction ? 'production' : (savedLocally ? 'local+db' : 'db-only')
+            mode: isProduction && !allowLocalWrite ? 'production' : (savedLocally ? 'local+db' : 'db-only')
         }), {
             status: 200,
             headers: { 'Content-Type': 'application/json' }

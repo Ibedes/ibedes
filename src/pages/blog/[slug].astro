@@ -1,0 +1,99 @@
+---
+import BlogLayout from "../../layouts/BlogLayout.astro";
+import matter from "gray-matter";
+import { getEntry } from "astro:content";
+import { marked } from "marked";
+import { getArticleFromDatabase } from "../../lib/database-helpers";
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+
+if (!slug) {
+    throw new Error("Slug is required");
+}
+
+const isProduction = import.meta.env.PROD || process.env.NODE_ENV === "production";
+
+let frontmatter: any = null;
+let html: string = "";
+let headings: any[] = [];
+let Content: any = null;
+
+const buildHeadings = (markdown: string) => {
+    const tokens = marked.lexer(markdown || "");
+    return tokens
+        .filter((t) => t.type === "heading")
+        .map((t: any) => ({
+            depth: t.depth,
+            text: t.text,
+            slug: t.text
+                .toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, "")
+                .trim()
+                .replace(/\s+/g, "-")
+                .replace(/-+/g, "-"),
+        }));
+};
+
+if (isProduction) {
+    // In preview/prod, read from Supabase so newly created articles muncul tanpa rebuild
+    const dbArticle = await getArticleFromDatabase(slug);
+
+    if (!dbArticle) {
+        return Astro.redirect("/404");
+    }
+
+    const parsed = matter(dbArticle.content || "");
+
+    frontmatter = {
+        title: dbArticle.title || parsed.data.title || slug,
+        description: parsed.data.description || dbArticle.excerpt || "",
+        featuredImage: parsed.data.featuredImage || dbArticle.image,
+        featuredImageAlt: parsed.data.featuredImageAlt,
+        featuredImageCaption: parsed.data.featuredImageCaption,
+        tags: parsed.data.tags || [],
+        featured: parsed.data.featured || false,
+        time: parsed.data.time || parsed.data.minutesRead || 5,
+        affiliateProducts: parsed.data.affiliateProducts || dbArticle.affiliate_ids || [],
+        affiliateContext: parsed.data.affiliateContext,
+        pubDate: parsed.data.pubDate || dbArticle.published_at,
+        timestamp: dbArticle.published_at || parsed.data.pubDate || new Date().toISOString(),
+        filename: `/blog/${slug}`,
+        minutesRead: parsed.data.minutesRead,
+    };
+
+    const markdownBody = parsed.content || dbArticle.content || "";
+    html = marked.parse(markdownBody) as string;
+    headings = buildHeadings(markdownBody);
+} else {
+    // In dev, gunakan content collection agar HMR tetap jalan
+    const entry = await getEntry("blog", slug);
+
+    if (!entry) {
+        return Astro.redirect("/404");
+    }
+
+    const rendered = await entry.render();
+
+    frontmatter = {
+        ...entry.data,
+        filename: `/blog/${slug}`,
+        timestamp:
+            entry.data.pubDate || (entry.data as any).timestamp || new Date().toISOString(),
+    };
+
+    // In dev, we already have rendered component + headings
+    html = ""; // Not used in dev path
+    Content = rendered.Content;
+    headings = rendered.headings;
+}
+---
+
+<BlogLayout frontmatter={frontmatter} headings={headings}>
+  {
+    isProduction
+      ? (<Fragment set:html={html} />)
+      : (<Content />)
+  }
+</BlogLayout>
