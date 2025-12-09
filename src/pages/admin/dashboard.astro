@@ -8,6 +8,7 @@ import AnalyticsCard from "../../components/admin/AnalyticsCard.astro";
 import TopPagesList from "../../components/admin/TopPagesList.astro";
 import EnhancedAnalytics from "../../components/admin/EnhancedAnalytics.astro";
 import ResponsiveAdminNav from "../../components/admin/ResponsiveAdminNav.astro";
+import NotificationBell from "../../components/NotificationBell.astro";
 import { loadAffiliateProducts } from "../../lib/affiliates";
 import { formatRupiah } from "../../lib/utils";
 
@@ -193,6 +194,9 @@ const previewProducts = sortedProducts.slice(0, 3);
                 </p>
             </div>
             <div class="admin-header__actions">
+                <div class="admin-header__notification" aria-label="Notifikasi admin">
+                    <NotificationBell isAdmin={true} />
+                </div>
                 <div class="admin-quick-actions" aria-label="Quick actions">
                     {
                         mobileQuickActions.map((action) => (
@@ -1100,6 +1104,38 @@ const previewProducts = sortedProducts.slice(0, 3);
         gap: 0.6rem;
         justify-content: flex-end;
         flex-wrap: wrap;
+    }
+
+    .admin-header__notification {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .admin-header__notification .notification-bell-trigger {
+        width: 2.75rem;
+        height: 2.75rem;
+        border-radius: 0.9rem;
+        border: var(--admin-border);
+        background: color-mix(
+            in srgb,
+            var(--color-card) 92%,
+            transparent
+        );
+        color: var(--color-foreground);
+        transition: all 0.2s ease;
+    }
+
+    .admin-header__notification .notification-bell-trigger:hover {
+        background: color-mix(
+            in srgb,
+            var(--color-foreground) 8%,
+            var(--color-card) 90%
+        );
+    }
+
+    .admin-header__notification .notification-badge {
+        background: #ef4444;
     }
 
     .admin-chip {

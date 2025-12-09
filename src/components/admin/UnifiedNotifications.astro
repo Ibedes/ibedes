@@ -95,8 +95,8 @@
             this.init();
         }
 
-        init() {
-            this.loadAndDisplay();
+        async init() {
+            await this.loadAndDisplay();
             this.setupEventListeners();
             this.setupPolling();
             this.setupStorageListener();
@@ -114,9 +114,9 @@
             });
 
             // Mark all as read
-            this.markAllReadBtn?.addEventListener("click", () => {
-                markAllAsRead();
-                this.loadAndDisplay();
+            this.markAllReadBtn?.addEventListener("click", async () => {
+                await markAllAsRead();
+                await this.loadAndDisplay();
                 this.showToast(
                     "Semua notifikasi ditandai sudah dibaca",
                     "success",
@@ -124,10 +124,10 @@
             });
 
             // Clear all
-            this.clearAllBtn?.addEventListener("click", () => {
+            this.clearAllBtn?.addEventListener("click", async () => {
                 if (confirm("Hapus semua notifikasi?")) {
                     clearAllNotifications();
-                    this.loadAndDisplay();
+                    await this.loadAndDisplay();
                     this.showToast("Semua notifikasi dihapus", "success");
                 }
             });
@@ -152,16 +152,15 @@
             window.addEventListener("notification:new", ((e: CustomEvent) => {
                 const { type, metadata } = e.detail;
                 const notification = formatNotification(type, metadata);
-                addNotification(notification);
-                this.loadAndDisplay();
+                addNotification(notification)
+                    .then(() => this.loadAndDisplay())
+                    .catch((err) => console.warn("Failed to add notification", err));
                 this.showNotificationToast(notification);
             }) as EventListener);
         }
 
         async checkForNewNotifications() {
-            // This would typically check an API endpoint
-            // For now, we just reload from localStorage
-            this.loadAndDisplay();
+            await this.loadAndDisplay();
         }
 
         setFilter(filter: NotificationType | "all") {
@@ -176,8 +175,8 @@
             this.loadAndDisplay();
         }
 
-        loadAndDisplay() {
-            const store = loadNotifications();
+        async loadAndDisplay() {
+            const store = await loadNotifications();
             let notifications = store.notifications;
 
             // Apply filter

@@ -18,7 +18,7 @@ if (!isAdmin) {
 }
 ---
 
-<div class="notification-bell-container">
+<div class="notification-bell-container" data-notification-bell>
     <button
         type="button"
         class="notification-bell-trigger"
@@ -90,8 +90,10 @@ if (!isAdmin) {
         type Notification,
         type NotificationType,
     } from "../lib/notifications";
+    import { supabase } from "../lib/supabase";
 
     class NotificationBell {
+        private root: HTMLElement;
         private trigger: HTMLElement | null;
         private panel: HTMLElement | null;
         private badge: HTMLElement | null;
@@ -101,19 +103,15 @@ if (!isAdmin) {
         private checkInterval: number | null = null;
         private isOpen = false;
         private currentNotifications: Notification[] = []; // Store current notifications
+        private realtimeChannel: any = null;
 
-        constructor() {
-            this.trigger = document.querySelector(
-                "[data-notification-trigger]",
-            );
-            this.panel = document.querySelector("[data-notification-panel]");
-            this.badge = document.querySelector("[data-notification-badge]");
-            this.listElement = document.querySelector(
-                "[data-notification-list]",
-            );
-            this.filterButtons = document.querySelectorAll("[data-filter]");
-
-            this.init();
+        constructor(root: HTMLElement) {
+            this.root = root;
+            this.trigger = root.querySelector("[data-notification-trigger]");
+            this.panel = root.querySelector("[data-notification-panel]");
+            this.badge = root.querySelector("[data-notification-badge]");
+            this.listElement = root.querySelector("[data-notification-list]");
+            this.filterButtons = root.querySelectorAll("[data-filter]");
         }
 
         async init() {
@@ -122,6 +120,7 @@ if (!isAdmin) {
             this.setupEventListeners();
             this.setupPolling();
             this.setupStorageListener();
+            this.setupRealtime();
             await this.loadAndDisplay();
         }
 
@@ -137,8 +136,7 @@ if (!isAdmin) {
                 const target = e.target as HTMLElement;
                 if (
                     this.isOpen &&
-                    !this.panel?.contains(target) &&
-                    !this.trigger?.contains(target)
+                    !this.root.contains(target)
                 ) {
                     this.closePanel();
                 }
@@ -187,6 +185,29 @@ if (!isAdmin) {
             this.checkInterval = window.setInterval(async () => {
                 await this.loadAndDisplay();
             }, 10000);
+        }
+
+        setupRealtime() {
+            // Optional realtime listener via Supabase if config is available
+            if (!supabase) return;
+            this.realtimeChannel = supabase
+                .channel("notifications-bell")
+                .on(
+                    "postgres_changes",
+                    {
+                        event: "INSERT",
+                        schema: "public",
+                        table: "notifications",
+                    },
+                    async () => {
+                        await this.loadAndDisplay();
+                    },
+                )
+                .subscribe((status) => {
+                    if (status === "SUBSCRIBED") {
+                        // no-op; just confirm
+                    }
+                });
         }
 
         setupStorageListener() {
@@ -629,18 +650,27 @@ if (!isAdmin) {
             if (this.checkInterval) {
                 clearInterval(this.checkInterval);
             }
+            if (this.realtimeChannel) {
+                supabase?.removeChannel(this.realtimeChannel);
+                this.realtimeChannel = null;
+            }
         }
     }
 
     // Initialize
+    const startAll = () => {
+        document
+            .querySelectorAll<HTMLElement>("[data-notification-bell]")
+            .forEach((container) => {
+                const bell = new NotificationBell(container);
+                bell.init();
+            });
+    };
+
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", async () => {
-            const bell = new NotificationBell();
-            await bell.init();
-        });
+        document.addEventListener("DOMContentLoaded", startAll);
     } else {
-        const bell = new NotificationBell();
-        await bell.init();
+        startAll();
     }
 </script>
 

@@ -32,6 +32,7 @@ import { supabase } from './supabase';
 
 const STORAGE_KEY = 'ibedes:admin:notifications';
 const MAX_NOTIFICATIONS = 100;
+const API_ENDPOINT = '/api/admin/notifications';
 
 const isSupabaseEnabled = () => !!supabase;
 
@@ -41,6 +42,23 @@ const isSupabaseEnabled = () => !!supabase;
 export async function loadNotifications(): Promise<NotificationStore> {
     if (typeof window === 'undefined') {
         return { notifications: [], unreadCount: 0 };
+    }
+
+    // 1) Try the API (server uses service role so data is always authoritative)
+    try {
+        const response = await fetch(API_ENDPOINT);
+        if (response.ok) {
+            const payload = await response.json();
+            if (payload?.success && Array.isArray(payload.notifications)) {
+                const notifications = payload.notifications.map(normalizeSupabaseNotification);
+                const unreadCount = payload.unreadCount ?? notifications.filter((n: Notification) => !n.read).length;
+                const store: NotificationStore = { notifications, unreadCount };
+                saveNotifications(store); // cache locally for offline UX
+                return store;
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to load notifications from API, trying Supabase/localStorage:', error);
     }
 
     try {
@@ -90,7 +108,7 @@ function normalizeSupabaseNotification(record: any): Notification {
         title: record.title,
         message: record.message,
         metadata: record.metadata || {},
-        timestamp: record.timestamp,
+        timestamp: record.timestamp || record.created_at || record.inserted_at || new Date().toISOString(),
         read: record.read || false,
     };
 }
@@ -118,6 +136,31 @@ export async function addNotification(notification: Omit<Notification, 'id' | 't
         timestamp: new Date().toISOString(),
         read: false,
     };
+
+    // 1) API first (server-side service role for consistent writes)
+    try {
+        const response = await fetch(API_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: newNotification.type,
+                metadata: newNotification.metadata || {},
+                title: newNotification.title,
+                message: newNotification.message,
+            }),
+        });
+
+        if (response.ok) {
+            const payload = await response.json();
+            if (payload?.success && payload.data) {
+                const inserted = normalizeSupabaseNotification(payload.data);
+                await upsertLocalCache(inserted);
+                return inserted;
+            }
+        }
+    } catch (error) {
+        console.warn('Failed to save notification via API, trying Supabase/localStorage:', error);
+    }
 
     try {
         // Try Supabase first
@@ -163,6 +206,20 @@ export async function addNotification(notification: Omit<Notification, 'id' | 't
  * Mark notification as read
  */
 export async function markAsRead(notificationId: string): Promise<void> {
+    let handled = false;
+
+    // API first
+    try {
+        const response = await fetch(`${API_ENDPOINT}?id=${encodeURIComponent(notificationId)}`, {
+            method: 'PATCH',
+        });
+        if (response.ok) {
+            handled = true;
+        }
+    } catch (error) {
+        console.warn('Failed to mark as read via API, falling back:', error);
+    }
+
     try {
         // Try Supabase first
         if (isSupabaseEnabled()) {
@@ -171,20 +228,31 @@ export async function markAsRead(notificationId: string): Promise<void> {
                 .update({ read: true })
                 .eq('id', notificationId);
 
-            if (!error) return;
+            if (!error) handled = true;
         }
     } catch (error) {
         console.warn('Failed to update in Supabase, falling back to localStorage:', error);
     }
 
     // Fallback to localStorage
-    const store = await loadNotifications();
-    const notification = store.notifications.find((n: Notification) => n.id === notificationId);
+    if (!handled) {
+        const store = await loadNotifications();
+        const notification = store.notifications.find((n: Notification) => n.id === notificationId);
 
-    if (notification && !notification.read) {
-        notification.read = true;
-        store.unreadCount = Math.max(0, store.unreadCount - 1);
-        saveNotifications(store);
+        if (notification && !notification.read) {
+            notification.read = true;
+            store.unreadCount = Math.max(0, store.unreadCount - 1);
+            saveNotifications(store);
+        }
+    } else {
+        // Keep cache in sync without reloading everything
+        const store = await loadNotifications();
+        const notification = store.notifications.find((n: Notification) => n.id === notificationId);
+        if (notification) {
+            notification.read = true;
+            store.unreadCount = store.notifications.filter((n) => !n.read).length;
+            saveNotifications(store);
+        }
     }
 }
 
@@ -192,6 +260,19 @@ export async function markAsRead(notificationId: string): Promise<void> {
  * Mark all notifications as read
  */
 export async function markAllAsRead(): Promise<void> {
+    let handled = false;
+
+    try {
+        const response = await fetch(`${API_ENDPOINT}?markAllRead=true`, {
+            method: 'PATCH',
+        });
+        if (response.ok) {
+            handled = true;
+        }
+    } catch (error) {
+        console.warn('Failed to mark-all via API, falling back:', error);
+    }
+
     try {
         // Try Supabase first
         if (isSupabaseEnabled()) {
@@ -200,7 +281,7 @@ export async function markAllAsRead(): Promise<void> {
                 .update({ read: true })
                 .eq('read', false);
 
-            if (!error) return;
+            if (!error) handled = true;
         }
     } catch (error) {
         console.warn('Failed to update in Supabase, falling back to localStorage:', error);
@@ -208,7 +289,7 @@ export async function markAllAsRead(): Promise<void> {
 
     // Fallback to localStorage
     const store = await loadNotifications();
-    store.notifications.forEach((n: Notification) => n.read = true);
+    store.notifications.forEach((n: Notification) => (n.read = true));
     store.unreadCount = 0;
     saveNotifications(store);
 }
@@ -217,6 +298,19 @@ export async function markAllAsRead(): Promise<void> {
  * Delete a notification
  */
 export async function deleteNotification(notificationId: string): Promise<void> {
+    let handled = false;
+
+    try {
+        const response = await fetch(`${API_ENDPOINT}?id=${encodeURIComponent(notificationId)}`, {
+            method: 'DELETE',
+        });
+        if (response.ok) {
+            handled = true;
+        }
+    } catch (error) {
+        console.warn('Failed to delete via API, falling back:', error);
+    }
+
     try {
         // Try Supabase first
         if (isSupabaseEnabled()) {
@@ -225,7 +319,7 @@ export async function deleteNotification(notificationId: string): Promise<void> 
                 .delete()
                 .eq('id', notificationId);
 
-            if (!error) return;
+            if (!error) handled = true;
         }
     } catch (error) {
         console.warn('Failed to delete from Supabase, falling back to localStorage:', error);
@@ -248,7 +342,13 @@ export async function deleteNotification(notificationId: string): Promise<void> 
 /**
  * Clear all notifications
  */
-export function clearAllNotifications(): void {
+export async function clearAllNotifications(): Promise<void> {
+    try {
+        await fetch(API_ENDPOINT, { method: 'DELETE' });
+    } catch (err) {
+        console.warn('Failed to clear notifications via API:', err);
+    }
+
     saveNotifications({ notifications: [], unreadCount: 0 });
 }
 
@@ -273,6 +373,24 @@ export async function getUnreadNotifications(): Promise<Notification[]> {
  */
 function generateId(): string {
     return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+async function upsertLocalCache(notification: Notification): Promise<void> {
+    const store = await loadNotifications();
+    const existingIndex = store.notifications.findIndex((n) => n.id === notification.id);
+
+    if (existingIndex >= 0) {
+        store.notifications[existingIndex] = notification;
+    } else {
+        store.notifications.unshift(notification);
+    }
+
+    if (store.notifications.length > MAX_NOTIFICATIONS) {
+        store.notifications = store.notifications.slice(0, MAX_NOTIFICATIONS);
+    }
+
+    store.unreadCount = store.notifications.filter((n) => !n.read).length;
+    saveNotifications(store);
 }
 
 /**

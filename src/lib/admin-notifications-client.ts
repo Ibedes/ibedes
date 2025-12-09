@@ -22,7 +22,7 @@ export interface NotificationPayload {
  */
 export async function sendAdminNotification(payload: NotificationPayload): Promise<void> {
     try {
-        // 1. Simpan ke Supabase/localStorage (ini yang mentrigger update di dashboard tab lain)
+        // 1. Simpan ke API/Supabase (ini yang mentrigger update di dashboard tab lain)
         const notification = formatNotification(payload.type, payload.metadata);
         await addNotification(notification);
 
@@ -38,14 +38,6 @@ export async function sendAdminNotification(payload: NotificationPayload): Promi
             });
         }
 
-        // 4. Optional: Kirim ke API untuk persistence server-side
-        fetch('/api/admin/notifications', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        }).catch(err => {
-            console.warn('Failed to send notification to API:', err);
-        });
     } catch (error) {
         console.error('Error sending admin notification:', error);
     }

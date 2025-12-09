@@ -36,24 +36,37 @@ const relatedArticles = allArticles
             new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     )
     .slice(0, 3);
+
+// Fallback to the latest articles if no tag-based matches are found
+const articlesToShow =
+    relatedArticles.length > 0
+        ? relatedArticles
+        : allArticles
+              .filter((article) => article.slug !== currentSlug)
+              .sort(
+                  (a, b) =>
+                      new Date(b.timestamp).getTime() -
+                      new Date(a.timestamp).getTime(),
+              )
+              .slice(0, 3);
 ---
 
 {
-    relatedArticles.length > 0 && (
+    articlesToShow.length > 0 && (
         <section class="border-t-2 border-dashed border-black/10 dark:border-white/10 pt-12 mt-12">
             <h2 class="font-display text-lg uppercase tracking-widest mb-8 flex items-center gap-2">
                 <i class="fa-solid fa-layer-group text-emerald-500" />
                 Baca Juga
             </h2>
             <div class="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-                {relatedArticles.map((article) => (
+                {articlesToShow.map((article) => (
                     <div class="flex flex-col h-full">
                         <ArticleSnippet
                             title={article.title}
                             description={article.description}
                             url={article.url}
                             timestamp={article.timestamp}
-                            duration={article.time + " min read"}
+                            duration={`${article.time || article.minutesRead || "5"} min read`}
                         />
                     </div>
                 ))}

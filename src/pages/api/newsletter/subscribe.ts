@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { createClient } from '@supabase/supabase-js';
 import {
     sendSubscriberNotification,
     isValidEmail,
@@ -9,6 +10,27 @@ import {
  * API Endpoint untuk notifikasi newsletter subscriber
  * POST /api/newsletter/subscribe
  */
+
+// Fallback ke PUBLIC_SUPABASE_URL jika SUPABASE_URL tidak tersedia
+const supabaseUrl =
+    import.meta.env.SUPABASE_URL ||
+    import.meta.env.PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    process.env.PUBLIC_SUPABASE_URL;
+// POST but still allow fallback anon key in dev; DB insert will fail if RLS on, but better than throw
+const supabaseServiceKey =
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY ||
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.PUBLIC_SUPABASE_ANON_KEY;
+
+const getSupabaseClient = () => {
+    if (!supabaseUrl || !supabaseServiceKey) {
+        throw new Error('Supabase configuration missing');
+    }
+    return createClient(supabaseUrl, supabaseServiceKey);
+};
+
 export const POST: APIRoute = async ({ request }) => {
     try {
         // Parse request body
@@ -57,16 +79,42 @@ export const POST: APIRoute = async ({ request }) => {
             userAgent,
         });
 
-        // Broadcast notification to admin dashboard
-        // This would typically use Server-Sent Events or WebSocket
-        // For now, we log it for the admin to pick up via polling
+        // Store notification in database for admin dashboard
         if (result.success) {
-            console.log('[Admin Notification] New newsletter subscriber:', {
-                type: 'newsletter',
-                email: cleanEmail,
-                source: source || 'unknown',
-                timestamp,
-            });
+            try {
+                const supabase = getSupabaseClient();
+                
+                // Generate unique ID for notification
+                const notificationId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+                
+                // Store notification in database
+                const { error: notificationError } = await supabase
+                    .from('notifications')
+                    .insert([{
+                        id: notificationId,
+                        type: 'newsletter',
+                        title: '📧 Newsletter Subscriber Baru',
+                        message: `${cleanEmail} berlangganan newsletter`,
+                        metadata: {
+                            email: cleanEmail,
+                            source: source || 'unknown',
+                            userAgent: userAgent || 'Unknown',
+                            timestamp,
+                        },
+                        read: false,
+                        timestamp: new Date().toISOString(),
+                    }]);
+
+                if (notificationError) {
+                    console.error('Error storing notification:', notificationError);
+                    // Don't fail the whole request if notification storage fails
+                } else {
+                    console.log('✅ Notification stored in database for admin dashboard');
+                }
+            } catch (error) {
+                console.error('Failed to store notification in database:', error);
+                // Don't fail the whole request if notification storage fails
+            }
         }
 
         // Return response

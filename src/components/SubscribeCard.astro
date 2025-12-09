@@ -231,17 +231,18 @@ const iframeTarget = `buttondown-frame-${Math.random()
             });
 
             // Send notification to admin (using shared client for cross-tab sync)
-            import("../lib/admin-notifications-client").then(
-              ({ sendAdminNotification }) => {
-                sendAdminNotification({
-                  type: "newsletter",
-                  metadata: {
-                    email: email,
-                    source: window.location.pathname,
-                  },
-                });
-              },
-            );
+            try {
+              const { sendAdminNotification } = await import("../lib/admin-notifications-client");
+              await sendAdminNotification({
+                type: "newsletter",
+                metadata: {
+                  email: email,
+                  source: window.location.pathname,
+                },
+              });
+            } catch (error) {
+              console.warn("Failed to import admin notifications client:", error);
+            }
           } catch (error) {
             console.error("Failed to send notification:", error);
           }

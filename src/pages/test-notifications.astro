@@ -110,115 +110,152 @@ import Layout from "../layouts/Layout.astro";
 </Layout>
 
 <script>
-    import { sendAdminNotification } from "../lib/admin-notifications-client";
-    import { clearAllNotifications } from "../lib/notifications";
-
     // Test Newsletter
     document
         .getElementById("test-newsletter")
-        ?.addEventListener("click", () => {
-            sendAdminNotification({
-                type: "newsletter",
-                metadata: {
-                    email: `test${Date.now()}@example.com`,
-                    source: "/test-notifications",
-                },
-            });
-            alert("Newsletter notification sent!");
+        ?.addEventListener("click", async () => {
+            try {
+                const { sendAdminNotification } = await import("../lib/admin-notifications-client");
+                await sendAdminNotification({
+                    type: "newsletter",
+                    metadata: {
+                        email: `test${Date.now()}@example.com`,
+                        source: "/test-notifications",
+                    },
+                });
+                alert("Newsletter notification sent!");
+            } catch (error) {
+                console.error("Failed to send newsletter notification:", error);
+                alert("Failed to send notification");
+            }
         });
 
     // Test Like
-    document.getElementById("test-like")?.addEventListener("click", () => {
-        sendAdminNotification({
-            type: "like",
-            metadata: {
-                articleSlug: "test-article",
-                articleTitle: "Test Article Title",
-                userHash: `user_${Date.now()}`,
-            },
-        });
-        alert("Like notification sent!");
+    document.getElementById("test-like")?.addEventListener("click", async () => {
+        try {
+            const { sendAdminNotification } = await import("../lib/admin-notifications-client");
+            await sendAdminNotification({
+                type: "like",
+                metadata: {
+                    articleSlug: "test-article",
+                    articleTitle: "Test Article Title",
+                    userHash: `user_${Date.now()}`,
+                },
+            });
+            alert("Like notification sent!");
+        } catch (error) {
+            console.error("Failed to send like notification:", error);
+            alert("Failed to send notification");
+        }
     });
 
     // Test Comment
-    document.getElementById("test-comment")?.addEventListener("click", () => {
-        sendAdminNotification({
-            type: "comment",
-            metadata: {
-                articleSlug: "test-article",
-                articleTitle: "Test Article Title",
-                commentText:
-                    "Ini adalah komentar test yang sangat panjang untuk melihat bagaimana tampilan notifikasi dengan teks yang panjang.",
-                userHash: `user_${Date.now()}`,
-            },
-        });
-        alert("Comment notification sent!");
+    document.getElementById("test-comment")?.addEventListener("click", async () => {
+        try {
+            const { sendAdminNotification } = await import("../lib/admin-notifications-client");
+            await sendAdminNotification({
+                type: "comment",
+                metadata: {
+                    articleSlug: "test-article",
+                    articleTitle: "Test Article Title",
+                    commentText:
+                        "Ini adalah komentar test yang sangat panjang untuk melihat bagaimana tampilan notifikasi dengan teks yang panjang.",
+                    userHash: `user_${Date.now()}`,
+                },
+            });
+            alert("Comment notification sent!");
+        } catch (error) {
+            console.error("Failed to send comment notification:", error);
+            alert("Failed to send notification");
+        }
     });
 
     // Test Bookmark
-    document.getElementById("test-bookmark")?.addEventListener("click", () => {
-        sendAdminNotification({
-            type: "bookmark",
-            metadata: {
-                articleSlug: "test-article",
-                articleTitle: "Test Article Title",
-                userHash: `user_${Date.now()}`,
-            },
-        });
-        alert("Bookmark notification sent!");
+    document.getElementById("test-bookmark")?.addEventListener("click", async () => {
+        try {
+            const { sendAdminNotification } = await import("../lib/admin-notifications-client");
+            await sendAdminNotification({
+                type: "bookmark",
+                metadata: {
+                    articleSlug: "test-article",
+                    articleTitle: "Test Article Title",
+                    userHash: `user_${Date.now()}`,
+                },
+            });
+            alert("Bookmark notification sent!");
+        } catch (error) {
+            console.error("Failed to send bookmark notification:", error);
+            alert("Failed to send notification");
+        }
     });
 
     // Test Bulk
-    document.getElementById("test-bulk")?.addEventListener("click", () => {
-        const types: Array<"newsletter" | "like" | "comment" | "bookmark"> = [
-            "newsletter",
-            "like",
-            "comment",
-            "bookmark",
-        ];
+    document.getElementById("test-bulk")?.addEventListener("click", async () => {
+        try {
+            const { sendAdminNotification } = await import("../lib/admin-notifications-client");
+            const types: Array<"newsletter" | "like" | "comment" | "bookmark"> = [
+                "newsletter",
+                "like",
+                "comment",
+                "bookmark",
+            ];
 
-        for (let i = 0; i < 10; i++) {
-            const type = types[Math.floor(Math.random() * types.length)];
+            for (let i = 0; i < 10; i++) {
+                const type = types[Math.floor(Math.random() * types.length)];
 
-            setTimeout(() => {
-                sendAdminNotification({
-                    type,
-                    metadata: {
-                        email:
-                            type === "newsletter"
-                                ? `test${Date.now()}@example.com`
-                                : undefined,
-                        articleSlug:
-                            type !== "newsletter" ? "test-article" : undefined,
-                        articleTitle:
-                            type !== "newsletter"
-                                ? `Test Article ${i + 1}`
-                                : undefined,
-                        commentText:
-                            type === "comment"
-                                ? `Test comment ${i + 1}`
-                                : undefined,
-                        userHash:
-                            type !== "newsletter"
-                                ? `user_${Date.now()}`
-                                : undefined,
-                        source:
-                            type === "newsletter"
-                                ? "/test-notifications"
-                                : undefined,
-                    },
-                });
-            }, i * 200);
+                setTimeout(async () => {
+                    try {
+                        await sendAdminNotification({
+                            type,
+                            metadata: {
+                                email:
+                                    type === "newsletter"
+                                        ? `test${Date.now()}@example.com`
+                                        : undefined,
+                                articleSlug:
+                                    type !== "newsletter" ? "test-article" : undefined,
+                                articleTitle:
+                                    type !== "newsletter"
+                                        ? `Test Article ${i + 1}`
+                                        : undefined,
+                                commentText:
+                                    type === "comment"
+                                        ? `Test comment ${i + 1}`
+                                        : undefined,
+                                userHash:
+                                    type !== "newsletter"
+                                        ? `user_${Date.now()}`
+                                        : undefined,
+                                source:
+                                    type === "newsletter"
+                                        ? "/test-notifications"
+                                        : undefined,
+                            },
+                        });
+                    } catch (error) {
+                        console.error(`Failed to send bulk notification ${i + 1}:`, error);
+                    }
+                }, i * 200);
+            }
+
+            alert("Sending 10 random notifications...");
+        } catch (error) {
+            console.error("Failed to send bulk notifications:", error);
+            alert("Failed to send notifications");
         }
-
-        alert("Sending 10 random notifications...");
     });
 
     // Clear All
-    document.getElementById("clear-all")?.addEventListener("click", () => {
+    document.getElementById("clear-all")?.addEventListener("click", async () => {
         if (confirm("Hapus semua notifikasi?")) {
-            clearAllNotifications();
-            alert("All notifications cleared!");
+            try {
+                const { clearAllNotifications } = await import("../lib/notifications");
+                clearAllNotifications();
+                alert("All notifications cleared!");
+            } catch (error) {
+                console.error("Failed to clear notifications:", error);
+                alert("Failed to clear notifications");
+            }
         }
     });
 </script>

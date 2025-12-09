@@ -8,8 +8,18 @@ import { createClient } from '@supabase/supabase-js';
  * DELETE: Clear notifications
  */
 
-const supabaseUrl = import.meta.env.SUPABASE_URL;
-const supabaseServiceKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+// Netlify/SSR bisa hanya expose PUBLIC_SUPABASE_URL, jadi fallback bila SUPABASE_URL tidak ada
+const supabaseUrl =
+    import.meta.env.SUPABASE_URL ||
+    import.meta.env.PUBLIC_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    process.env.PUBLIC_SUPABASE_URL;
+// Fallback ke anon key supaya GET tetap jalan di dev/pratinjau ketika service role tidak tersedia
+const supabaseServiceKey =
+    import.meta.env.SUPABASE_SERVICE_ROLE_KEY ||
+    import.meta.env.PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.PUBLIC_SUPABASE_ANON_KEY;
 
 const getSupabaseClient = () => {
     if (!supabaseUrl || !supabaseServiceKey) {
@@ -114,7 +124,7 @@ export const GET: APIRoute = async ({ request, url }) => {
 export const POST: APIRoute = async ({ request }) => {
     try {
         const body = await request.json();
-        const { type, metadata } = body;
+        const { type, metadata, title, message } = body;
 
         if (!type) {
             return new Response(
@@ -131,13 +141,21 @@ export const POST: APIRoute = async ({ request }) => {
 
         const supabase = getSupabaseClient();
 
+        // Generate safe ID & timestamp (avoid supabase default mismatch)
+        const notificationId =
+            crypto.randomUUID?.() ||
+            `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        const now = new Date().toISOString();
+
         // Format notification data
         const notificationData = {
+            id: notificationId,
             type,
-            title: getNotificationTitle(type, metadata),
-            message: getNotificationMessage(type, metadata),
+            title: title || getNotificationTitle(type, metadata),
+            message: message || getNotificationMessage(type, metadata),
             metadata: metadata || {},
             read: false,
+            timestamp: now,
         };
 
         const { data, error } = await supabase
@@ -311,4 +329,3 @@ export const DELETE: APIRoute = async ({ url }) => {
         );
     }
 };
-

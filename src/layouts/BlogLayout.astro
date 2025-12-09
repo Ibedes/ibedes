@@ -166,13 +166,6 @@ console.log("[BlogLayout] Article will load affiliate products client-side:", {
           <!-- TOC stopper so sidebar only sticks along article body -->
           <div id="toc-end-sentinel" class="h-px" aria-hidden="true"></div>
 
-          <RelatedArticles
-            currentSlug={frontmatter.filename
-              ? (frontmatter.filename.split("/").pop() ?? "")
-              : ""}
-            tags={frontmatter.tags ?? []}
-          />
-
           <AuthorBio />
 
           <!-- Affiliate Products Section -->
@@ -199,6 +192,13 @@ console.log("[BlogLayout] Article will load affiliate products client-side:", {
           <div class="my-12">
             <SubscribeCard />
           </div>
+
+          <RelatedArticles
+            currentSlug={frontmatter.filename
+              ? (frontmatter.filename.split("/").pop() ?? "")
+              : ""}
+            tags={frontmatter.tags ?? []}
+          />
         </div>
       </div>
 

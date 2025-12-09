@@ -740,6 +740,7 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
             });
 
             const handleSupabaseLike = async () => {
+                let notificationSent = false;
                 if (likesState.claps >= MAX_CLAPS) {
                     setStatusMessage(
                         "Kamu sudah memberi 50 tepuk untuk artikel ini.",
@@ -748,11 +749,28 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
                     return;
                 }
 
+                const sendLikeNotification = async () => {
+                    try {
+                        const articleTitle =
+                            document.querySelector("h1")?.textContent ||
+                            document.title;
+                        const { notifyLike } = await import(
+                            "../../lib/admin-notifications-client"
+                        );
+                        notifyLike(slug, articleTitle);
+                        notificationSent = true;
+                    } catch (error) {
+                        console.warn("Failed to send admin notification:", error);
+                    }
+                };
+
                 if (!useRemote) {
                     applyClapLocally();
                     setStatusMessage(
                         `Tepuk tersimpan di perangkatmu (${likesState.claps}/${MAX_CLAPS}).`,
                     );
+                    // Tetap kirim notifikasi admin walau offline/local
+                    sendLikeNotification();
                     return;
                 }
                 primaryLikeButton?.setAttribute("data-loading", "true");
@@ -782,24 +800,15 @@ const supabaseEnabled = Boolean(supabaseUrl && supabaseAnonKey);
                             : "Terima kasih sudah apresiasi!",
                     );
 
-                    // Kirim notifikasi ke admin
-                    try {
-                        const articleTitle =
-                            document.querySelector("h1")?.textContent ||
-                            document.title;
-                        const { notifyLike } = await import(
-                            "../../lib/admin-notifications-client"
-                        );
-                        notifyLike(slug, articleTitle);
-                    } catch (error) {
-                        console.warn(
-                            "Failed to send admin notification:",
-                            error,
-                        );
-                    }
+                    // Kirim notifikasi ke admin (hanya sekali)
+                    await sendLikeNotification();
                 } catch (error) {
                     console.error(error);
                     setStatusMessage("Suka gagal dikirim. Coba lagi.", "error");
+                    // Walau gagal simpan ke Supabase, tetap kirim notifikasi supaya admin tahu
+                    if (!notificationSent) {
+                        await sendLikeNotification();
+                    }
                 } finally {
                     primaryLikeButton?.removeAttribute("data-loading");
                 }
