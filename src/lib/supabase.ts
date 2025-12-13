@@ -1,8 +1,27 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
+// On the server (SSR/Node) ensure .env is loaded even if the process
+// wasn't started with `-r dotenv/config`. The branch is tree-shaken from
+// client bundles because `import.meta.env.SSR` is a compile-time constant.
+if (import.meta.env?.SSR) {
+    await import('dotenv/config');
+}
+
 // Support both Astro runtime (import.meta.env) and direct Node execution (process.env)
-const supabaseUrl = import.meta.env?.PUBLIC_SUPABASE_URL || (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_URL : undefined);
-const supabaseAnonKey = import.meta.env?.PUBLIC_SUPABASE_ANON_KEY || (typeof process !== 'undefined' ? process.env.PUBLIC_SUPABASE_ANON_KEY : undefined);
+const supabaseUrl =
+    import.meta.env?.PUBLIC_SUPABASE_URL ||
+    import.meta.env?.SUPABASE_URL ||
+    (typeof process !== 'undefined'
+        ? process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL
+        : undefined);
+
+const supabaseAnonKey =
+    import.meta.env?.PUBLIC_SUPABASE_ANON_KEY ||
+    import.meta.env?.SUPABASE_ANON_KEY ||
+    (typeof process !== 'undefined'
+        ? process.env.PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY
+        : undefined);
+
 // Accept both the correct private env name and the accidental PUBLIC variant to avoid breakage
 const supabaseServiceKey =
     import.meta.env?.SUPABASE_SERVICE_ROLE_KEY ||
