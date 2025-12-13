@@ -282,6 +282,116 @@
   }
 }
 
+/* --------------------------------------------------
+   Admin Popup (alert/confirm/prompt) redesign
+-------------------------------------------------- */
+.ui-popup-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: color-mix(in srgb, #09090f 55%, transparent);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+  z-index: 1400;
+}
+
+.ui-popup-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ui-popup {
+  width: min(420px, 100%);
+  background: #1b1b26;
+  color: #f3f5ff;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, #8e92ff 60%, #4a4d73 40%);
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.02);
+  padding: 1.1rem 1.1rem 0.95rem;
+  font-family: var(--font-mono);
+}
+
+.ui-popup__title {
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  color: #cfd5ff;
+  margin-bottom: 0.4rem;
+}
+
+.ui-popup__message {
+  margin: 0;
+  color: #e6e9ff;
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.ui-popup__input {
+  margin-top: 0.65rem;
+}
+
+.ui-popup__input input {
+  width: 100%;
+  background: #0f0f17;
+  color: #f5f7ff;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font-family: var(--font-mono);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.ui-popup__input input:focus {
+  border-color: #9ca3ff;
+  box-shadow: 0 0 0 3px rgba(156, 163, 255, 0.18);
+}
+
+.ui-popup__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.ui-popup__button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8ebff;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+}
+
+.ui-popup__button:hover,
+.ui-popup__button:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.ui-popup__button--primary {
+  background: linear-gradient(135deg, #7f88ff, #b5a6ff);
+  color: #0b0b14;
+  border: none;
+  box-shadow: 0 10px 30px rgba(127, 136, 255, 0.4);
+}
+
+.ui-popup__button--primary:hover,
+.ui-popup__button--primary:focus-visible {
+  transform: translateY(-2px);
+}
+
 .service-link {
   display: inline-flex;
   align-items: center;

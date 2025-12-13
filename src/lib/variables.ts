@@ -2,8 +2,11 @@
 
 export const GLOBAL = {
   // Site metadata
+  siteName: "Ibedes",
   username: "ibedes",
   rootUrl: "https://ibedes.xyz",
+  twitterHandle: "@bellamujiaa",
+  defaultOgImage: "/og/default.svg",
   shortDescription: "Web Developer &<br /> Content Creator",
   longDescription: "Platform personal untuk berbagi artikel, tutorial web development, dan showcase project. Dibangun dengan Astro, TypeScript, dan Tailwind CSS untuk performa optimal.",
 

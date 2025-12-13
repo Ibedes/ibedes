@@ -811,7 +811,7 @@ export const prerender = false;
             const rating = ratingInput?.value.trim();
 
             if (!productId || !productName || !description || !image || !link) {
-                alert("Please fill all required fields");
+                await window.adminAlert?.("Please fill all required fields");
                 return;
             }
 
@@ -847,20 +847,20 @@ export const prerender = false;
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert("Product added successfully!");
+                    await window.adminAlert?.("Product added successfully!");
 
                     setTimeout(() => {
                         window.location.href = "/admin?t=" + Date.now();
                     }, 1500);
                 } else {
-                    alert("Error: " + result.error);
+                    await window.adminAlert?.("Error: " + result.error);
                     saveBtn.disabled = false;
                     saveBtn.innerHTML =
                         '<i class="fa-solid fa-save"></i> Simpan produk';
                 }
             } catch (error) {
                 console.error(error);
-                alert("Failed to save product");
+                await window.adminAlert?.("Failed to save product");
                 saveBtn.disabled = false;
                 saveBtn.innerHTML =
                     '<i class="fa-solid fa-save"></i> Simpan produk';
@@ -927,14 +927,15 @@ export const prerender = false;
 
             const productId = button.dataset.productDelete;
             const productName = button.dataset.productName || productId;
-            if (
-                !productId ||
-                !confirm(
-                    `Hapus produk "${productName}"? Tindakan ini tidak bisa dibatalkan.`,
-                )
-            ) {
-                return;
-            }
+            if (!productId) return;
+
+            const ok = await window.adminConfirm?.(
+                `Hapus produk "${productName}"? Tindakan ini tidak bisa dibatalkan.`,
+                "Delete product",
+                "Hapus",
+                "Batal",
+            );
+            if (!ok) return;
 
             const card = button.closest("[data-product-card]");
             const originalContent = button.innerHTML;
@@ -954,7 +955,7 @@ export const prerender = false;
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert("Produk dihapus");
+                    await window.adminAlert?.("Produk dihapus");
                     card?.classList.add("is-removing");
                     setTimeout(() => {
                         card?.remove();
@@ -962,13 +963,13 @@ export const prerender = false;
                         applyProductSearchFilter();
                     }, 250);
                 } else {
-                    alert(result.error || "Failed to delete product");
+                    await window.adminAlert?.(result.error || "Failed to delete product");
                     button.disabled = false;
                     button.innerHTML = originalContent;
                 }
             } catch (error) {
                 console.error(error);
-                alert("Error deleting product");
+                await window.adminAlert?.("Error deleting product");
                 button.disabled = false;
                 button.innerHTML = originalContent;
             }

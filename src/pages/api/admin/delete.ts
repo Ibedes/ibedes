@@ -68,8 +68,18 @@ export const POST: APIRoute = async ({ request }) => {
 
         // Always delete from Supabase
         try {
-            const slug = filename.replace('.md', '');
-            const { supabaseAdmin } = await import('../../../lib/supabase');
+            const { supabaseAdmin, hasSupabaseConfig } = await import('../../../lib/supabase');
+
+            if (!hasSupabaseConfig || !supabaseAdmin) {
+                console.error('[Admin API] Supabase admin client is not configured');
+                return new Response(JSON.stringify({ error: 'Supabase admin client is not configured' }), {
+                    status: 500,
+                    headers: { 'Content-Type': 'application/json' }
+                });
+            }
+
+            const slug = filename.replace(/\.(md|mdx)$/i, '');
+
             const { error: supabaseError } = await supabaseAdmin
                 .from('articles')
                 .delete()
@@ -77,7 +87,11 @@ export const POST: APIRoute = async ({ request }) => {
 
             if (supabaseError) {
                 console.error('[Admin API] Supabase delete error:', supabaseError);
-                throw new Error(`Gagal menghapus dari database: ${supabaseError.message}`);
+                const friendly = supabaseError.message?.toLowerCase().includes('row level security') ||
+                    supabaseError.message?.toLowerCase().includes('permission')
+                    ? 'SUPABASE_SERVICE_ROLE_KEY belum atau salah. Pastikan key service role terisi di .env / environment.'
+                    : supabaseError.message;
+                throw new Error(`Gagal menghapus dari database: ${friendly}`);
             } else {
                 console.log('[Admin API] Deleted from Supabase');
             }

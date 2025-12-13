@@ -2,11 +2,7 @@
 import Section from "../components/common/Section.astro";
 import Breadcrumb from "../components/common/Breadcrumb.astro";
 import type { ArticleFrontmatter } from "../lib/types";
-import {
-  getShortDescription,
-  processArticleDate,
-  generateSourceUrl,
-} from "../lib/utils";
+import { processArticleDate } from "../lib/utils";
 import { GLOBAL } from "../lib/variables";
 import type { MarkdownLayoutProps } from "astro";
 import Prose from "../components/Prose.astro";
@@ -27,7 +23,6 @@ import RelatedArticles from "../components/RelatedArticles.astro";
 import CodeCopy from "../components/CodeCopy.astro";
 import ImageLightbox from "../components/ImageLightbox.astro";
 import BackToTop from "../components/BackToTop.astro";
-import AuthorBio from "../components/AuthorBio.astro";
 
 type Props = {
   frontmatter: ArticleFrontmatter;
@@ -39,18 +34,35 @@ type Props = {
 };
 
 const { frontmatter, headings } = Astro.props;
-const shortDescription = getShortDescription(frontmatter.description);
-const articleDate = processArticleDate(frontmatter.timestamp);
-const sourceUrl = frontmatter.filename
-  ? generateSourceUrl(frontmatter.filename, "blog")
+
+// Normalize article path for sharing/canonical/SEO
+const articlePath = (() => {
+  let raw = (frontmatter as any).slug || frontmatter.filename || "";
+  raw = raw.trim();
+  if (!raw) return "";
+  // Strip extension if accidentally included
+  raw = raw.replace(/\.mdx?$/i, "");
+  // Normalize double slashes
+  raw = raw.replace(/\/+/g, "/");
+  if (raw.startsWith("/")) return raw;
+  // Back-compat if stored as slug or "blog/slug"
+  const normalized = raw.replace(/^blog\//, "");
+  return `/blog/${normalized}`;
+})();
+
+const canonicalUrl = articlePath
+  ? new URL(articlePath, GLOBAL.rootUrl).href
+  : GLOBAL.rootUrl;
+
+const articleSlug = articlePath
+  ? (articlePath.split("/").filter(Boolean).pop() ?? "")
   : "";
-const canonicalUrl = `${GLOBAL.rootUrl}${sourceUrl}`;
 
 // Breadcrumb items
 const breadcrumbItems = [
   { name: "Home", url: "/" },
   { name: "Blog", url: "/blog" },
-  { name: frontmatter.title, url: sourceUrl },
+  { name: frontmatter.title, url: articlePath || "/blog" },
 ];
 
 // Generate Article structured data
@@ -72,8 +84,8 @@ const articleSchema = generateArticleSchema(
 );
 
 // Generate social meta tags with dynamic OG image
-const ogImageUrl = frontmatter.filename
-  ? `${GLOBAL.rootUrl}/og/${frontmatter.filename}.svg`
+const ogImageUrl = articleSlug
+  ? `${GLOBAL.rootUrl}/og/${articleSlug}.svg`
   : `${GLOBAL.rootUrl}/og/default.svg`;
 const seoImage = featuredImageUrl ?? ogImageUrl;
 
@@ -100,7 +112,7 @@ console.log("[BlogLayout] Article will load affiliate products client-side:", {
 
 ---
 
-<Layout
+  <Layout
   title={`${frontmatter.title} • ${GLOBAL.username}`}
   description={frontmatter.description}
   image={seoImage}
@@ -166,8 +178,6 @@ console.log("[BlogLayout] Article will load affiliate products client-side:", {
           <!-- TOC stopper so sidebar only sticks along article body -->
           <div id="toc-end-sentinel" class="h-px" aria-hidden="true"></div>
 
-          <AuthorBio />
-
           <!-- Affiliate Products Section -->
           {
             affiliateProducts.length > 0 && (
@@ -181,17 +191,7 @@ console.log("[BlogLayout] Article will load affiliate products client-side:", {
             )
           }
 
-          <div class="my-12">
-            <ShareActions
-              title={frontmatter.title}
-              url={sourceUrl}
-              image={ogImageUrl}
-            />
-          </div>
-
-          <div class="my-12">
-            <SubscribeCard />
-          </div>
+          
 
           <RelatedArticles
             currentSlug={frontmatter.filename
@@ -199,8 +199,22 @@ console.log("[BlogLayout] Article will load affiliate products client-side:", {
               : ""}
             tags={frontmatter.tags ?? []}
           />
+
+          <div class="my-12">
+            <ShareActions
+              title={frontmatter.title}
+              url={articlePath}
+              image={ogImageUrl}
+            />
+          </div>
+
+          <div class="my-12">
+            <SubscribeCard />
+          </div>
         </div>
       </div>
+
+      
 
       <aside class="hidden lg:block relative lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
         <TableOfContents headings={headings} />
@@ -211,7 +225,7 @@ console.log("[BlogLayout] Article will load affiliate products client-side:", {
   <ReadingProgress />
   <TextShareTooltip
     title={frontmatter.title}
-    url={sourceUrl}
+    url={articlePath}
   />
   <FloatingReactions
     slug={frontmatter.filename || "default"}

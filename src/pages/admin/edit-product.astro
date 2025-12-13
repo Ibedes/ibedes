@@ -387,7 +387,7 @@ if (!product) {
                 document.getElementById("product-verified").checked;
 
             if (!productId || !productName || !description || !image || !link) {
-                alert("Please fill all required fields");
+                await window.adminAlert?.("Please fill all required fields");
                 return;
             }
 
@@ -423,20 +423,20 @@ if (!product) {
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert("Product updated successfully!");
+                    await window.adminAlert?.("Product updated successfully!");
 
                     setTimeout(() => {
                         window.location.href = "/admin";
                     }, 1500);
                 } else {
-                    alert("Error: " + result.error);
+                    await window.adminAlert?.("Error: " + result.error);
                     saveBtn.disabled = false;
                     saveBtn.innerHTML =
                         '<i class="fa-solid fa-save"></i> Update Product';
                 }
             } catch (error) {
                 console.error(error);
-                alert("Failed to update product");
+                await window.adminAlert?.("Failed to update product");
                 saveBtn.disabled = false;
                 saveBtn.innerHTML =
                     '<i class="fa-solid fa-save"></i> Update Product';

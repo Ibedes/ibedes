@@ -7,6 +7,10 @@ export const prerender = false;
 const projectRoot = process.cwd();
 const metadataPath = path.join(projectRoot, "src/data/custom-pages.json");
 const customPagesDir = path.join(projectRoot, "src/pages/custom");
+const isProduction = import.meta.env.PROD || process.env.NODE_ENV === "production";
+const allowReadInProd =
+    process.env.ALLOW_PAGE_BUILDER_PROD === "true" ||
+    process.env.PREVIEW_ALLOW_FS === "true";
 
 export const GET: APIRoute = async ({ request }) => {
     const url = new URL(request.url);
@@ -20,6 +24,16 @@ export const GET: APIRoute = async ({ request }) => {
     }
 
     try {
+        if (isProduction && !allowReadInProd) {
+            return new Response(
+                JSON.stringify({
+                    error:
+                        "Page Builder dimatikan di production (filesystem read-only). Jalankan lokal atau set ALLOW_PAGE_BUILDER_PROD=true jika Anda yakin.",
+                }),
+                { status: 503, headers: { "Content-Type": "application/json" } },
+            );
+        }
+
         const raw = await fs.readFile(metadataPath, "utf-8");
         const pages = JSON.parse(raw) as any[];
         const page = pages.find((p) => p.slug === slug);

@@ -8,6 +8,10 @@ const projectRoot = process.cwd();
 const customPagesDir = path.join(projectRoot, "src/pages/custom");
 const metadataPath = path.join(projectRoot, "src/data/custom-pages.json");
 const publicPagesDir = path.join(projectRoot, "public/custom-pages");
+const isProduction = import.meta.env.PROD || process.env.NODE_ENV === "production";
+const allowWriteInProd =
+    process.env.ALLOW_PAGE_BUILDER_PROD === "true" ||
+    process.env.PREVIEW_ALLOW_FS === "true";
 
 const normalizeSlug = (value: string) =>
     value
@@ -46,6 +50,16 @@ const injectResources = (html: string, css: string, js: string) => {
 
 export const POST: APIRoute = async ({ request }) => {
     try {
+        if (isProduction && !allowWriteInProd) {
+            return new Response(
+                JSON.stringify({
+                    error:
+                        "Page Builder dimatikan di production (filesystem read-only). Jalankan lokal atau set ALLOW_PAGE_BUILDER_PROD=true jika Anda yakin.",
+                }),
+                { status: 503, headers: { "Content-Type": "application/json" } },
+            );
+        }
+
         const body = await request.json();
         const rawSlug = typeof body.slug === "string" ? body.slug : "";
         const slug = normalizeSlug(rawSlug);

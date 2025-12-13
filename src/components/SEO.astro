@@ -19,9 +19,9 @@ interface Props {
 const {
     title,
     description,
-    image = "/og-image.png",
+    image,
     imageAlt,
-    canonicalURL = new URL(Astro.url.pathname, Astro.site),
+    canonicalURL,
     type = "website",
     keywords,
     author = GLOBAL.username,
@@ -30,17 +30,28 @@ const {
     breadcrumbs = [{ name: "Home", url: "/" }],
 } = Astro.props;
 
-const siteName = "Ibedes";
-const twitterHandle = "@bellamujiaa";
+const siteName = GLOBAL.siteName || GLOBAL.username || "Ibedes";
+const twitterHandle = GLOBAL.twitterHandle || "";
 const locale = "id_ID";
+const defaultOgImage = image || GLOBAL.defaultOgImage || "/og/default.svg";
 
-const siteUrl = Astro.site ?? Astro.url;
-const canonicalUrlValue =
-    typeof canonicalURL === "string"
+// Resolve base URL (prefer config rootUrl, fall back to Astro.site, then current URL origin)
+const baseUrl =
+    GLOBAL.rootUrl ||
+    (Astro.site ? Astro.site.href : undefined) ||
+    (Astro.url ? Astro.url.origin : undefined) ||
+    "http://localhost:4321";
+
+const siteUrl = new URL(baseUrl);
+const canonicalUrlValue = canonicalURL
+    ? typeof canonicalURL === "string"
         ? new URL(canonicalURL, siteUrl).href
-        : canonicalURL.href;
-const resolvedImageUrl = new URL(image, siteUrl).href;
+        : canonicalURL.href
+    : siteUrl.href;
+
+const resolvedImageUrl = new URL(defaultOgImage, siteUrl).href;
 const resolvedImageAlt = imageAlt || title;
+const ogType = type === "article" ? "article" : "website";
 const resolvedBreadcrumbSchema = generateBreadcrumbSchema(
     breadcrumbs,
     siteUrl.href,
@@ -81,6 +92,7 @@ const schema = {
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="manifest" href="/manifest.json" />
 <meta name="generator" content={Astro.generator} />
+<meta name="application-name" content={siteName} />
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalUrlValue} />
@@ -94,7 +106,7 @@ const schema = {
 <meta name="language" content="Indonesian" />
 
 <!-- Open Graph / Facebook -->
-<meta property="og:type" content={type} />
+<meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonicalUrlValue} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={description} />

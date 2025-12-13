@@ -18,6 +18,7 @@ const { searchParams } = Astro.url;
 const filename = normalizeFilename(searchParams.get("file"));
 const blogDir = path.join(process.cwd(), "src/content/blog");
 const legacyBlogDir = path.join(process.cwd(), "src/pages/blog");
+const isProduction = import.meta.env.PROD || process.env.NODE_ENV === "production";
 
 interface Frontmatter {
     title: string;
@@ -47,31 +48,94 @@ if (filename) {
         return { filePath, fileContent };
     };
 
+    const trySupabase = async () => {
+        try {
+            const { supabaseAdmin } = await import("../../lib/supabase-admin");
+            if (!supabaseAdmin) {
+                console.warn("[Admin Editor] Supabase admin client tidak tersedia");
+                return null;
+            }
+            const slug = filename.replace(/\.md$/i, "");
+            const { data, error } = await supabaseAdmin
+                .from("articles")
+                .select("content, title, excerpt, published_at, affiliate_ids, featured_image")
+                .eq("slug", slug)
+                .single();
+            if (error) {
+                console.error("[Admin Editor] Supabase fetch error:", error);
+                return null;
+            }
+            return {
+                filePath: `supabase:${slug}`,
+                fileContent: data?.content || "",
+                meta: data,
+            };
+        } catch (err) {
+            console.error("[Admin Editor] Unexpected Supabase load error:", err);
+            return null;
+        }
+    };
+
     try {
         let fileData;
-        try {
-            fileData = await tryRead(blogDir);
-        } catch (err) {
-            // fallback to legacy path for older repos
-            fileData = await tryRead(legacyBlogDir);
+        if (!isProduction) {
+            try {
+                fileData = await tryRead(blogDir);
+            } catch (err) {
+                // fallback to legacy path for older repos
+                fileData = await tryRead(legacyBlogDir);
+            }
         }
 
-        const parsed = matter(fileData.fileContent);
-        content = parsed.content;
-        frontmatter = { ...frontmatter, ...parsed.data };
-
-        // Normalize affiliate IDs to strings for checkbox binding
-        if (Array.isArray(frontmatter.affiliateProducts)) {
-            frontmatter.affiliateProducts = frontmatter.affiliateProducts.map(
-                (id: any) => String(id),
-            );
+        if (!fileData) {
+            fileData = await trySupabase();
         }
 
-        // Handle date format if it's a Date object
-        if (frontmatter.pubDate instanceof Date) {
-            frontmatter.pubDate = frontmatter.pubDate
-                .toISOString()
-                .split("T")[0];
+        if (fileData) {
+            const parsed = matter(fileData.fileContent);
+            content = parsed.content;
+            frontmatter = {
+                ...frontmatter,
+                ...parsed.data,
+                // fallback ke metadata dari Supabase jika frontmatter kosong
+                ...(fileData.meta
+                    ? {
+                          title: parsed.data.title || fileData.meta.title || frontmatter.title,
+                          description:
+                              parsed.data.description ||
+                              fileData.meta.excerpt ||
+                              frontmatter.description,
+                          pubDate:
+                              parsed.data.pubDate ||
+                              fileData.meta.published_at ||
+                              frontmatter.pubDate,
+                          affiliateProducts:
+                              parsed.data.affiliateProducts ||
+                              fileData.meta.affiliate_ids ||
+                              [],
+                          featuredImage:
+                              parsed.data.featuredImage ||
+                              fileData.meta.featured_image ||
+                              undefined,
+                      }
+                    : {}),
+            };
+
+            // Normalize affiliate IDs to strings for checkbox binding
+            if (Array.isArray(frontmatter.affiliateProducts)) {
+                frontmatter.affiliateProducts = frontmatter.affiliateProducts.map(
+                    (id: any) => String(id),
+                );
+            }
+
+            // Handle date format jika Date object
+            if (frontmatter.pubDate instanceof Date) {
+                frontmatter.pubDate = frontmatter.pubDate
+                    .toISOString()
+                    .split("T")[0];
+            }
+        } else {
+            console.warn("[Admin Editor] Artikel tidak ditemukan di file maupun Supabase");
         }
     } catch (e) {
         console.error("Error reading file", e);
@@ -759,13 +823,15 @@ const sortedProducts = [...allProducts].reverse();
                     if (response.ok) {
                         urlInput.value = result.url;
                         updatePreview();
-                        alert("Image uploaded successfully!");
+                        await window.adminAlert?.("Image uploaded successfully!");
                     } else {
                         throw new Error(result.error);
                     }
                 } catch (error) {
                     console.error("Upload error:", error);
-                    alert(error.message || "Failed to upload image");
+                    await window.adminAlert?.(
+                        error?.message || "Failed to upload image",
+                    );
                 } finally {
                     // Restore button state
                     if (uploadBtn && originalContent) {
@@ -783,7 +849,7 @@ const sortedProducts = [...allProducts].reverse();
                 let filename = filenameInput?.value.trim() ?? "";
 
                 if (!filename) {
-                    alert("Please enter a filename");
+                    await window.adminAlert?.("Please enter a filename");
                     return;
                 }
 
@@ -931,7 +997,7 @@ const sortedProducts = [...allProducts].reverse();
 
                     if (response.ok) {
                         // Show success alert
-                        alert("Article saved successfully!");
+                        await window.adminAlert?.("Article saved successfully!");
 
                         // Show View Article button
                         const viewBtn =
@@ -958,7 +1024,7 @@ const sortedProducts = [...allProducts].reverse();
                             saveBtn.disabled = false;
                         }, 1600);
                     } else {
-                        alert("Error saving: " + result.error);
+                        await window.adminAlert?.("Error saving: " + result.error);
                         saveBtn.innerHTML =
                             '<i class="fa-solid fa-save"></i> Simpan';
                         saveBtn.disabled = false;
@@ -966,7 +1032,7 @@ const sortedProducts = [...allProducts].reverse();
                 } catch (e) {
                     console.error(e);
                     // Show error alert
-                    alert("Failed to save article");
+                    await window.adminAlert?.("Failed to save article");
                     saveBtn.innerHTML =
                         '<i class="fa-solid fa-save"></i> Simpan';
                     saveBtn.disabled = false;

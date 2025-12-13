@@ -181,8 +181,9 @@ const tagUsage = tags.map((tag) => ({
                 const type = (btn as HTMLElement).dataset.type;
                 const oldValue = (btn as HTMLElement).dataset.value;
 
-                const newValue = prompt(
+                const newValue = await window.adminPrompt?.(
                     `Rename ${type} "${oldValue}" to:`,
+                    "Rename",
                     oldValue,
                 );
 
@@ -198,11 +199,13 @@ const tagUsage = tags.map((tag) => ({
                 const type = (btn as HTMLElement).dataset.type;
                 const value = (btn as HTMLElement).dataset.value;
 
-                if (
-                    confirm(
-                        `Are you sure you want to delete the ${type} "${value}"? This will remove it from all products.`,
-                    )
-                ) {
+                const ok = await window.adminConfirm?.(
+                    `Are you sure you want to delete the ${type} "${value}"? This will remove it from all products.`,
+                    "Delete",
+                    "Hapus",
+                    "Batal",
+                );
+                if (ok) {
                     await updateMetadata(type, "delete", value);
                 }
             });
@@ -214,11 +217,13 @@ const tagUsage = tags.map((tag) => ({
                 const id = (btn as HTMLElement).dataset.id;
                 const name = (btn as HTMLElement).dataset.name;
 
-                if (
-                    confirm(
-                        `Are you sure you want to delete the product "${name}"? This action cannot be undone.`,
-                    )
-                ) {
+                const ok = await window.adminConfirm?.(
+                    `Are you sure you want to delete the product "${name}"? This action cannot be undone.`,
+                    "Delete product",
+                    "Hapus",
+                    "Batal",
+                );
+                if (ok) {
                     await updateMetadata("product", "delete", id);
                 }
             });
@@ -235,14 +240,14 @@ const tagUsage = tags.map((tag) => ({
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert(`${type} ${action}d successfully!`);
+                    await window.adminAlert?.(`${type} ${action}d successfully!`);
                     setTimeout(() => window.location.reload(), 1000);
                 } else {
-                    alert(`Error: ${result.error}`);
+                    await window.adminAlert?.(`Error: ${result.error}`);
                 }
             } catch (error) {
                 console.error(error);
-                alert("Failed to update metadata");
+                await window.adminAlert?.("Failed to update metadata");
             }
         }
     </script>

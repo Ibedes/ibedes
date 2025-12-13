@@ -44,6 +44,20 @@ const {
       breadcrumbs={breadcrumbs}
       keywords={keywords}
     />
+    <script is:inline>
+      (() => {
+        try {
+          const THEME_KEY = "ibedes-theme";
+          const stored = localStorage.getItem(THEME_KEY);
+          const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
+          const theme = stored || (prefersDark ? "dark" : "light");
+          document.documentElement.classList.toggle("dark", theme === "dark");
+          document.documentElement.dataset.theme = theme;
+        } catch (error) {
+          console.warn("[Theme] Failed to initialize theme preference", error);
+        }
+      })();
+    </script>
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-TQ2GF3GCCX"
@@ -96,6 +110,168 @@ const {
     
     <!-- Netlify Identity Widget for Decap CMS -->
     <script src="https://unpkg.com/netlify-identity-widget@1.9.2/build/netlify-identity-widget.js"></script>
+
+    <!-- Global popup helper (alert/confirm/prompt replacement) -->
+    <script is:inline>
+      (() => {
+        if (typeof window === "undefined") return;
+
+        const TEMPLATE = `
+          <div class="ui-popup-overlay" data-state="hidden" aria-hidden="true">
+            <div class="ui-popup" role="alertdialog" aria-modal="true" aria-live="assertive">
+              <div class="ui-popup__title" data-popup-title>ibedes</div>
+              <div class="ui-popup__message" data-popup-message>...</div>
+              <div class="ui-popup__input" data-popup-input-wrapper hidden>
+                <input type="text" data-popup-input />
+              </div>
+              <div class="ui-popup__actions">
+                <button class="ui-popup__button" data-popup-cancel>Cancel</button>
+                <button class="ui-popup__button ui-popup__button--primary" data-popup-ok>OK</button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const ensureElements = () => {
+          let overlay = document.getElementById("ui-popup-overlay");
+          if (overlay) return overlay;
+
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = TEMPLATE;
+          const node = wrapper.firstElementChild;
+          if (!node) return null;
+
+          const mount = () => {
+            document.body?.appendChild(node);
+          };
+
+          if (document.body) {
+            mount();
+          } else {
+            document.addEventListener("DOMContentLoaded", mount, { once: true });
+          }
+
+          return node;
+        };
+
+        const openPopup = ({
+          title = "ibedes",
+          message = "",
+          mode = "alert",
+          okText = "OK",
+          cancelText = "Cancel",
+          defaultValue = "",
+        }) =>
+          new Promise((resolve) => {
+            const overlay = ensureElements();
+            const titleEl = overlay?.querySelector("[data-popup-title]");
+            const messageEl = overlay?.querySelector("[data-popup-message]");
+            const inputWrap = overlay?.querySelector("[data-popup-input-wrapper]");
+            const inputEl = overlay?.querySelector("[data-popup-input]");
+            const okBtn = overlay?.querySelector("[data-popup-ok]");
+            const cancelBtn = overlay?.querySelector("[data-popup-cancel]");
+
+            if (!overlay || !titleEl || !messageEl || !okBtn || !cancelBtn) {
+              resolve(mode === "confirm" ? false : mode === "prompt" ? null : undefined);
+              return;
+            }
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            okBtn.textContent = okText;
+            cancelBtn.textContent = cancelText;
+
+            const isConfirm = mode === "confirm";
+            const isPrompt = mode === "prompt";
+
+            cancelBtn.style.display = isConfirm || isPrompt ? "inline-flex" : "none";
+            inputWrap?.toggleAttribute("hidden", !isPrompt);
+
+            if (isPrompt && inputEl) {
+              inputEl.value = defaultValue ?? "";
+            }
+
+            const close = (value) => {
+              overlay.dataset.state = "hidden";
+              overlay.setAttribute("aria-hidden", "true");
+              overlay.classList.remove("is-visible");
+              okBtn.removeEventListener("click", onOk);
+              cancelBtn.removeEventListener("click", onCancel);
+              document.removeEventListener("keydown", onKeydown);
+              resolve(value);
+            };
+
+            const onOk = () => {
+              if (isPrompt && inputEl) {
+                close(inputEl.value);
+              } else if (isConfirm) {
+                close(true);
+              } else {
+                close(undefined);
+              }
+            };
+
+            const onCancel = () => {
+              close(isConfirm ? false : isPrompt ? null : undefined);
+            };
+
+            const onKeydown = (event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                onCancel();
+              }
+              if (event.key === "Enter") {
+                event.preventDefault();
+                onOk();
+              }
+            };
+
+            okBtn.addEventListener("click", onOk);
+            cancelBtn.addEventListener("click", onCancel);
+            document.addEventListener("keydown", onKeydown);
+
+            overlay.dataset.state = "open";
+            overlay.setAttribute("aria-hidden", "false");
+            requestAnimationFrame(() => overlay.classList.add("is-visible"));
+
+            if (isPrompt && inputEl) {
+              inputEl.focus();
+              inputEl.select();
+            } else {
+              okBtn.focus();
+            }
+          });
+
+        const api = {
+          alert(message, title = "Info") {
+            return openPopup({ mode: "alert", message, title });
+          },
+          confirm(message, title = "Konfirmasi", okText = "OK", cancelText = "Batal") {
+            return openPopup({ mode: "confirm", message, title, okText, cancelText });
+          },
+          prompt(message, title = "Input", defaultValue = "") {
+            return openPopup({
+              mode: "prompt",
+              message,
+              title,
+              defaultValue,
+              okText: "Simpan",
+              cancelText: "Batal",
+            });
+          },
+        };
+
+        window.adminPopup = api;
+        window.adminAlert = api.alert;
+        window.adminConfirm = api.confirm;
+        window.adminPrompt = api.prompt;
+
+        // Replace default alert with the new popup (non-blocking).
+        window.alert = (message) => {
+          api.alert(String(message ?? ""));
+        };
+      })();
+    </script>
   </head>
   <body class="zag-bg zag-text zag-transition font-mono">
     <a href="#main-content" class="skip-link">Skip to content</a>

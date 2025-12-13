@@ -1,7 +1,6 @@
 ---
-import { processContentInDir } from "../lib/utils";
-import type { ArticleFrontmatter } from "../lib/types";
 import ArticleSnippet from "./ArticleSnippet.astro";
+import { articles as articleList } from "../lib/list";
 
 interface Props {
     currentSlug: string;
@@ -10,20 +9,28 @@ interface Props {
 
 const { currentSlug, tags } = Astro.props;
 
-const allArticles = await processContentInDir<ArticleFrontmatter, any>(
-    "blog",
-    ({ frontmatter, url, file }) => ({
-        ...frontmatter,
-        url,
-        slug: file.split("/").pop(),
-    }),
-);
+// Normalize article data from shared list (uses Supabase in prod, content collection in dev)
+const allArticles = (articleList || []).map((article) => {
+    const slug =
+        article.filename?.split("/").filter(Boolean).pop() ??
+        article.slug ??
+        "";
+
+    return {
+        ...article,
+        slug,
+        url: article.filename || article.url || `/blog/${slug}`,
+        tags: article.tags || [],
+        timestamp: article.timestamp || article.pubDate || new Date().toISOString(),
+    };
+});
 
 const relatedArticles = allArticles
     .filter((article) => article.slug !== currentSlug)
     .map((article) => {
-        const articleTags = article.tags || [];
-        const matchingTags = articleTags.filter((tag) => tags.includes(tag));
+        const matchingTags = article.tags.filter((tag: string) =>
+            tags.includes(tag),
+        );
         return {
             ...article,
             relevance: matchingTags.length,

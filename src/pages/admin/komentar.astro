@@ -378,7 +378,15 @@ const statusTabs = [
             const id = host?.dataset.id;
             const action = btn.dataset.action;
             if (!id || !action) return;
-            if (action === "delete" && !confirm("Hapus komentar ini?")) return;
+            if (action === "delete") {
+                const ok = await window.adminConfirm?.(
+                    "Hapus komentar ini?",
+                    "Hapus komentar",
+                    "Hapus",
+                    "Batal",
+                );
+                if (!ok) return;
+            }
 
             const payload = { id };
             let method = "POST";
@@ -401,7 +409,7 @@ const statusTabs = [
                 if (!res.ok) throw new Error(data.error || "Gagal memproses");
                 await load();
             } catch (err) {
-                alert(err?.message || "Gagal memproses");
+                await window.adminAlert?.(err?.message || "Gagal memproses");
             } finally {
                 btn.disabled = false;
                 btn.classList.remove("is-loading");

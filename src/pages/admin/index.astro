@@ -324,13 +324,13 @@ return Astro.redirect("/admin/dashboard");
                 const button = btn as HTMLButtonElement;
                 const filename = button.dataset.filename;
 
-                if (
-                    !confirm(
-                        `Are you sure you want to delete "${filename}"? This action cannot be undone.`,
-                    )
-                ) {
-                    return;
-                }
+                const ok = await window.adminConfirm?.(
+                    `Are you sure you want to delete "${filename}"? This action cannot be undone.`,
+                    "Delete article",
+                    "Delete",
+                    "Cancel",
+                );
+                if (!ok) return;
 
                 try {
                     button.disabled = true;
@@ -348,18 +348,16 @@ return Astro.redirect("/admin/dashboard");
                     const result = await response.json();
 
                     if (response.ok) {
-                        // Show success alert
-                        alert("Article deleted successfully!");
-                        // Reload the page to show updated list
+                        await window.adminAlert?.("Article deleted successfully!");
                         setTimeout(() => window.location.reload(), 1200);
                     } else {
-                        alert("Error: " + result.error);
+                        await window.adminAlert?.("Error: " + result.error);
                         button.disabled = false;
                         button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                     }
                 } catch (error) {
                     console.error(error);
-                    alert("Failed to delete article");
+                    await window.adminAlert?.("Failed to delete article");
                     button.disabled = false;
                     button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                 }
@@ -372,14 +370,15 @@ return Astro.redirect("/admin/dashboard");
                 const productId = button.dataset.productId;
                 const productName = button.dataset.productName || productId;
 
-                if (
-                    !productId ||
-                    !confirm(
-                        `Are you sure you want to delete \"${productName}\"? This action cannot be undone.`,
-                    )
-                ) {
-                    return;
-                }
+                if (!productId) return;
+
+                const ok = await window.adminConfirm?.(
+                    `Are you sure you want to delete "${productName}"? This action cannot be undone.`,
+                    "Delete product",
+                    "Delete",
+                    "Cancel",
+                );
+                if (!ok) return;
 
                 try {
                     button.disabled = true;
@@ -397,16 +396,16 @@ return Astro.redirect("/admin/dashboard");
                     const result = await response.json();
 
                     if (response.ok) {
-                        alert("Product deleted successfully!");
+                        await window.adminAlert?.("Product deleted successfully!");
                         setTimeout(() => window.location.reload(), 1200);
                     } else {
-                        alert(result.error || "Failed to delete product");
+                        await window.adminAlert?.(result.error || "Failed to delete product");
                         button.disabled = false;
                         button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                     }
                 } catch (error) {
                     console.error(error);
-                    alert("Failed to delete product");
+                    await window.adminAlert?.("Failed to delete product");
                     button.disabled = false;
                     button.innerHTML = '<i class="fa-solid fa-trash"></i>';
                 }

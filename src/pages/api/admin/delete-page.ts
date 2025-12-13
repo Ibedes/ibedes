@@ -8,9 +8,23 @@ const projectRoot = process.cwd();
 const customPagesDir = path.join(projectRoot, "src/pages/custom");
 const metadataPath = path.join(projectRoot, "src/data/custom-pages.json");
 const publicPagesDir = path.join(projectRoot, "public/custom-pages");
+const isProduction = import.meta.env.PROD || process.env.NODE_ENV === "production";
+const allowWriteInProd =
+    process.env.ALLOW_PAGE_BUILDER_PROD === "true" ||
+    process.env.PREVIEW_ALLOW_FS === "true";
 
 export const POST: APIRoute = async ({ request }) => {
     try {
+        if (isProduction && !allowWriteInProd) {
+            return new Response(
+                JSON.stringify({
+                    error:
+                        "Page Builder delete dimatikan di production (filesystem read-only). Jalankan lokal atau set ALLOW_PAGE_BUILDER_PROD=true jika Anda yakin.",
+                }),
+                { status: 503, headers: { "Content-Type": "application/json" } },
+            );
+        }
+
         const { slug } = await request.json();
         if (!slug || typeof slug !== "string") {
             return new Response(JSON.stringify({ error: "Slug wajib diisi." }), {

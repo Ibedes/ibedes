@@ -1,6 +1,6 @@
 import type { ArticleFrontmatter } from "./types";
 import { getShortDescription } from "./utils";
-import { supabaseAdmin } from "./supabase";
+import { supabaseAdmin } from "./supabase-admin";
 
 /**
  * Fetch articles from Supabase database
@@ -8,6 +8,12 @@ import { supabaseAdmin } from "./supabase";
  */
 export async function getArticlesFromDatabase() {
     try {
+        // Check if supabaseAdmin is properly initialized
+        if (!supabaseAdmin || !supabaseAdmin.from) {
+            console.error('[Database] Supabase admin client is not properly initialized');
+            return [];
+        }
+
         const { data, error } = await supabaseAdmin
             .from('articles')
             .select('*')
@@ -55,6 +61,12 @@ export async function getArticlesFromDatabase() {
  */
 export async function getArticleFromDatabase(slug: string) {
     try {
+        // Check if supabaseAdmin is properly initialized
+        if (!supabaseAdmin || !supabaseAdmin.from) {
+            console.error('[Database] Supabase admin client is not properly initialized');
+            return null;
+        }
+
         const { data, error } = await supabaseAdmin
             .from('articles')
             .select('*')

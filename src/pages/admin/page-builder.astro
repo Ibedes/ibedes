@@ -767,7 +767,7 @@ savedPages.sort((a, b) => {
         // Initialize the page builder when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             const builder = new PageBuilder();
-            (window as any).pageBuilder = builder;
+            window.pageBuilder = builder;
 
             // Edit existing page
             document.querySelectorAll('[data-edit-page]').forEach((btn) => {
@@ -797,7 +797,7 @@ savedPages.sort((a, b) => {
                         builder.updateStatus(`Memuat halaman "${slug}"`, 'success');
                         window.scrollTo({ top: 0, behavior: 'smooth' });
                     } catch (err: any) {
-                        alert(err?.message || 'Gagal memuat halaman');
+                        await window.adminAlert?.(err?.message || 'Gagal memuat halaman');
                     } finally {
                         button.disabled = false;
                         button.innerHTML = original;
@@ -812,9 +812,13 @@ savedPages.sort((a, b) => {
                     const slug = button.dataset.deletePage;
                     if (!slug) return;
 
-                    if (!confirm(`Hapus halaman "${slug}"? Tindakan tidak dapat dibatalkan.`)) {
-                        return;
-                    }
+                    const ok = await window.adminConfirm?.(
+                        `Hapus halaman "${slug}"? Tindakan tidak dapat dibatalkan.`,
+                        'Hapus halaman',
+                        'Hapus',
+                        'Batal'
+                    );
+                    if (!ok) return;
 
                     button.disabled = true;
                     const original = button.innerHTML;
@@ -833,7 +837,7 @@ savedPages.sort((a, b) => {
                         card?.remove();
                         builder.updateStatus(`Halaman "${slug}" dihapus`, 'success');
                     } catch (err: any) {
-                        alert(err?.message || 'Gagal menghapus halaman');
+                        await window.adminAlert?.(err?.message || 'Gagal menghapus halaman');
                         button.disabled = false;
                         button.innerHTML = original;
                     }

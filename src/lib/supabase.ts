@@ -23,6 +23,10 @@ let supabase: SupabaseClient | null = null;
 let supabaseAdmin: SupabaseClient | null = null;
 
 if (hasSupabaseConfig) {
+    if (!supabaseServiceKey) {
+        console.warn('[Supabase] SUPABASE_SERVICE_ROLE_KEY tidak ditemukan. Operasi admin akan memakai anon key dan bisa gagal pada RLS.');
+    }
+
     supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
         auth: {
             persistSession: true,
