@@ -9,493 +9,6 @@ export const prerender = false;
 const metadataPath = path.join(process.cwd(), "src/data/custom-pages.json");
 let savedPages: Array<{ slug: string; title: string; path: string; updatedAt?: string }> = [];
 
-const templateCategories = {
-    landing: {
-        title: "Landing Pages",
-        description: "Perfect for product launches and marketing campaigns",
-        templates: [
-            {
-                id: "hero-cta",
-                title: "Hero + CTA",
-                description: "Header lebar dengan tombol ajakan",
-                category: "landing",
-                thumbnail: "🎯",
-                html: `<section class="hero-section">
-  <div class="hero-container">
-    <div class="hero-content">
-      <span class="eyebrow">Produk Unggulan</span>
-      <h1 class="hero-title">Bangun landing page secepat menempelkan kode</h1>
-      <p class="hero-description">Gunakan Page Builder untuk merilis halaman promo tanpa menunggu deploy. Tempel HTML/CSS/JS, cek preview, lalu publish.</p>
-      <div class="hero-actions">
-        <a href="#" class="btn btn-primary">Coba Gratis</a>
-        <a href="#fitur" class="btn btn-secondary">Lihat Fitur</a>
-      </div>
-      <ul class="hero-features">
-        <li><span class="icon">⚡</span> Deploy cepat</li>
-        <li><span class="icon">🛠️</span> Editable penuh</li>
-        <li><span class="icon">📈</span> Siap dilacak</li>
-      </ul>
-    </div>
-  </div>
-</section>`,
-                css: `.hero-section{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:2rem;color:white;font-family:'Inter',system-ui,-apple-system,sans-serif}.hero-container{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:3rem;align-items:center}.hero-content{max-width:600px;text-align:center;margin:0 auto}.eyebrow{font-size:.875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.8);margin-bottom:1rem;display:block}.hero-title{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;line-height:1.1;margin-bottom:1.5rem;background:linear-gradient(135deg,#fff 0%,#e2e8f0 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}.hero-description{font-size:1.125rem;line-height:1.6;color:rgba(255,255,255,.9);margin-bottom:2.5rem}.hero-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem}.btn{padding:0.875rem 1.75rem;border-radius:0.75rem;text-decoration:none;font-weight:600;transition:all .2s ease;display:inline-flex;align-items:center;gap:.5rem}.btn-primary{background:rgba(255,255,255,.15);backdrop-filter:blur(10px);color:white;border:1px solid rgba(255,255,255,.2)}.btn-primary:hover{background:rgba(255,255,255,.25);transform:translateY(-2px)}.btn-secondary{background:transparent;color:white;border:1px solid rgba(255,255,255,.3)}.btn-secondary:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}.hero-features{list-style:none;padding:0;margin:0;display:flex;gap:2rem;justify-content:center;flex-wrap:wrap}.hero-features li{display:flex;align-items:center;gap:.5rem;font-weight:500;color:rgba(255,255,255,.9)}.icon{font-size:1.125rem}`,
-                js: ``,
-            },
-            {
-                id: "feature-showcase",
-                title: "Feature Showcase",
-                description: "Highlight key features with icons and descriptions",
-                category: "landing",
-                thumbnail: "✨",
-                html: `<section class="features-section">
-  <div class="container">
-    <header class="section-header">
-      <span class="eyebrow">Features</span>
-      <h2>Everything you need to succeed</h2>
-      <p>Powerful tools designed to help you build and grow</p>
-    </header>
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon">🚀</div>
-        <h3>Lightning Fast</h3>
-        <p>Deploy your pages in seconds with our optimized infrastructure</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🎨</div>
-        <h3>Beautiful Design</h3>
-        <p>Professional templates that look great on any device</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3>Analytics Ready</h3>
-        <p>Built-in analytics to track your page performance</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔧</div>
-        <h3>Easy Customization</h3>
-        <p>Full control over your design with simple HTML/CSS/JS</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🌐</div>
-        <h3>Global CDN</h3>
-        <p>Fast loading times worldwide with our CDN network</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">🔒</div>
-        <h3>Secure & Reliable</h3>
-        <p>Enterprise-grade security with 99.9% uptime guarantee</p>
-      </div>
-    </div>
-  </div>
-</section>`,
-                css: `.features-section{padding:5rem 1rem;background:#f8fafc;font-family:'Inter',system-ui,-apple-system,sans-serif}.container{max-width:1200px;margin:0 auto}.section-header{text-align:center;margin-bottom:4rem}.eyebrow{font-size:.875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:1rem;display:block}.section-header h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#1e293b;margin-bottom:1rem}.section-header p{font-size:1.125rem;color:#64748b;max-width:600px;margin:0 auto}.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2rem}.feature-card{background:white;padding:2rem;border-radius:1rem;box-shadow:0 4px 6px -1px rgba(0,0,0,.1);transition:all .3s ease;text-align:center}.feature-card:hover{transform:translateY(-4px);box-shadow:0 20px 25px -5px rgba(0,0,0,.1)}.feature-icon{font-size:3rem;margin-bottom:1.5rem;display:block}.feature-card h3{font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:1rem}.feature-card p{color:#64748b;line-height:1.6}`,
-                js: ``,
-            },
-            {
-                id: "testimonial-slider",
-                title: "Testimonial Slider",
-                description: "Customer reviews with slider functionality",
-                category: "landing",
-                thumbnail: "💬",
-                html: `<section class="testimonials-section">
-  <div class="container">
-    <header class="section-header">
-      <span class="eyebrow">Testimonials</span>
-      <h2>What our customers say</h2>
-      <p>Join thousands of satisfied users worldwide</p>
-    </header>
-    <div class="testimonials-slider">
-      <div class="testimonial-track">
-        <div class="testimonial-card active">
-          <div class="testimonial-content">
-            <p>"Amazing tool! I created a professional landing page in minutes."</p>
-            <div class="testimonial-author">
-              <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop&crop=face" alt="John Doe">
-              <div>
-                <h4>John Doe</h4>
-                <span>CEO, TechCorp</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial-card">
-          <div class="testimonial-content">
-            <p>"The best page builder I've ever used. Simple and powerful."</p>
-            <div class="testimonial-author">
-              <img src="https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=60&h=60&fit=crop&crop=face" alt="Sarah Wilson">
-              <div>
-                <h4>Sarah Wilson</h4>
-                <span>Marketing Director</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="testimonial-card">
-          <div class="testimonial-content">
-            <p>"Game changer for our business. Highly recommended!"</p>
-            <div class="testimonial-author">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=60&h=60&fit=crop&crop=face" alt="Mike Johnson">
-              <div>
-                <h4>Mike Johnson</h4>
-                <span>Founder, StartupXYZ</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="testimonial-nav">
-        <button class="nav-btn active" data-slide="0"></button>
-        <button class="nav-btn" data-slide="1"></button>
-        <button class="nav-btn" data-slide="2"></button>
-      </div>
-    </div>
-  </div>
-</section>`,
-                css: `.testimonials-section{padding:5rem 1rem;background:white;font-family:'Inter',system-ui,-apple-system,sans-serif}.container{max-width:1200px;margin:0 auto}.section-header{text-align:center;margin-bottom:4rem}.eyebrow{font-size:.875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:1rem;display:block}.section-header h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#1e293b;margin-bottom:1rem}.section-header p{font-size:1.125rem;color:#64748b;max-width:600px;margin:0 auto}.testimonials-slider{max-width:800px;margin:0 auto}.testimonial-track{position:relative;overflow:hidden}.testimonial-card{position:absolute;top:0;left:0;width:100%;opacity:0;transition:opacity .5s ease}.testimonial-card.active{opacity:1;position:relative}.testimonial-content{background:#f8fafc;padding:3rem;border-radius:1rem;text-align:center}.testimonial-content p{font-size:1.25rem;color:#374151;margin-bottom:2rem;font-style:italic}.testimonial-author{display:flex;align-items:center;gap:1rem;justify-content:center}.testimonial-author img{width:60px;height:60px;border-radius:50%;object-fit:cover}.testimonial-author h4{margin:0;color:#1e293b;font-weight:600}.testimonial-author span{margin:0;color:#64748b;font-size:.875rem}.testimonial-nav{display:flex;gap:.5rem;justify-content:center;margin-top:2rem}.nav-btn{width:12px;height:12px;border-radius:50%;border:none;background:#e2e8f0;cursor:pointer;transition:background .2s ease}.nav-btn.active{background:#6366f1}`,
-                js: `let currentSlide = 0;const slides = document.querySelectorAll('.testimonial-card');const navBtns = document.querySelectorAll('.nav-btn');function showSlide(index){slides.forEach((slide,i)=>{slide.classList.toggle('active',i===index)});navBtns.forEach((btn,i)=>btn.classList.toggle('active',i===index));currentSlide=index;}navBtns.forEach((btn,i)=>{btn.addEventListener('click',()=>showSlide(i));});setInterval(()=>{currentSlide=(currentSlide+1)%slides.length;showSlide(currentSlide);},5000);`,
-            },
-        ]
-    },
-    pricing: {
-        title: "Pricing & Plans",
-        description: "Showcase your pricing tiers effectively",
-        templates: [
-            {
-                id: "pricing-3col",
-                title: "Pricing 3 Kolom",
-                description: "Tabel harga responsif",
-                category: "pricing",
-                thumbnail: "💰",
-                html: `<section class="pricing-section">
-  <div class="container">
-    <header class="section-header">
-      <span class="eyebrow">Pricing</span>
-      <h2>Choose your plan</h2>
-      <p>Start free, upgrade when you need more power</p>
-    </header>
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <div class="pricing-header">
-          <h3>Starter</h3>
-          <div class="price">
-            <span class="currency">Rp</span>0<span class="period">/month</span>
-          </div>
-          <p>Perfect for getting started</p>
-        </div>
-        <ul class="pricing-features">
-          <li><span class="check">✓</span> 1 landing page</li>
-          <li><span class="check">✓</span> Basic analytics</li>
-          <li><span class="check">✓</span> Email support</li>
-          <li><span class="check">✓</span> Custom domain</li>
-        </ul>
-        <button class="pricing-btn">Get Started</button>
-      </div>
-      <div class="pricing-card featured">
-        <div class="badge">Most Popular</div>
-        <div class="pricing-header">
-          <h3>Professional</h3>
-          <div class="price">
-            <span class="currency">Rp</span>149<span class="period">/month</span>
-          </div>
-          <p>Best for growing businesses</p>
-        </div>
-        <ul class="pricing-features">
-          <li><span class="check">✓</span> Unlimited pages</li>
-          <li><span class="check">✓</span> Advanced analytics</li>
-          <li><span class="check">✓</span> Priority support</li>
-          <li><span class="check">✓</span> A/B testing</li>
-          <li><span class="check">✓</span> Custom integrations</li>
-        </ul>
-        <button class="pricing-btn">Start Free Trial</button>
-      </div>
-      <div class="pricing-card">
-        <div class="pricing-header">
-          <h3>Enterprise</h3>
-          <div class="price">
-            <span class="currency">Rp</span>399<span class="period">/month</span>
-          </div>
-          <p>For large organizations</p>
-        </div>
-        <ul class="pricing-features">
-          <li><span class="check">✓</span> Everything in Pro</li>
-          <li><span class="check">✓</span> Dedicated support</li>
-          <li><span class="check">✓</span> SLA guarantee</li>
-          <li><span class="check">✓</span> Custom contracts</li>
-          <li><span class="check">✓</span> Training sessions</li>
-        </ul>
-        <button class="pricing-btn">Contact Sales</button>
-      </div>
-    </div>
-  </div>
-</section>`,
-                css: `.pricing-section{padding:5rem 1rem;background:linear-gradient(135deg,#f8fafc 0%,#e2e8f0 100%);font-family:'Inter',system-ui,-apple-system,sans-serif}.container{max-width:1200px;margin:0 auto}.section-header{text-align:center;margin-bottom:4rem}.eyebrow{font-size:.875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:1rem;display:block}.section-header h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#1e293b;margin-bottom:1rem}.section-header p{font-size:1.125rem;color:#64748b;max-width:600px;margin:0 auto}.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:2rem;max-width:1000px;margin:0 auto}.pricing-card{background:white;border-radius:1rem;padding:2.5rem;box-shadow:0 4px 6px -1px rgba(0,0,0,.1);position:relative;transition:all .3s ease}.pricing-card:hover{transform:translateY(-4px);box-shadow:0 20px 25px -5px rgba(0,0,0,.1)}.pricing-card.featured{border:2px solid #6366f1;transform:scale(1.05)}.badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#6366f1;color:white;padding:.5rem 1rem;border-radius:999px;font-size:.875rem;font-weight:600}.pricing-header{text-align:center;margin-bottom:2rem}.pricing-header h3{font-size:1.5rem;font-weight:700;color:#1e293b;margin-bottom:.5rem}.price{font-size:3rem;font-weight:800;color:#6366f1;margin-bottom:1rem}.currency{font-size:1.5rem}.period{font-size:1rem;color:#64748b;font-weight:400}.pricing-header p{color:#64748b;margin:0}.pricing-features{list-style:none;padding:0;margin:0 0 2rem}.pricing-features li{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;color:#374151}.check{color:#10b981;font-weight:600}.pricing-btn{width:100%;padding:1rem;border-radius:.75rem;border:none;background:#6366f1;color:white;font-weight:600;cursor:pointer;transition:all .2s ease}.pricing-btn:hover{background:#5856eb;transform:translateY(-1px)}`,
-                js: ``,
-            },
-            {
-                id: "pricing-comparison",
-                title: "Feature Comparison",
-                description: "Side-by-side feature comparison table",
-                category: "pricing",
-                thumbnail: "📊",
-                html: `<section class="comparison-section">
-  <div class="container">
-    <header class="section-header">
-      <span class="eyebrow">Compare Plans</span>
-      <h2>Find the perfect plan for you</h2>
-      <p>Compare features across all our plans</p>
-    </header>
-    <div class="comparison-table">
-      <div class="table-header">
-        <div class="feature-col">Features</div>
-        <div class="plan-col">Starter</div>
-        <div class="plan-col featured">Professional</div>
-        <div class="plan-col">Enterprise</div>
-      </div>
-      <div class="table-body">
-        <div class="table-row">
-          <div class="feature-col">Landing Pages</div>
-          <div class="plan-col">1</div>
-          <div class="plan-col featured">Unlimited</div>
-          <div class="plan-col">Unlimited</div>
-        </div>
-        <div class="table-row">
-          <div class="feature-col">Monthly Visitors</div>
-          <div class="plan-col">1K</div>
-          <div class="plan-col featured">10K</div>
-          <div class="plan-col">100K+</div>
-        </div>
-        <div class="table-row">
-          <div class="feature-col">Analytics</div>
-          <div class="plan-col"><span class="check">✓</span></div>
-          <div class="plan-col featured"><span class="check">✓</span></div>
-          <div class="plan-col"><span class="check">✓</span></div>
-        </div>
-        <div class="table-row">
-          <div class="feature-col">A/B Testing</div>
-          <div class="plan-col"><span class="cross">✗</span></div>
-          <div class="plan-col featured"><span class="check">✓</span></div>
-          <div class="plan-col"><span class="check">✓</span></div>
-        </div>
-        <div class="table-row">
-          <div class="feature-col">Priority Support</div>
-          <div class="plan-col"><span class="cross">✗</span></div>
-          <div class="plan-col featured"><span class="check">✓</span></div>
-          <div class="plan-col"><span class="check">✓</span></div>
-        </div>
-        <div class="table-row">
-          <div class="feature-col">Custom Integrations</div>
-          <div class="plan-col"><span class="cross">✗</span></div>
-          <div class="plan-col featured"><span class="check">✓</span></div>
-          <div class="plan-col"><span class="check">✓</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>`,
-                css: `.comparison-section{padding:5rem 1rem;background:white;font-family:'Inter',system-ui,-apple-system,sans-serif}.container{max-width:1200px;margin:0 auto}.section-header{text-align:center;margin-bottom:4rem}.eyebrow{font-size:.875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:1rem;display:block}.section-header h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#1e293b;margin-bottom:1rem}.section-header p{font-size:1.125rem;color:#64748b;max-width:600px;margin:0 auto}.comparison-table{background:white;border-radius:1rem;box-shadow:0 4px 6px -1px rgba(0,0,0,.1);overflow:hidden;max-width:900px;margin:0 auto}.table-header{display:grid;grid-template-columns:2fr repeat(3,1fr);background:#f8fafc;border-bottom:1px solid #e2e8f0}.feature-col,.plan-col{padding:1.5rem;font-weight:600;color:#1e293b;text-align:center}.feature-col{text-align:left}.plan-col.featured{background:#6366f1;color:white}.table-body{display:grid}.table-row{display:grid;grid-template-columns:2fr repeat(3,1fr);border-bottom:1px solid #f1f5f9}.table-row:last-child{border-bottom:none}.feature-col,.plan-col{padding:1rem;text-align:center;display:flex;align-items:center;justify-content:center}.feature-col{justify-content:flex-start}.check{color:#10b981;font-weight:600;font-size:1.25rem}.cross{color:#ef4444;font-weight:600;font-size:1.25rem}`,
-                js: ``,
-            },
-        ]
-    },
-    content: {
-        title: "Content & FAQ",
-        description: "Information sections and customer support",
-        templates: [
-            {
-                id: "faq-accordion",
-                title: "FAQ Accordion",
-                description: "Pertanyaan umum dengan toggle",
-                category: "content",
-                thumbnail: "❓",
-                html: `<section class="faq-section">
-  <div class="container">
-    <header class="section-header">
-      <span class="eyebrow">FAQ</span>
-      <h2>Frequently asked questions</h2>
-      <p>Everything you need to know about our service</p>
-    </header>
-    <div class="faq-list">
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>How long does it take to publish a page?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Pages are typically published within 5 seconds after clicking the publish button. The process is automated and requires no manual intervention.</p>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>Can I add external scripts and third-party integrations?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Yes, you can add external scripts by pasting them directly in the HTML or JavaScript sections. We support most third-party integrations including analytics, chat widgets, and marketing tools.</p>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>Are the pages SEO optimized?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Absolutely! All pages are static HTML with full control over meta tags, structured data, and other SEO elements. This results in fast-loading, search engine friendly pages.</p>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>What about analytics and tracking?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>You have full control over analytics implementation. Add Google Analytics, Facebook Pixel, or any other tracking code directly to your pages.</p>
-        </div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-question">
-          <span>Can I use my own domain?</span>
-          <span class="faq-icon">+</span>
-        </button>
-        <div class="faq-answer">
-          <p>Yes, all plans include custom domain support. You can connect your own domain and have full control over DNS settings.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>`,
-                css: `.faq-section{padding:5rem 1rem;background:#f8fafc;font-family:'Inter',system-ui,-apple-system,sans-serif}.container{max-width:800px;margin:0 auto}.section-header{text-align:center;margin-bottom:4rem}.eyebrow{font-size:.875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:1rem;display:block}.section-header h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#1e293b;margin-bottom:1rem}.section-header p{font-size:1.125rem;color:#64748b;max-width:600px;margin:0 auto}.faq-list{display:flex;flex-direction:column;gap:1rem}.faq-item{background:white;border-radius:1rem;box-shadow:0 2px 4px rgba(0,0,0,.05);overflow:hidden}.faq-question{width:100%;padding:1.5rem;background:none;border:none;text-align:left;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:600;color:#1e293b;font-size:1.125rem}.faq-question:hover{background:#f8fafc}.faq-icon{font-size:1.5rem;color:#6366f1;transition:transform .2s ease}.faq-item.active .faq-icon{transform:rotate(45deg)}.faq-answer{padding:0 1.5rem;max-height:0;overflow:hidden;transition:all .3s ease}.faq-item.active .faq-answer{padding:0 1.5rem 1.5rem;max-height:200px}.faq-answer p{color:#64748b;line-height:1.6;margin:0}`,
-                js: `document.querySelectorAll('.faq-question').forEach(button=>{button.addEventListener('click',()=>{const faqItem=button.parentElement;const isActive=faqItem.classList.contains('active');document.querySelectorAll('.faq-item').forEach(item=>item.classList.remove('active'));if(!isActive){faqItem.classList.add('active');}});});`,
-            },
-            {
-                id: "contact-form",
-                title: "Contact Form",
-                description: "Modern contact form with validation",
-                category: "content",
-                thumbnail: "📧",
-                html: `<section class="contact-section">
-  <div class="container">
-    <div class="contact-grid">
-      <div class="contact-info">
-        <span class="eyebrow">Get in Touch</span>
-        <h2>Ready to get started?</h2>
-        <p>Have questions about our platform? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
-        <div class="contact-methods">
-          <div class="contact-method">
-            <div class="method-icon">📧</div>
-            <div>
-              <h4>Email us</h4>
-              <p>hello@example.com</p>
-            </div>
-          </div>
-          <div class="contact-method">
-            <div class="method-icon">📱</div>
-            <div>
-              <h4>Call us</h4>
-              <p>+1 (555) 123-4567</p>
-            </div>
-          </div>
-          <div class="contact-method">
-            <div class="method-icon">📍</div>
-            <div>
-              <h4>Visit us</h4>
-              <p>123 Business St, Suite 100<br>City, State 12345</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <form class="contact-form">
-        <div class="form-group">
-          <label for="name">Full Name</label>
-          <input type="text" id="name" name="name" required>
-        </div>
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" name="email" required>
-        </div>
-        <div class="form-group">
-          <label for="subject">Subject</label>
-          <select id="subject" name="subject" required>
-            <option value="">Select a subject</option>
-            <option value="general">General Inquiry</option>
-            <option value="support">Technical Support</option>
-            <option value="billing">Billing Question</option>
-            <option value="partnership">Partnership</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="message">Message</label>
-          <textarea id="message" name="message" rows="5" required placeholder="Tell us more about your inquiry..."></textarea>
-        </div>
-        <button type="submit" class="submit-btn">Send Message</button>
-      </form>
-    </div>
-  </div>
-</section>`,
-                css: `.contact-section{padding:5rem 1rem;background:white;font-family:'Inter',system-ui,-apple-system,sans-serif}.container{max-width:1200px;margin:0 auto}.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:start}.eyebrow{font-size:.875rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:1rem;display:block}.contact-info h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;color:#1e293b;margin-bottom:1.5rem}.contact-info p{font-size:1.125rem;color:#64748b;line-height:1.6;margin-bottom:2.5rem}.contact-methods{display:flex;flex-direction:column;gap:1.5rem}.contact-method{display:flex;align-items:flex-start;gap:1rem}.method-icon{font-size:1.5rem;background:#f0f9ff;padding:.75rem;border-radius:.75rem}.contact-method h4{margin:0 0 .25rem;color:#1e293b;font-weight:600}.contact-method p{margin:0;color:#64748b}.contact-form{background:#f8fafc;padding:2.5rem;border-radius:1rem}.form-group{margin-bottom:1.5rem}.form-group label{display:block;margin-bottom:.5rem;font-weight:600;color:#374151}.form-group input,.form-group select,.form-group textarea{width:100%;padding:0.875rem;border:1px solid #d1d5db;border-radius:.5rem;font-size:1rem;transition:border-color .2s ease;background:white}.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.1)}.submit-btn{width:100%;padding:1rem;background:#6366f1;color:white;border:none;border-radius:.5rem;font-size:1rem;font-weight:600;cursor:pointer;transition:all .2s ease}.submit-btn:hover{background:#5856eb;transform:translateY(-1px)}`,
-                js: `document.querySelector('.contact-form').addEventListener('submit',function(e){e.preventDefault();const submitBtn=this.querySelector('.submit-btn');submitBtn.textContent='Sending...';submitBtn.disabled=true;setTimeout(()=>{submitBtn.textContent='Message Sent!';submitBtn.style.background='#10b981';setTimeout(()=>{submitBtn.textContent='Send Message';submitBtn.disabled=false;submitBtn.style.background='#6366f1';},2000);},1500);});`,
-            },
-        ]
-    },
-    components: {
-        title: "UI Components",
-        description: "Reusable UI elements and sections",
-        templates: [
-            {
-                id: "cta-banner",
-                title: "CTA Banner",
-                description: "Call-to-action banner with background",
-                category: "components",
-                thumbnail: "🎯",
-                html: `<section class="cta-banner">
-  <div class="cta-container">
-    <div class="cta-content">
-      <h2>Ready to build amazing pages?</h2>
-      <p>Join thousands of creators who are building beautiful pages with our platform</p>
-      <div class="cta-actions">
-        <a href="#" class="cta-btn cta-btn-primary">Start Free Trial</a>
-        <a href="#" class="cta-btn cta-btn-secondary">View Examples</a>
-      </div>
-    </div>
-  </div>
-</section>`,
-                css: `.cta-banner{background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);padding:4rem 1rem;margin:2rem 0}.cta-container{max-width:1200px;margin:0 auto;text-align:center}.cta-content h2{font-size:clamp(2rem,4vw,3rem);font-weight:800;color:white;margin-bottom:1rem}.cta-content p{font-size:1.25rem;color:rgba(255,255,255,.9);margin-bottom:2.5rem;max-width:600px;margin-left:auto;margin-right:auto}.cta-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}.cta-btn{padding:1rem 2rem;border-radius:.75rem;text-decoration:none;font-weight:600;transition:all .2s ease;display:inline-flex;align-items:center;gap:.5rem}.cta-btn-primary{background:white;color:#6366f1;border:2px solid white}.cta-btn-primary:hover{background:#f8fafc;transform:translateY(-2px)}.cta-btn-secondary{background:transparent;color:white;border:2px solid rgba(255,255,255,.3)}.cta-btn-secondary:hover{background:rgba(255,255,255,.1);transform:translateY(-2px)}`,
-                js: ``,
-            },
-            {
-                id: "stats-counter",
-                title: "Stats Counter",
-                description: "Animated statistics display",
-                category: "components",
-                thumbnail: "📈",
-                html: `<section class="stats-section">
-  <div class="container">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <div class="stat-number" data-count="10000">0</div>
-        <div class="stat-label">Happy Customers</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number" data-count="50000">0</div>
-        <div class="stat-label">Pages Created</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number" data-count="99">0</div>
-        <div class="stat-label">% Uptime</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-number" data-count="24">0</div>
-        <div class="stat-label">Hour Support</div>
-      </div>
-    </div>
-  </div>
-</section>`,
-                css: `.stats-section{padding:4rem 1rem;background:#f8fafc;font-family:'Inter',system-ui,-apple-system,sans-serif}.container{max-width:1200px;margin:0 auto}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem}.stat-item{text-align:center;background:white;padding:2rem;border-radius:1rem;box-shadow:0 2px 4px rgba(0,0,0,.05)}.stat-number{font-size:3rem;font-weight:800;color:#6366f1;margin-bottom:.5rem}.stat-label{color:#64748b;font-weight:500}`,
-                js: `const animateCounter=(element)=>{const target=parseInt(element.dataset.count);const increment=target/100;let current=0;const timer=setInterval(()=>{current+=increment;if(current>=target){element.textContent=target.toLocaleString();clearInterval(timer);}else{element.textContent=Math.floor(current).toLocaleString();}},20);};const observer=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){animateCounter(entry.target);observer.unobserve(entry.target);}})});document.querySelectorAll('.stat-number').forEach(el=>observer.observe(el));`,
-            },
-        ]
-    }
-};
-
 try {
     const raw = await fs.readFile(metadataPath, "utf-8");
     savedPages = JSON.parse(raw);
@@ -528,7 +41,7 @@ savedPages.sort((a, b) => {
                         Page Builder
                     </h1>
                     <p class="page-subtitle">
-                        Rancang halaman kustom tanpa build ulang: pilih template, edit kode, dan terbitkan instan.
+                        Rancang halaman kustom tanpa build ulang: tulis HTML/CSS/JS, cek pratinjau, dan terbitkan instan.
                     </p>
                 </div>
                 <div class="header-actions">
@@ -536,14 +49,6 @@ savedPages.sort((a, b) => {
                         <i class="fa-solid fa-arrow-left-long"></i>
                         Dashboard
                     </a>
-                    <button class="action-btn action-btn-secondary" id="preview-inline-btn">
-                        <i class="fa-solid fa-eye"></i>
-                        Pratinjau
-                    </button>
-                    <button class="action-btn action-btn-secondary" id="save-draft-btn">
-                        <i class="fa-solid fa-save"></i>
-                        Simpan Draft
-                    </button>
                     <button class="action-btn action-btn-primary" id="publish-btn">
                         <i class="fa-solid fa-rocket"></i>
                         Terbitkan
@@ -597,38 +102,6 @@ savedPages.sort((a, b) => {
                     </div>
                 </div>
 
-                <div class="panel-section">
-                    <div class="section-header">
-                        <h3><i class="fa-solid fa-layer-group"></i> Template</h3>
-                        <div class="template-filters">
-                            <button class="filter-btn active" data-filter="all">All</button>
-                            {Object.entries(templateCategories).map(([key, category]) => (
-                                <button class="filter-btn" data-filter={key}>{category.title}</button>
-                            ))}
-                        </div>
-                    </div>
-                    <div class="template-list" data-templates={JSON.stringify(templateCategories)}>
-                        {Object.entries(templateCategories).map(([catKey, category]) => 
-                            category.templates.map((template) => (
-                                <div class="template-row" data-category={catKey} data-template-id={template.id}>
-                                    <div class="template-thumb">{template.thumbnail}</div>
-                                    <div class="template-text">
-                                        <p class="template-title">{template.title}</p>
-                                        <p class="template-desc">{template.description}</p>
-                                    </div>
-                                    <div class="template-actions">
-                                        <button class="template-cta" data-template={template.id}>
-                                            Gunakan
-                                        </button>
-                                        <button class="template-edit" data-template-edit={template.id}>
-                                            Edit
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
             </aside>
 
             <div class="editor-panel">
@@ -670,28 +143,25 @@ savedPages.sort((a, b) => {
                                     <h4 class="preview-inline__title" data-preview-title>Untitled Page</h4>
                                     <p class="preview-inline__url" data-preview-url>/custom/your-page</p>
                                 </div>
-                                <div class="preview-inline__controls">
-                                    <div class="device-selector">
-                                        <button class="device-btn active" data-device="desktop">
-                                            <i class="fa-solid fa-desktop"></i>
-                                            Desktop
-                                        </button>
-                                        <button class="device-btn" data-device="tablet">
-                                            <i class="fa-solid fa-tablet-screen-button"></i>
-                                            Tablet
-                                        </button>
-                                        <button class="device-btn" data-device="mobile">
-                                            <i class="fa-solid fa-mobile-screen"></i>
-                                            Mobile
-                                        </button>
-                                    </div>
-                                    <div class="preview-inline__actions">
-                                        <button class="action-btn action-btn-secondary" id="preview-new-tab-btn">
-                                            <i class="fa-solid fa-external-link"></i>
-                                            New Tab
-                                        </button>
-                                    </div>
-                                </div>
+                        <div class="preview-inline__controls">
+                            <div class="device-selector">
+                                <button class="device-btn active" data-device="desktop">
+                                    <i class="fa-solid fa-desktop"></i>
+                                    Desktop
+                                </button>
+                                <button class="device-btn" data-device="tablet">
+                                    <i class="fa-solid fa-tablet-screen-button"></i>
+                                    Tablet
+                                </button>
+                                <button class="device-btn" data-device="mobile">
+                                    <i class="fa-solid fa-mobile-screen"></i>
+                                    Mobile
+                                </button>
+                                <button class="device-btn device-btn--link" id="preview-new-tab-btn">
+                                    <i class="fa-solid fa-up-right-from-square"></i>
+                                </button>
+                            </div>
+                        </div>
                             </div>
                             <div class="preview-inline__frame">
                                 <iframe
@@ -741,7 +211,7 @@ savedPages.sort((a, b) => {
                 <div class="empty-state">
                     <div class="empty-icon">📄</div>
                     <h4>Belum ada halaman</h4>
-                    <p>Buat halaman kustom pertama dengan memilih template di atas</p>
+                    <p>Buat halaman kustom pertama langsung dari editor di atas</p>
                 </div>
             ) : (
                 <div class="pages-grid">
@@ -768,7 +238,7 @@ savedPages.sort((a, b) => {
                             </div>
                             <div class="page-actions">
                                 <a
-                                    href={page.path || `/custom-pages/${page.slug}.html`}
+                                    href={page.publicPath || `/custom-pages/${page.slug}.html`}
                                     target="_blank"
                                     class="action-btn action-btn-primary action-btn-sm"
                                 >
@@ -777,10 +247,24 @@ savedPages.sort((a, b) => {
                                 </a>
                                 <button
                                     class="action-btn action-btn-secondary action-btn-sm"
-                                    data-copy-url={page.path || `/custom-pages/${page.slug}.html`}
+                                    data-copy-url={page.publicPath || `/custom-pages/${page.slug}.html`}
                                 >
                                     <i class="fa-solid fa-copy"></i>
                                     Salin URL
+                                </button>
+                                <button
+                                    class="action-btn action-btn-secondary action-btn-sm"
+                                    data-edit-page={page.slug}
+                                >
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                    Edit
+                                </button>
+                                <button
+                                    class="action-btn action-btn-danger action-btn-sm"
+                                    data-delete-page={page.slug}
+                                >
+                                    <i class="fa-solid fa-trash"></i>
+                                    Hapus
                                 </button>
                             </div>
                         </div>
@@ -797,7 +281,6 @@ savedPages.sort((a, b) => {
                 this.initializeElements();
                 this.initializeEditor();
                 this.initializeEventListeners();
-                this.initializeTemplates();
                 this.loadInitialState();
             }
 
@@ -818,25 +301,14 @@ savedPages.sort((a, b) => {
                 
                 // Action buttons
                 this.publishBtn = document.getElementById('publish-btn');
-                this.saveDraftBtn = document.getElementById('save-draft-btn');
-                this.previewToggleBtn = document.getElementById('preview-toggle-btn');
                 this.previewNewTabBtn = document.getElementById('preview-new-tab-btn');
-                this.previewInlineBtn = document.getElementById('preview-inline-btn');
                 this.formatCodeBtn = document.getElementById('format-code-btn');
                 this.validateCodeBtn = document.getElementById('validate-code-btn');
                 
                 // Editor elements
                 this.editorTabs = document.querySelectorAll('.editor-tab');
-                this.templateButtons = document.querySelectorAll('[data-template]');
-                this.templateEditButtons = document.querySelectorAll('[data-template-edit]');
-                this.templateCards = document.querySelectorAll('.template-row');
-                this.filterBtns = document.querySelectorAll('.filter-btn');
                 this.deviceBtns = document.querySelectorAll('.device-btn');
                 this.statusEl = document.querySelector('[data-status]');
-                
-                // Template data
-                this.templateGrid = document.querySelector('.template-list');
-                this.templateData = JSON.parse(this.templateGrid?.dataset.templates || '{}');
                 
                 // State
                 this.currentLang = 'html';
@@ -914,19 +386,6 @@ savedPages.sort((a, b) => {
                     btn.addEventListener('click', () => this.switchEditorTab(btn.dataset.lang));
                 });
 
-                // Template buttons
-                this.templateButtons.forEach(btn => {
-                    btn.addEventListener('click', () => this.applyTemplate(btn.dataset.template));
-                });
-                this.templateEditButtons.forEach(btn => {
-                    btn.addEventListener('click', () => this.applyTemplate(btn.dataset.templateEdit));
-                });
-
-                // Template filters
-                this.filterBtns.forEach(btn => {
-                    btn.addEventListener('click', () => this.filterTemplates(btn.dataset.filter));
-                });
-
                 // Device selector
                 this.deviceBtns.forEach(btn => {
                     btn.addEventListener('click', () => this.changeDevice(btn.dataset.device));
@@ -934,10 +393,7 @@ savedPages.sort((a, b) => {
 
                 // Action buttons
                 this.publishBtn?.addEventListener('click', () => this.publishPage());
-                this.saveDraftBtn?.addEventListener('click', () => this.saveDraft());
-                this.previewToggleBtn?.addEventListener('click', () => this.togglePreviewFullscreen());
                 this.previewNewTabBtn?.addEventListener('click', () => this.openPreviewNewTab());
-                this.previewInlineBtn?.addEventListener('click', () => this.openPreviewNewTab());
                 this.formatCodeBtn?.addEventListener('click', () => this.formatCode());
                 this.validateCodeBtn?.addEventListener('click', () => this.validateCode());
 
@@ -950,13 +406,9 @@ savedPages.sort((a, b) => {
                 document.addEventListener('keydown', (e) => this.handleKeyboardShortcuts(e));
             }
 
-            initializeTemplates() {
-                this.filterTemplates('all');
-            }
-
             loadInitialState() {
                 // Set default content
-                this.codeState.html = '<div class="welcome-message">\n  <h1>Welcome to Page Builder!</h1>\n  <p>Start by selecting a template or write your own HTML, CSS, and JavaScript.</p>\n</div>';
+                this.codeState.html = '<div class="welcome-message">\n  <h1>Welcome to Page Builder!</h1>\n  <p>Mulai dengan menulis HTML, CSS, atau JavaScript kamu sendiri.</p>\n</div>';
                 this.codeState.css = '.welcome-message {\n  text-align: center;\n  padding: 4rem 2rem;\n  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);\n  color: white;\n  border-radius: 1rem;\n  margin: 2rem;\n}\n\n.welcome-message h1 {\n  font-size: 2.5rem;\n  margin-bottom: 1rem;\n}\n\n.welcome-message p {\n  font-size: 1.2rem;\n  opacity: 0.9;\n}';
                 this.codeState.javascript = 'console.log("Page Builder initialized!");';
 
@@ -985,18 +437,37 @@ savedPages.sort((a, b) => {
                 this.jsInput.value = this.codeState.javascript;
             }
 
+            syncEditorFromState() {
+                if (!this.monacoEditor) return;
+                const model = monaco.editor.createModel(
+                    this.codeState[this.currentLang] || '',
+                    this.currentLang === 'javascript' ? 'javascript' : this.currentLang
+                );
+                this.monacoEditor.setModel(model);
+            }
+
+            setCodeState(next) {
+                this.codeState = { ...this.codeState, ...next };
+                this.syncToFields();
+                this.currentLang = 'html';
+                if (this.monacoEditor) {
+                    this.monacoEditor.setValue(this.codeState.html || '');
+                }
+            }
+
             switchEditorTab(lang) {
                 if (!window.monaco || !this.monacoEditor) return;
                 
                 // Update active tab
                 this.editorTabs.forEach(btn => btn.classList.remove('active'));
                 document.querySelector(`[data-lang="${lang}"]`).classList.add('active');
-                
+
                 if (lang === 'preview') {
                     this.showPreviewMode();
+                    this.updatePreview();
                     return;
                 }
-                
+
                 // Save current content
                 this.codeState[this.currentLang] = this.monacoEditor.getValue();
                 this.currentLang = lang;
@@ -1019,42 +490,6 @@ savedPages.sort((a, b) => {
             showPreviewMode() {
                 document.getElementById('code-editor-container').style.display = 'none';
                 document.getElementById('preview-inline').hidden = false;
-                this.updateStatus('Preview mode active');
-            }
-
-            applyTemplate(templateId) {
-                // Find template in all categories
-                let template = null;
-                for (const category of Object.values(this.templateData)) {
-                    template = category.templates.find(t => t.id === templateId);
-                    if (template) break;
-                }
-                
-                if (!template) {
-                    this.updateStatus('Template not found', 'error');
-                    return;
-                }
-                
-                this.codeState.html = template.html || '';
-                this.codeState.css = template.css || '';
-                this.codeState.javascript = template.js || '';
-                
-                this.syncToFields();
-                this.updatePreview();
-                this.updateStatus(`Template "${template.title}" applied`);
-            }
-
-            filterTemplates(filter) {
-                // Update filter buttons
-                this.filterBtns.forEach(btn => btn.classList.remove('active'));
-                document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
-                
-                // Filter template cards
-                this.templateCards.forEach(card => {
-                    const category = card.dataset.category;
-                    const shouldShow = filter === 'all' || category === filter;
-                    card.style.display = shouldShow ? 'flex' : 'none';
-                });
             }
 
             changeDevice(device) {
@@ -1167,17 +602,6 @@ savedPages.sort((a, b) => {
                 this.updateStatus('Preview opened in new tab');
             }
 
-            togglePreviewFullscreen() {
-                const panel = document.querySelector('.preview-panel');
-                if (panel.classList.contains('fullscreen')) {
-                    panel.classList.remove('fullscreen');
-                    this.previewToggleBtn.innerHTML = '<i class="fa-solid fa-expand"></i> Fullscreen';
-                } else {
-                    panel.classList.add('fullscreen');
-                    this.previewToggleBtn.innerHTML = '<i class="fa-solid fa-compress"></i> Exit Fullscreen';
-                }
-            }
-
             async publishPage() {
                 const slug = this.normalizeSlug(this.slugInput.value);
                 const payload = {
@@ -1231,21 +655,6 @@ savedPages.sort((a, b) => {
                 } finally {
                     this.setBusyState(false);
                 }
-            }
-
-            async saveDraft() {
-                const draft = {
-                    slug: this.normalizeSlug(this.slugInput.value),
-                    title: this.titleInput.value,
-                    description: this.descriptionInput.value,
-                    html: this.htmlInput.value,
-                    css: this.cssInput.value,
-                    js: this.jsInput.value,
-                    timestamp: new Date().toISOString()
-                };
-
-                localStorage.setItem('page-builder-draft', JSON.stringify(draft));
-                this.updateStatus('Draft saved locally', 'success');
             }
 
             formatCode() {
@@ -1357,7 +766,79 @@ savedPages.sort((a, b) => {
 
         // Initialize the page builder when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            new PageBuilder();
+            const builder = new PageBuilder();
+            (window as any).pageBuilder = builder;
+
+            // Edit existing page
+            document.querySelectorAll('[data-edit-page]').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    const button = btn as HTMLButtonElement;
+                    const slug = button.dataset.editPage;
+                    if (!slug) return;
+                    button.disabled = true;
+                    const original = button.innerHTML;
+                    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+                    try {
+                        const res = await fetch(`/api/admin/load-page?slug=${slug}`);
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Gagal memuat halaman');
+
+                        builder.slugInput.value = data.slug || slug;
+                        builder.titleInput.value = data.title || slug;
+                        builder.handleSlugChange();
+                        builder.handleTitleChange();
+                        builder.setCodeState({
+                            html: data.html || '',
+                            css: data.css || '',
+                            javascript: data.js || ''
+                        });
+                        builder.updatePreview();
+                        builder.updateStatus(`Memuat halaman "${slug}"`, 'success');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    } catch (err: any) {
+                        alert(err?.message || 'Gagal memuat halaman');
+                    } finally {
+                        button.disabled = false;
+                        button.innerHTML = original;
+                    }
+                });
+            });
+
+            // Delete existing page
+            document.querySelectorAll('[data-delete-page]').forEach((btn) => {
+                btn.addEventListener('click', async () => {
+                    const button = btn as HTMLButtonElement;
+                    const slug = button.dataset.deletePage;
+                    if (!slug) return;
+
+                    if (!confirm(`Hapus halaman "${slug}"? Tindakan tidak dapat dibatalkan.`)) {
+                        return;
+                    }
+
+                    button.disabled = true;
+                    const original = button.innerHTML;
+                    button.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+                    try {
+                        const res = await fetch('/api/admin/delete-page', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ slug })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Gagal menghapus halaman');
+
+                        const card = button.closest('.page-card');
+                        card?.remove();
+                        builder.updateStatus(`Halaman "${slug}" dihapus`, 'success');
+                    } catch (err: any) {
+                        alert(err?.message || 'Gagal menghapus halaman');
+                        button.disabled = false;
+                        button.innerHTML = original;
+                    }
+                });
+            });
         });
     </script>
 
@@ -1553,6 +1034,19 @@ savedPages.sort((a, b) => {
             background: var(--builder-subtle);
         }
 
+        .action-btn-danger {
+            color: #b91c1c;
+            border-color: color-mix(in srgb, #b91c1c 35%, transparent);
+            background: color-mix(in srgb, #b91c1c 6%, transparent);
+        }
+
+        .action-btn-danger:hover,
+        .action-btn-danger:focus-visible {
+            background: color-mix(in srgb, #b91c1c 12%, transparent);
+            border-color: color-mix(in srgb, #b91c1c 55%, transparent);
+            color: #7f1d1d;
+        }
+
         .action-btn-sm {
             padding: 0.55rem 1rem;
             font-size: 0.78rem;
@@ -1628,39 +1122,6 @@ savedPages.sort((a, b) => {
             letter-spacing: 0.01em;
         }
 
-        .template-filters {
-            display: flex;
-            gap: 0.45rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 0.5rem 0.9rem;
-            border: 1px solid var(--builder-border-color);
-            border-radius: var(--builder-radius-sm);
-            background: var(--builder-surface);
-            color: var(--builder-muted);
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .filter-btn:hover {
-            background: var(--builder-subtle);
-            color: var(--color-foreground);
-        }
-
-        .filter-btn.active {
-            background: var(--builder-primary);
-            color: var(--color-primary-foreground);
-            border-color: color-mix(
-                in srgb,
-                var(--builder-primary) 60%,
-                transparent
-            );
-        }
         .settings-grid {
             display: grid;
             gap: 1.1rem;
@@ -1726,88 +1187,6 @@ savedPages.sort((a, b) => {
             color: var(--builder-muted);
         }
 
-        .template-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 0.6rem;
-            padding: 1rem 1.1rem 1.3rem;
-        }
-
-        .template-row {
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            align-items: center;
-            gap: 0.65rem;
-            padding: 0.65rem 0.75rem;
-            border: 1px solid var(--builder-border-color);
-            border-radius: var(--builder-radius-sm);
-            background: var(--builder-surface-alt);
-        }
-
-        .template-thumb {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            display: grid;
-            place-items: center;
-            background: var(--builder-subtle);
-            font-size: 1.05rem;
-        }
-
-        .template-text {
-            flex: 1;
-        }
-
-        .template-text .template-title {
-            margin: 0;
-            font-weight: 800;
-            letter-spacing: 0.01em;
-            font-size: 0.9rem;
-        }
-
-        .template-text .template-desc {
-            margin: 0.08rem 0 0;
-            color: var(--builder-muted);
-            font-size: 0.78rem;
-            line-height: 1.35;
-        }
-
-        .template-actions {
-            display: grid;
-            gap: 0.35rem;
-            justify-items: end;
-        }
-
-        .template-cta,
-        .template-edit {
-            border: 1px solid var(--builder-border-color);
-            border-radius: var(--builder-radius-sm);
-            padding: 0.32rem 0.78rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 120ms ease, box-shadow 120ms ease;
-            font-size: 0.82rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-        }
-
-        .template-cta {
-            background: var(--builder-primary);
-            color: var(--color-primary-foreground);
-        }
-
-        .template-edit {
-            background: var(--builder-surface);
-            color: var(--color-foreground);
-        }
-
-        .template-cta:hover,
-        .template-edit:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 8px 16px
-                color-mix(in srgb, var(--builder-primary) 20%, transparent);
-        }
 
         .editor-tabs {
             display: flex;
@@ -1816,13 +1195,19 @@ savedPages.sort((a, b) => {
             padding: 0.35rem;
             border-radius: var(--builder-radius-sm);
             margin: 1rem 1.25rem 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .editor-tabs::-webkit-scrollbar {
+            display: none;
         }
 
         .editor-tab {
             display: inline-flex;
             align-items: center;
             gap: 0.45rem;
-            padding: 0.45rem 0.9rem;
+            padding: 0.55rem 0.95rem;
             border: 1px solid transparent;
             background: transparent;
             color: var(--builder-muted);
@@ -2032,6 +1417,12 @@ savedPages.sort((a, b) => {
             transition: all 0.15s ease;
         }
 
+        .device-btn--link {
+            width: 40px;
+            justify-content: center;
+            padding: 0.45rem;
+        }
+
         .device-btn:hover {
             background: var(--builder-surface);
             color: var(--color-foreground);
@@ -2222,16 +1613,45 @@ savedPages.sort((a, b) => {
 
         @media (max-width: 780px) {
             .builder-workspace {
-                padding: 1rem 0.75rem 2.5rem;
+                padding: 0.75rem 0.65rem 2.2rem;
+                gap: 0.6rem;
             }
 
             .workspace-header {
-                padding: 1.05rem 1rem;
+                padding: 0.95rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .header-actions {
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 0.45rem;
+                justify-content: stretch;
+            }
+
+            .action-btn {
+                justify-content: center;
+            }
+
+            .editor-tabs {
+                margin: 0.5rem 0.5rem 0;
+                padding: 0.3rem;
+            }
+
+            .editor-tab {
+                font-size: 0.82rem;
+                padding: 0.5rem 0.85rem;
+                white-space: nowrap;
             }
 
             .editor-container {
-                margin: 0 1rem 1rem;
-                height: 360px;
+                margin: 0 0.65rem 0.85rem;
+                height: 260px;
             }
 
             .side-panel {
@@ -2242,30 +1662,53 @@ savedPages.sort((a, b) => {
             }
 
             .preview-inline {
-                margin: 0 0 1rem 0;
-                padding: 0.85rem 0.95rem 1.05rem;
+                margin: 0 0.5rem 0.85rem;
+                padding: 0.75rem 0.85rem 0.95rem;
             }
 
-            .template-grid,
             .pages-grid {
                 grid-template-columns: 1fr;
             }
 
-            .header-actions {
-                justify-content: stretch;
+            .preview-inline__controls {
+                width: 100%;
+                justify-content: space-between;
             }
 
-            .action-btn {
+            .device-selector {
                 flex: 1;
-                justify-content: center;
+                justify-content: space-between;
+            }
+
+            .device-btn {
+                padding: 0.45rem 0.7rem;
+                font-size: 0.78rem;
+            }
+
+            .device-btn--link {
+                width: 34px;
+                padding: 0.45rem;
+            }
+
+            .preview-frame {
+                height: clamp(340px, 60vh, 520px);
+            }
+
+            .editor-actions {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.35rem;
+                padding: 0.75rem 0.75rem 0.85rem;
+            }
+
+            .editor-actions .action-btn {
+                width: 100%;
             }
         }
 
         @media (max-width: 520px) {
             .page-actions,
             .header-actions,
-            .template-filters,
-            .editor-tabs,
             .preview-actions {
                 flex-direction: column;
             }

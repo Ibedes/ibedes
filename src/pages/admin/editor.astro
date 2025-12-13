@@ -83,70 +83,58 @@ const sortedProducts = [...allProducts].reverse();
 ---
 
 <Layout title={`Editor - ${GLOBAL.username}`}>
-    <div class="editor-shell">
-        <header class="editor-header">
-            <div class="editor-header__text">
-                <p class="editor-eyebrow">
-                    {filename ? "Mode edit" : "Mode draft"}
-                </p>
-                <h1>{filename ? "Perbarui artikel" : "Artikel baru"}</h1>
-                <p>
-                    Kelola markdown, metadata, dan afiliasi dari satu layar yang
-                    lebih ringkas.
+    <div class="editor-shell editor-layout">
+        <aside class="editor-sidepanel">
+            <div class="editor-sidepanel__section">
+                <p class="editor-eyebrow">{filename ? "Mode edit" : "Draft baru"}</p>
+                <h2 class="editor-sidepanel__title">Artikel</h2>
+                <p class="editor-sidepanel__meta">
+                    {filename || "Belum ada file"} · {frontmatter.pubDate
+                        ? new Date(frontmatter.pubDate).toLocaleDateString("id-ID")
+                        : "Tanggal otomatis"}
                 </p>
             </div>
-            <div class="editor-header__actions">
-                <a href="/admin" class="editor-button editor-button--ghost">
-                    <i class="fa-solid fa-arrow-left-long" aria-hidden="true"
-                    ></i>
-                    <span>Kembali</span>
-                </a>
+
+            <div class="editor-sidepanel__section">
+                <button id="save-btn" type="button" class="editor-button editor-button--primary w-full">
+                    <i class="fa-solid fa-save" aria-hidden="true"></i>
+                    <span>Simpan</span>
+                </button>
                 <a
                     id="view-article-btn"
                     href="#"
                     target="_blank"
                     data-hidden
-                    class="editor-button editor-button--soft"
+                    class="editor-button editor-button--soft w-full"
                 >
                     <i class="fa-solid fa-eye" aria-hidden="true"></i>
                     <span>Lihat</span>
                 </a>
-                <button
-                    id="save-btn"
-                    type="button"
-                    class="editor-button editor-button--primary"
-                >
-                    <i class="fa-solid fa-save" aria-hidden="true"></i>
-                    <span>Simpan</span>
-                </button>
+                <a href="/admin" class="editor-button editor-button--ghost w-full">
+                    <i class="fa-solid fa-arrow-left-long" aria-hidden="true"></i>
+                    <span>Kembali</span>
+                </a>
             </div>
-        </header>
 
-        <div class="editor-chip-row">
-            <span class="editor-chip" data-filename-chip>
-                <i class="fa-regular fa-file-lines" aria-hidden="true"></i>
-                <span data-filename-chip-text
-                    >{filename || "Belum ada file"}</span
-                >
-            </span>
-            <span class="editor-chip">
-                <i class="fa-regular fa-calendar" aria-hidden="true"></i>
-                {
-                    frontmatter.pubDate
-                        ? new Date(frontmatter.pubDate).toLocaleDateString(
-                              "id-ID",
-                          )
-                        : "Tanggal otomatis"
-                }
-            </span>
-            <span class="editor-chip">
-                <i class="fa-solid fa-tags" aria-hidden="true"></i>
-                <span data-product-count
-                    >{frontmatter.affiliateProducts?.length ?? 0}</span
-                >
-                produk
-            </span>
-        </div>
+            <div class="editor-sidepanel__section">
+                <p class="editor-eyebrow">Navigasi</p>
+                <nav class="editor-sidepanel__nav">
+                    <a href="#content-editor">Konten</a>
+                    <a href="#metadata-form">Metadata</a>
+                    <a href="#affiliate-section">Afiliasi</a>
+                    <a href="#actions-form">Aksi</a>
+                </nav>
+            </div>
+
+            <div class="editor-sidepanel__section">
+                <p class="editor-eyebrow">Tips singkat</p>
+                <ul class="editor-sidepanel__tips">
+                    <li>Cmd/Ctrl + S untuk simpan cepat</li>
+                    <li>Pastikan slug unik dan huruf kecil</li>
+                    <li>Tambahkan affiliate untuk monetisasi</li>
+                </ul>
+            </div>
+        </aside>
 
         <div class="editor-grid">
             <section class="editor-panel editor-panel--primary">
@@ -988,7 +976,7 @@ const sortedProducts = [...allProducts].reverse();
 
         <style>
             .editor-shell {
-                max-width: 1100px;
+                max-width: 1200px;
                 margin: 0 auto;
                 padding: 1.5rem 1.25rem 4rem;
                 --editor-border: 1px solid
@@ -1006,44 +994,69 @@ const sortedProducts = [...allProducts].reverse();
                 --accent-rgb: 59, 130, 246;
             }
 
-            .editor-header {
-                display: flex;
-                flex-direction: column;
+            .editor-layout {
+                display: grid;
+                grid-template-columns: 260px 1fr;
                 gap: 1rem;
-                padding: 1.25rem;
-                border: var(--editor-border);
-                border-radius: var(--editor-radius);
-                background: var(--editor-card-bg);
+                align-items: start;
             }
 
-            @media (min-width: 768px) {
-                .editor-header {
-                    flex-direction: row;
-                    align-items: flex-start;
-                    justify-content: space-between;
+            @media (max-width: 900px) {
+                .editor-layout {
+                    grid-template-columns: 1fr;
                 }
             }
 
-            .editor-header__text h1 {
-                font-family: var(--font-display);
-                font-size: clamp(1.4rem, 3vw, 1.9rem);
+            .editor-sidepanel {
+                position: sticky;
+                top: 1rem;
+                display: grid;
+                gap: 0.75rem;
+                padding: 1rem;
+                border: 1px solid color-mix(in srgb, var(--color-foreground) 10%, transparent);
+                border-radius: 1rem;
+                background: color-mix(in srgb, var(--color-card) 95%, transparent);
+                height: fit-content;
+            }
+
+            .editor-sidepanel__title {
+                margin: 0.1rem 0;
+                font-size: 1.2rem;
+            }
+
+            .editor-sidepanel__meta {
                 margin: 0;
+                color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
+                font-size: 0.9rem;
             }
 
-            .editor-header__text p {
+            .editor-sidepanel__nav {
+                display: grid;
+                gap: 0.35rem;
+            }
+
+            .editor-sidepanel__nav a {
+                text-decoration: none;
+                color: inherit;
+                padding: 0.45rem 0.6rem;
+                border-radius: 0.6rem;
+                border: 1px solid color-mix(in srgb, var(--color-foreground) 10%, transparent);
+                background: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+                transition: border-color 120ms ease, transform 120ms ease;
+            }
+
+            .editor-sidepanel__nav a:hover {
+                border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+                transform: translateX(2px);
+            }
+
+            .editor-sidepanel__tips {
                 margin: 0.35rem 0 0;
-                max-width: 48ch;
-                color: color-mix(
-                    in srgb,
-                    var(--color-foreground) 70%,
-                    transparent
-                );
-            }
-
-            .editor-header__actions {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.5rem;
+                padding-left: 1rem;
+                color: color-mix(in srgb, var(--color-foreground) 75%, transparent);
+                display: grid;
+                gap: 0.25rem;
+                font-size: 0.95rem;
             }
 
             .editor-eyebrow {

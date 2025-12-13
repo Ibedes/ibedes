@@ -1,0 +1,20 @@
+---
+import Layout from "../../layouts/Layout.astro";
+const pageTitle = "chatgpt";
+const description = "Custom page dibuat lewat Page Builder";
+const htmlContent = "<header>\n  <div class=\"nav\">\n    <div class=\"brand\">AWESOME</div>\n    <nav>\n      <a href=\"#\">Home</a>\n      <a href=\"#\">Features</a>\n      <a href=\"#\">About</a>\n    </nav>\n  </div>\n</header>\n\n<section class=\"hero\">\n  <div>\n    <h1>Build something<br/>that actually matters.</h1>\n    <p>\n      A modern landing page is not about noise.\n      It’s about clarity, rhythm, and respect for the reader’s time.\n    </p>\n    <a href=\"#\" class=\"cta\">Get Started</a>\n  </div>\n\n  <div class=\"hero-card\">\n    <h3>Minimal. Purposeful.</h3>\n    <p>\n      Inspired by classic layout principles:\n      strong hierarchy, generous spacing,\n      and animation that serves meaning.\n    </p>\n  </div>\n</section>\n\n<section>\n  <div class=\"features\">\n    <div class=\"feature\">\n      <h3>Fast by Default</h3>\n      <p>No framework lock-in. Pure HTML, CSS, and a touch of JS.</p>\n    </div>\n    <div class=\"feature\">\n      <h3>Readable Design</h3>\n      <p>Typography-first approach. Content leads, visuals follow.</p>\n    </div>\n    <div class=\"feature\">\n      <h3>Timeless Feel</h3>\n      <p>Built to age well, not chase trends.</p>\n    </div>\n  </div>\n</section>\n\n<footer>\n  © 2025 Awesome Landing Page. Built with care.\n</footer>";
+const cssContent = "";
+const jsContent = "";
+---
+
+<Layout title={pageTitle} description={description}>
+    {cssContent ? <style is:global>{cssContent}</style> : null}
+    <main class="page-builder-output" data-custom-page="chatgpt">
+        <div class="page-builder-html" set:html={htmlContent}></div>
+    </main>
+    {jsContent ? (
+        <script is:inline>
+            {jsContent}
+        </script>
+    ) : null}
+</Layout>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Awesome Landing Page</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --fg: #eaeaf0;
+      --muted: #9aa0aa;
+      --accent: #6cf2c2;
+      --glass: rgba(255,255,255,0.08);
+      --blur: blur(14px);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 10% -10%, #15202b, transparent),
+                  radial-gradient(800px 400px at 90% 10%, #0f2a1f, transparent),
+                  var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: var(--blur);
+      background: linear-gradient(
+        to bottom,
+        rgba(11,13,16,0.85),
+        rgba(11,13,16,0.55)
+      );
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .nav {
+      max-width: 1100px;
+      margin: auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .nav a {
+      color: var(--muted);
+      text-decoration: none;
+      margin-left: 24px;
+      font-size: 14px;
+    }
+
+    .nav a:hover {
+      color: var(--fg);
+    }
+
+    section {
+      max-width: 1100px;
+      margin: auto;
+      padding: 120px 24px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 64px;
+      align-items: center;
+      min-height: 90vh;
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      line-height: 1.05;
+      margin-bottom: 24px;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 520px;
+      margin-bottom: 40px;
+    }
+
+    .cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 28px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #08130e;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform .3s ease, box-shadow .3s ease;
+      box-shadow: 0 10px 30px rgba(108,242,194,0.25);
+    }
+
+    .cta:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 16px 40px rgba(108,242,194,0.35);
+    }
+
+    .hero-card {
+      background: linear-gradient(
+        to bottom right,
+        rgba(255,255,255,0.12),
+        rgba(255,255,255,0.02)
+      );
+      backdrop-filter: var(--blur);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      padding: 32px;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+      gap: 24px;
+    }
+
+    .feature {
+      background: var(--glass);
+      backdrop-filter: var(--blur);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 28px;
+      transition: transform .4s ease, border-color .4s ease;
+    }
+
+    .feature:hover {
+      transform: translateY(-6px);
+      border-color: var(--accent);
+    }
+
+    .feature h3 {
+      margin-bottom: 12px;
+    }
+
+    .feature p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    footer {
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="nav">
+    <div class="brand">AWESOME</div>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Features</a>
+      <a href="#">About</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div>
+    <h1>Build something<br/>that actually matters.</h1>
+    <p>
+      A modern landing page is not about noise.
+      It’s about clarity, rhythm, and respect for the reader’s time.
+    </p>
+    <a href="#" class="cta">Get Started</a>
+  </div>
+
+  <div class="hero-card">
+    <h3>Minimal. Purposeful.</h3>
+    <p>
+      Inspired by classic layout principles:
+      strong hierarchy, generous spacing,
+      and animation that serves meaning.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="features">
+    <div class="feature">
+      <h3>Fast by Default</h3>
+      <p>No framework lock-in. Pure HTML, CSS, and a touch of JS.</p>
+    </div>
+    <div class="feature">
+      <h3>Readable Design</h3>
+      <p>Typography-first approach. Content leads, visuals follow.</p>
+    </div>
+    <div class="feature">
+      <h3>Timeless Feel</h3>
+      <p>Built to age well, not chase trends.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © 2025 Awesome Landing Page. Built with care.
+</footer>
+
+</body>
+</html>

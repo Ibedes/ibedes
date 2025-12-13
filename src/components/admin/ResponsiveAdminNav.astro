@@ -27,25 +27,39 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
             <h2 class="admin-sidebar__title">Admin Panel</h2>
         </div>
         
-        <div class="admin-sidebar__content">
+                <div class="admin-sidebar__content">
             <ul class="admin-sidebar__list" role="tablist">
                 {tabs.map((tab) => (
                     <li class="admin-sidebar__item">
-                        <button
-                            type="button"
-                            class={`admin-sidebar__button ${
-                                tab.id === activeTab ? 'active' : ''
-                            }`}
-                            data-tab={tab.id}
-                            data-tab-trigger
-                            role="tab"
-                            aria-selected={tab.id === activeTab}
-                            aria-controls={tab.id}
-                            title={tab.tooltip}
-                        >
-                            <i class={`fa-solid ${tab.icon}`} aria-hidden="true"></i>
-                            <span class="admin-sidebar__label">{tab.tooltip}</span>
-                        </button>
+                        {tab.href ? (
+                            <a
+                                href={tab.href}
+                                class={`admin-sidebar__button ${
+                                    tab.id === activeTab ? 'active' : ''
+                                }`}
+                                aria-current={tab.id === activeTab ? 'page' : undefined}
+                                title={tab.tooltip}
+                            >
+                                <i class={`fa-solid ${tab.icon}`} aria-hidden="true"></i>
+                                <span class="admin-sidebar__label">{tab.tooltip}</span>
+                            </a>
+                        ) : (
+                            <button
+                                type="button"
+                                class={`admin-sidebar__button ${
+                                    tab.id === activeTab ? 'active' : ''
+                                }`}
+                                data-tab={tab.id}
+                                data-tab-trigger
+                                role="tab"
+                                aria-selected={tab.id === activeTab}
+                                aria-controls={tab.id}
+                                title={tab.tooltip}
+                            >
+                                <i class={`fa-solid ${tab.icon}`} aria-hidden="true"></i>
+                                <span class="admin-sidebar__label">{tab.tooltip}</span>
+                            </button>
+                        )}
                     </li>
                 ))}
             </ul>
@@ -77,22 +91,37 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
         <div class="admin-bottom-nav__scroll-container" data-scroll-container>
             <div class="admin-bottom-nav__wrapper" style={`--nav-count: ${tabs.length}; --active-index: ${tabs.findIndex(tab => tab.id === activeTab)};`}>
                 {tabs.map((tab, index) => (
-                    <button
-                        type="button"
-                        class={`admin-bottom-nav__item ${
-                            tab.id === activeTab ? 'active' : ''
-                        }`}
-                        data-tab={tab.id}
-                        data-tab-trigger
-                        data-index={index}
-                        role="tab"
-                        aria-selected={tab.id === activeTab}
-                        aria-controls={tab.id}
-                        title={tab.tooltip}
-                    >
-                        <i class={`fa-solid ${tab.icon}`} aria-hidden="true"></i>
-                        <span class="admin-bottom-nav__label">{tab.tooltip}</span>
-                    </button>
+                    tab.href ? (
+                        <a
+                            href={tab.href}
+                            class={`admin-bottom-nav__item ${
+                                tab.id === activeTab ? 'active' : ''
+                            }`}
+                            data-index={index}
+                            aria-current={tab.id === activeTab ? 'page' : undefined}
+                            title={tab.tooltip}
+                        >
+                            <i class={`fa-solid ${tab.icon}`} aria-hidden="true"></i>
+                            <span class="admin-bottom-nav__label">{tab.tooltip}</span>
+                        </a>
+                    ) : (
+                        <button
+                            type="button"
+                            class={`admin-bottom-nav__item ${
+                                tab.id === activeTab ? 'active' : ''
+                            }`}
+                            data-tab={tab.id}
+                            data-tab-trigger
+                            data-index={index}
+                            role="tab"
+                            aria-selected={tab.id === activeTab}
+                            aria-controls={tab.id}
+                            title={tab.tooltip}
+                        >
+                            <i class={`fa-solid ${tab.icon}`} aria-hidden="true"></i>
+                            <span class="admin-bottom-nav__label">{tab.tooltip}</span>
+                        </button>
+                    )
                 ))}
                 <span class="admin-bottom-nav__indicator" aria-hidden="true"></span>
             </div>
@@ -630,8 +659,12 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
 
         overlay?.addEventListener("click", closeSidebar);
 
-        // Tab switching functionality
+        const hasTabPanes = !!document.querySelector(TAB_PANE_SELECTOR);
+        const hasLinkOnlyNav = !document.querySelector(TAB_TRIGGER_SELECTOR) && !!nav?.querySelector("a[href]");
+
+        // Tab switching functionality (only when tab panes are present)
         function setActiveTab(tabName: string) {
+            if (!hasTabPanes) return;
             // Close sidebar on mobile after tab selection
             if (window.innerWidth < 1024) {
                 closeSidebar();
@@ -673,46 +706,45 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
         }
 
         function updateSidebarIndicator(tabName: string) {
-            const sidebarItems = document.querySelectorAll(".admin-sidebar__button");
-            let activeIndex = 0;
-            
-            sidebarItems.forEach((item, index) => {
-                if (item.getAttribute("data-tab") === tabName) {
-                    activeIndex = index;
-                }
+            if (!hasTabPanes) return;
+            const sidebarItems = document.querySelectorAll(".admin-sidebar__button[data-tab]");
+            sidebarItems.forEach((item) => {
+                item.classList.toggle("active", item.getAttribute("data-tab") === tabName);
             });
         }
 
-    function updateBottomNavIndicator(tabName: string) {
-        const bottomNavWrapper = document.querySelector(".admin-bottom-nav__wrapper");
-        if (!bottomNavWrapper) return;
+        function updateBottomNavIndicator(tabName: string) {
+            const bottomNavWrapper = document.querySelector(".admin-bottom-nav__wrapper");
+            if (!bottomNavWrapper) return;
 
-        const triggers = bottomNavWrapper.querySelectorAll<HTMLElement>("[data-tab-trigger]");
-            
+            const triggers = bottomNavWrapper.querySelectorAll<HTMLElement>(".admin-bottom-nav__item");
+
             let activeIndex = 0;
             triggers.forEach((trigger, index) => {
-                if (trigger.getAttribute("data-tab") === tabName) {
+                const isActiveTab = trigger.getAttribute("data-tab") === tabName;
+                const isAlreadyActive = trigger.classList.contains("active");
+                if (isActiveTab || isAlreadyActive) {
                     activeIndex = index;
                 }
             });
 
-        (bottomNavWrapper as HTMLElement).style.setProperty("--active-index", String(activeIndex));
-        
-        // Update slide indicator
-        updateSlideIndicator(activeIndex);
+            (bottomNavWrapper as HTMLElement).style.setProperty("--active-index", String(activeIndex));
+            
+            // Update slide indicator
+            updateSlideIndicator(activeIndex);
 
-        // Move underline indicator to active tab
-        const activeTrigger = triggers[activeIndex];
-        const indicator = bottomNavWrapper.querySelector<HTMLElement>(".admin-bottom-nav__indicator");
-        if (activeTrigger && indicator) {
-            const triggerRect = activeTrigger.getBoundingClientRect();
-            const wrapperRect = bottomNavWrapper.getBoundingClientRect();
-            const width = Math.max(24, triggerRect.width * 0.6);
-            const offset = triggerRect.left - wrapperRect.left;
-            indicator.style.width = `${width}px`;
-            indicator.style.transform = `translateX(${offset + (triggerRect.width - width) / 2}px)`;
+            // Move underline indicator to active tab (works for both anchors & buttons)
+            const activeTrigger = triggers[activeIndex];
+            const indicator = bottomNavWrapper.querySelector<HTMLElement>(".admin-bottom-nav__indicator");
+            if (activeTrigger && indicator) {
+                const triggerRect = activeTrigger.getBoundingClientRect();
+                const wrapperRect = bottomNavWrapper.getBoundingClientRect();
+                const width = Math.max(24, triggerRect.width * 0.6);
+                const offset = triggerRect.left - wrapperRect.left;
+                indicator.style.width = `${width}px`;
+                indicator.style.transform = `translateX(${offset + (triggerRect.width - width) / 2}px)`;
+            }
         }
-    }
 
         function updateSlideIndicator(activeIndex: number) {
             const slideDots = document.querySelectorAll("[data-slide-dot]");
@@ -728,6 +760,7 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
 
         // Global function for tab switching
         (window as any).switchTab = (tabName: string) => {
+            if (!hasTabPanes) return;
             setActiveTab(tabName);
             window.scrollTo({ top: 0, behavior: "smooth" });
         };
@@ -735,6 +768,7 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
         // Tab trigger event listeners
         document.querySelectorAll(TAB_TRIGGER_SELECTOR).forEach((btn) => {
             btn.addEventListener("click", () => {
+                if (!hasTabPanes) return;
                 const tabName = btn.getAttribute("data-tab");
                 if (tabName) {
                     switchTab(tabName);
@@ -825,8 +859,10 @@ const { tabs, activeTab, class: className = "" } = Astro.props;
         const activeTab = document.querySelector(".admin-sidebar__button.active, .admin-bottom-nav__item.active");
         if (activeTab) {
             const tabName = activeTab.getAttribute("data-tab");
-            if (tabName) {
+            if (tabName && hasTabPanes) {
                 setActiveTab(tabName);
+            } else {
+                updateBottomNavIndicator(tabName || "");
             }
         }
 

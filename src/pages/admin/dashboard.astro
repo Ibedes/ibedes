@@ -121,34 +121,24 @@ const mobileQuickActions = [
         accent: "muted",
         description: "Atur SEO",
     },
+    {
+        icon: "fa-file-code",
+        label: "Page",
+        href: "/admin/page-builder",
+        accent: "primary",
+        description: "Buat custom page",
+    },
 ];
 
 const adminTabs = [
-    {
-        id: "overview",
-        icon: "fa-chart-line",
-        tooltip: "Overview",
-    },
-    {
-        id: "articles",
-        icon: "fa-newspaper",
-        tooltip: "Articles",
-    },
-    {
-        id: "products",
-        icon: "fa-tags",
-        tooltip: "Products",
-    },
-    {
-        id: "analytics",
-        icon: "fa-chart-bar",
-        tooltip: "Analytics",
-    },
-    {
-        id: "settings",
-        icon: "fa-gear",
-        tooltip: "Settings",
-    },
+    { id: "overview", icon: "fa-chart-line", tooltip: "Overview" },
+    { id: "articles", icon: "fa-newspaper", tooltip: "Articles" },
+    { id: "page-builder", icon: "fa-file-code", tooltip: "Page Builder", href: "/admin/page-builder" },
+    { id: "products", icon: "fa-tags", tooltip: "Products" },
+    { id: "comments", icon: "fa-comments", tooltip: "Comments", href: "/admin/komentar" },
+    { id: "analytics", icon: "fa-chart-bar", tooltip: "Analytics" },
+    { id: "settings", icon: "fa-gear", tooltip: "Settings" },
+    
 ];
 
 const overviewStats = [
